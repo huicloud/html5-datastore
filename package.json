@@ -1,0 +1,65 @@
+{
+  "name": "html5-datastore",
+  "version": "0.2.11",
+  "description": "dzh云平台数据查询和存储管理模块",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huicloud/html5-datastore.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "connection": "https://github.com/huicloud/html5-connection.git",
+    "promise": "^7.0.4",
+    "protobufjs": "*",
+    "yfloat": "https://github.com/huicloud/html5-yfloat.git"
+  },
+  "devDependencies": {
+    "aliasify": "^1.7.2",
+    "browserify": "^10.2.1",
+    "del": "^1.2.0",
+    "es5-shim": "^4.1.13",
+    "event-stream": "^3.3.1",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-git": "^1.2.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.2.0",
+    "gulp-util": "^3.0.4",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "aliasify": {
+    "aliases": {
+      "protobufjs": "protobufjs/dist/ProtoBuf-light"
+    }
+  },
+  "jspm": {
+    "jspmNodeConversion": false,
+    "dependencies": {
+      "protobufjs": "github:dcodeIO/ProtoBuf.js@4.0.0",
+      "connection": "gwgit:~jiagang/connection",
+      "yfloat": "gwgit:~jiagang/yfloat"
+    },
+    "overrides": {
+      "github:dcodeIO/ProtoBuf.js@4.0.0": {
+        "main": "dist/ProtoBuf-light",
+        "dependencies": {
+          "ByteBuffer": "github:dcodeIO/ByteBuffer.js@4.0.0"
+        }
+      },
+      "github:dcodeIO/ByteBuffer.js@4.0.0": {
+        "main": "dist/ByteBufferAB",
+        "dependencies": {
+          "Long": "github:dcodeIO/Long.js@2.2.5"
+        }
+      },
+      "github:dcodeIO/Long.js@2.2.5": {
+        "main": "dist/Long"
+      }
+    }
+  }
+}

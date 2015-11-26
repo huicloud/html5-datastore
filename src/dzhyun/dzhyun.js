@@ -1,0 +1,1 @@
+throw Error('未编译dzhyun proto');
