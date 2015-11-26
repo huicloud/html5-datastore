@@ -3,7 +3,7 @@ import parser from './parser';
 import MSGAdapter from './adapter/MSGAdapter';
 import MSGDirectAdapter from './adapter/MSGDirectAdapter';
 import pbTable from './pbTable';
-import yfloat from 'yfloat';
+import yfloat from 'html5-yfloat';
 
 var adapterMap = {
   //'dyna': MSGAdapter

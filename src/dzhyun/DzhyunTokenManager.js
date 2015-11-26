@@ -1,4 +1,4 @@
-import connection from 'connection';
+import connection from 'html5-connection';
 import * as util from '../util';
 import DzhyunDataParser from './DzhyunDataParser';
 

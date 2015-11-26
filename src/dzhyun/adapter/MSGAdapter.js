@@ -1,7 +1,7 @@
 import pbTable from '../pbTable';
 import jsonTable from '../jsonTable';
 import BaseDataAdapter from './BaseDataAdapter';
-import yfloat from 'yfloat';
+import yfloat from 'html5-yfloat';
 import ProtoBuf from '../protobuf';
 var Long = ProtoBuf.Long;
 

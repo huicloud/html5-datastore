@@ -4,7 +4,7 @@ import DzhyunTokenManager from './dzhyun/DzhyunTokenManager';
 
 var connection;
 try {
-  connection = require('connection');
+  connection = require('html5-connection');
 } catch (err) {
   connection = window.connection;
 }

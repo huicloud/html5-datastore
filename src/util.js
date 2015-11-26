@@ -1,4 +1,4 @@
-export * from 'connection/lib/util';
+export * from 'html5-connection/lib/util';
 
 export function unParam(searchStr) {
   if (searchStr.indexOf('?') === 0) {
