@@ -6,7 +6,7 @@ if (typeof Promise === 'undefined') {
 }
 module.exports = require('./lib/DataStore');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/DataStore":3,"promise":27}],2:[function(require,module,exports){
+},{"./lib/DataStore":3,"promise":25}],2:[function(require,module,exports){
 // 数据解析接口
 'use strict';
 
@@ -67,7 +67,7 @@ var _dzhyunDzhyunTokenManager2 = _interopRequireDefault(_dzhyunDzhyunTokenManage
 
 var connection;
 try {
-  connection = require('connection');
+  connection = require('html5-connection');
 } catch (err) {
   connection = window.connection;
 }
@@ -721,7 +721,7 @@ DataStore.pushInterval = 5000;
 // 全局暂停标识，对于http订阅数据有效，默认为false
 DataStore.pause = false;
 module.exports = exports['default'];
-},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":13,"connection":18}],4:[function(require,module,exports){
+},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":13,"html5-connection":15}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -731,7 +731,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -759,9 +759,9 @@ var _pbTable = require('./pbTable');
 
 var _pbTable2 = _interopRequireDefault(_pbTable);
 
-var _yfloat = require('yfloat');
+var _html5Yfloat = require('html5-yfloat');
 
-var _yfloat2 = _interopRequireDefault(_yfloat);
+var _html5Yfloat2 = _interopRequireDefault(_html5Yfloat);
 
 var adapterMap = {
   //'dyna': MSGAdapter
@@ -835,14 +835,14 @@ exports['default'] = DzhyunDataParser;
 DzhyunDataParser.parser = _parser2['default'];
 DzhyunDataParser.MSGAdapter = _adapterMSGAdapter2['default'];
 DzhyunDataParser.pbTable = _pbTable2['default'];
-DzhyunDataParser.yfloat = _yfloat2['default'];
+DzhyunDataParser.yfloat = _html5Yfloat2['default'];
 
 // 将DzhyunDataParser暴露到全局，便于外部使用（之后应该要从datastore中提出成单独模块）
 var _global = global || undefined;
 _global.DzhyunDataParser = DzhyunDataParser;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":10,"./pbTable":11,"yfloat":14}],5:[function(require,module,exports){
+},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":10,"./pbTable":11,"html5-yfloat":24}],5:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -858,9 +858,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _connection = require('connection');
+var _html5Connection = require('html5-connection');
 
-var _connection2 = _interopRequireDefault(_connection);
+var _html5Connection2 = _interopRequireDefault(_html5Connection);
 
 var _util = require('../util');
 
@@ -898,7 +898,7 @@ var DzhyunTokenManager = (function () {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
-        _connection2['default'].https(_this.address, {}, {
+        _html5Connection2['default'].https(_this.address, {}, {
           response: resolve,
           error: reject
         }).request(service + '?' + util.param(params));
@@ -993,7 +993,7 @@ var _global = global || undefined;
 _global.DzhyunTokenManager = DzhyunTokenManager;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":13,"./DzhyunDataParser":4,"connection":18}],6:[function(require,module,exports){
+},{"../util":13,"./DzhyunDataParser":4,"html5-connection":15}],6:[function(require,module,exports){
 /**
  * 数据转换器，负责将各种响应数据类型转换为用于DataStore统一存储用格式
  */
@@ -1039,7 +1039,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -1059,9 +1059,9 @@ var _BaseDataAdapter2 = require('./BaseDataAdapter');
 
 var _BaseDataAdapter3 = _interopRequireDefault(_BaseDataAdapter2);
 
-var _yfloat = require('yfloat');
+var _html5Yfloat = require('html5-yfloat');
 
-var _yfloat2 = _interopRequireDefault(_yfloat);
+var _html5Yfloat2 = _interopRequireDefault(_html5Yfloat);
 
 var _protobuf = require('../protobuf');
 
@@ -1091,7 +1091,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
       if (!data) {
         return data;
       } else if (typeof data === 'number' || data instanceof Long) {
-        return _yfloat2['default'].unmakeValueToNumber(data);
+        return _html5Yfloat2['default'].unmakeValueToNumber(data);
       } else if (data instanceof Array) {
         var newArray = [];
         data.forEach(function (eachData) {
@@ -1130,7 +1130,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
                 // 第一次记录精度
                 if (dq === undefined) {
-                  var arr = _yfloat2['default'].unmakeValue(value);
+                  var arr = _html5Yfloat2['default'].unmakeValue(value);
                   dq = differObject.dq = arr[1];
                   return differObject.previousValue = arr[0];
                 } else {
@@ -1141,7 +1141,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
                   return differObject.previousValue = Number((previousValue * w + value).toFixed()) / w;
                 }
               } else {
-                return isPb ? _yfloat2['default'].unmakeValueToNumber(value) : value;
+                return isPb ? _html5Yfloat2['default'].unmakeValueToNumber(value) : value;
               }
             }
             return true;
@@ -1208,7 +1208,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
 exports['default'] = MSGAdapter;
 module.exports = exports['default'];
-},{"../jsonTable":9,"../pbTable":11,"../protobuf":12,"./BaseDataAdapter":6,"yfloat":14}],8:[function(require,module,exports){
+},{"../jsonTable":9,"../pbTable":11,"../protobuf":12,"./BaseDataAdapter":6,"html5-yfloat":24}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -1217,7 +1217,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -1868,9 +1868,9 @@ function _interopExportWildcard(obj, defaults) { var newObj = defaults({}, obj);
 
 function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
-var _connectionLibUtil = require('connection/lib/util');
+var _html5ConnectionLibUtil = require('html5-connection/lib/util');
 
-_defaults(exports, _interopExportWildcard(_connectionLibUtil, _defaults));
+_defaults(exports, _interopExportWildcard(_html5ConnectionLibUtil, _defaults));
 
 function unParam(searchStr) {
   if (searchStr.indexOf('?') === 0) {
@@ -1890,477 +1890,14 @@ function unParam(searchStr) {
 
   return obj;
 }
-},{"connection/lib/util":26}],14:[function(require,module,exports){
+},{"html5-connection/lib/util":23}],14:[function(require,module,exports){
 
 },{}],15:[function(require,module,exports){
-/*global define:false require:false */
-module.exports = (function(){
-	// Import Events
-	var events = require('events')
-
-	// Export Domain
-	var domain = {}
-	domain.createDomain = domain.create = function(){
-		var d = new events.EventEmitter()
-
-		function emitError(e) {
-			d.emit('error', e)
-		}
-
-		d.add = function(emitter){
-			emitter.on('error', emitError)
-		}
-		d.remove = function(emitter){
-			emitter.removeListener('error', emitError)
-		}
-		d.bind = function(fn){
-			return function(){
-				var args = Array.prototype.slice.call(arguments)
-				try {
-					fn.apply(null, args)
-				}
-				catch (err){
-					emitError(err)
-				}
-			}
-		}
-		d.intercept = function(fn){
-			return function(err){
-				if ( err ) {
-					emitError(err)
-				}
-				else {
-					var args = Array.prototype.slice.call(arguments, 1)
-					try {
-						fn.apply(null, args)
-					}
-					catch (err){
-						emitError(err)
-					}
-				}
-			}
-		}
-		d.run = function(fn){
-			try {
-				fn()
-			}
-			catch (err) {
-				emitError(err)
-			}
-			return this
-		};
-		d.dispose = function(){
-			this.removeAllListeners()
-			return this
-		};
-		d.enter = d.exit = function(){
-			return this
-		}
-		return d
-	};
-	return domain
-}).call(this)
-},{"events":16}],16:[function(require,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      }
-      throw TypeError('Uncaught, unspecified "error" event.');
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        len = arguments.length;
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++)
-          args[i - 1] = arguments[i];
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    len = arguments.length;
-    args = new Array(len - 1);
-    for (i = 1; i < len; i++)
-      args[i - 1] = arguments[i];
-
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    var m;
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  var ret;
-  if (!emitter._events || !emitter._events[type])
-    ret = 0;
-  else if (isFunction(emitter._events[type]))
-    ret = 1;
-  else
-    ret = emitter._events[type].length;
-  return ret;
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-},{}],17:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-// TODO(shtylman)
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],18:[function(require,module,exports){
 require('./lib/HttpConnection');
 require('./lib/WebSocketConnection');
 
 module.exports = require('./lib/connection');
-},{"./lib/HttpConnection":20,"./lib/WebSocketConnection":22,"./lib/connection":25}],19:[function(require,module,exports){
+},{"./lib/HttpConnection":17,"./lib/WebSocketConnection":19,"./lib/connection":22}],16:[function(require,module,exports){
 /**
  * connection基类
  */
@@ -2485,7 +2022,7 @@ BaseConnection.EVENT_PROGRESS = 'progress';
 
 exports['default'] = BaseConnection;
 module.exports = exports['default'];
-},{}],20:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -2610,7 +2147,7 @@ _connection2['default'].https = function (url, options, handler) {
   return new HttpConnection(url, options, handler, true);
 };
 module.exports = exports['default'];
-},{"./BaseConnection":19,"./ajax":24,"./connection":25,"./util":26}],21:[function(require,module,exports){
+},{"./BaseConnection":16,"./ajax":21,"./connection":22,"./util":23}],18:[function(require,module,exports){
 // WebSocket 依赖，node环境使用模块ws
 'use strict';
 
@@ -2624,7 +2161,7 @@ if (typeof window !== 'undefined') {
   var wsDep = 'ws';
   module.exports = require(wsDep);
 }
-},{}],22:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -2768,7 +2305,7 @@ _connection2['default'].wss = function (url, options, handler) {
   return new WebSocketConnection(url, options, handler, true);
 };
 module.exports = exports['default'];
-},{"./BaseConnection":19,"./WebSocket":21,"./connection":25}],23:[function(require,module,exports){
+},{"./BaseConnection":16,"./WebSocket":18,"./connection":22}],20:[function(require,module,exports){
 // 判断环境，浏览器环境存在window对象
 'use strict';
 
@@ -2787,7 +2324,7 @@ if (typeof window !== 'undefined') {
   var xmlhttprequest = require(xmlhttprequestDep);
   module.exports = xmlhttprequest.XMLHttpRequest || xmlhttprequest;
 }
-},{}],24:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -3225,7 +2762,7 @@ if (typeof $ !== 'undefined' && typeof $.ajax === 'function' && typeof XDomainRe
     };
   })();
 }
-},{"./XMLHttpRequest":23,"./util":26}],25:[function(require,module,exports){
+},{"./XMLHttpRequest":20,"./util":23}],22:[function(require,module,exports){
 /**
  * 解析url，根据url中指定的协议创建对应的连接对象
  * @param url
@@ -3262,7 +2799,7 @@ function connection(url, options, handler) {
 
 exports['default'] = connection;
 module.exports = exports['default'];
-},{}],26:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -3302,12 +2839,115 @@ function extend(target) {
 }
 
 // recurse into nested objects
-},{}],27:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
+/**
+ * yfloat格式数据的解析模块
+ * Created by jiagang on 2015/10/15.
+ */
+
+var TWO_PWR_16_DBL = 1 << 16;
+var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+
+/**
+ * 得到value中高32位数值
+ * @param {number} value
+ * @returns {number}
+ */
+function getHighBits(value) {
+  return (value / TWO_PWR_32_DBL) | 0;
+}
+
+/**
+ * 得到value中低32位数值
+ * @param {number} value
+ * @returns {number}
+ */
+function getLowBits(value) {
+  return (value % TWO_PWR_32_DBL) | 0;
+}
+
+/**
+ * 高位和低位合并为一个数字
+ * @param {number} low
+ * @param {number} high
+ * @returns {number}
+ */
+function toNumber(low, high) {
+  return ((high >>> 0) * TWO_PWR_32_DBL) + (low >>> 0);
+}
+
+/**
+ * 解析yfloat类型数字，返回数值和精度的数组
+ * @param {number|Long} value
+ * @returns {Array}
+ */
+function unmakeValue(value) {
+  var high, low;
+
+  // 数字类型
+  if (typeof value === 'number' && value > 0) {
+    high = getHighBits(value);
+    low = getLowBits(value);
+  }
+
+  // Long型
+  else if (value && typeof value['getHighBits'] === 'function' && typeof value['getLowBits'] === 'function') {
+    high = value.getHighBits();
+    low = value.getLowBits();
+  }
+
+  // 其它类型不支持
+  else {
+    console.warn('unmakeValue: invalid value');
+    return [NaN, 0];
+  }
+
+  var b = (low >> 16) & 0xFF,
+    l = b & 0x0F,
+    h = (b >> 4) & 0x0F,
+    bx = toNumber((high << 24) + ((low >>> 24) << 16) + (low & 0xFFFF), high >> 8),
+    dq = [2, 1, null, 3, 4, 5, 6, 7, 8, 9, 0][l],
+    temp = dq != null ? bx / (Math.pow(10, dq) || 1) : NaN;
+
+  if (h != 0) {
+    temp = -temp;
+  }
+  return [temp, dq];
+}
+
+/**
+ * 解析yfloat类型数字，返回数字类型
+ * @param {number|Long} value
+ * @returns {number}
+ */
+function unmakeValueToNumber(value) {
+  return unmakeValue(value)[0];
+}
+
+/**
+ * 解析yfloat类型数字，返回根据精度格式化后的字符串
+ * @param {number|Long} value
+ * @returns {string}
+ */
+function unmakeValueToString (value) {
+  var result = unmakeValue(value),
+    resultValue = result[0],
+    dq = result[1];
+  return dq !== null ? resultValue.toFixed(dq) : resultValue.toString();
+}
+
+module.exports = {
+  unmakeValue: unmakeValue,
+  unmakeValueToNumber: unmakeValueToNumber,
+  unmakeValueToString: unmakeValueToString
+};
+
+},{}],25:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib')
 
-},{"./lib":32}],28:[function(require,module,exports){
+},{"./lib":30}],26:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -3493,7 +3133,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":36}],29:[function(require,module,exports){
+},{"asap/raw":33}],27:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -3508,7 +3148,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
   });
 };
 
-},{"./core.js":28}],30:[function(require,module,exports){
+},{"./core.js":26}],28:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -3617,7 +3257,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":28}],31:[function(require,module,exports){
+},{"./core.js":26}],29:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -3635,7 +3275,7 @@ Promise.prototype['finally'] = function (f) {
   });
 };
 
-},{"./core.js":28}],32:[function(require,module,exports){
+},{"./core.js":26}],30:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./core.js');
@@ -3644,7 +3284,7 @@ require('./finally.js');
 require('./es6-extensions.js');
 require('./node-extensions.js');
 
-},{"./core.js":28,"./done.js":29,"./es6-extensions.js":30,"./finally.js":31,"./node-extensions.js":33}],33:[function(require,module,exports){
+},{"./core.js":26,"./done.js":27,"./es6-extensions.js":28,"./finally.js":29,"./node-extensions.js":31}],31:[function(require,module,exports){
 'use strict';
 
 // This file contains then/promise specific extensions that are only useful
@@ -3717,7 +3357,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   });
 }
 
-},{"./core.js":28,"asap":34}],34:[function(require,module,exports){
+},{"./core.js":26,"asap":32}],32:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -3785,7 +3425,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":35}],35:[function(require,module,exports){
+},{"./raw":33}],33:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -4009,110 +3649,5 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],36:[function(require,module,exports){
-(function (process){
-"use strict";
-
-var domain; // The domain module is executed on demand
-var hasSetImmediate = typeof setImmediate === "function";
-
-// Use the fastest means possible to execute a task in its own turn, with
-// priority over other events including network IO events in Node.js.
-//
-// An exception thrown by a task will permanently interrupt the processing of
-// subsequent tasks. The higher level `asap` function ensures that if an
-// exception is thrown by a task, that the task queue will continue flushing as
-// soon as possible, but if you use `rawAsap` directly, you are responsible to
-// either ensure that no exceptions are thrown from your task, or to manually
-// call `rawAsap.requestFlush` if an exception is thrown.
-module.exports = rawAsap;
-function rawAsap(task) {
-    if (!queue.length) {
-        requestFlush();
-        flushing = true;
-    }
-    // Avoids a function call
-    queue[queue.length] = task;
-}
-
-var queue = [];
-// Once a flush has been requested, no further calls to `requestFlush` are
-// necessary until the next `flush` completes.
-var flushing = false;
-// The position of the next task to execute in the task queue. This is
-// preserved between calls to `flush` so that it can be resumed if
-// a task throws an exception.
-var index = 0;
-// If a task schedules additional tasks recursively, the task queue can grow
-// unbounded. To prevent memory excaustion, the task queue will periodically
-// truncate already-completed tasks.
-var capacity = 1024;
-
-// The flush function processes all tasks that have been scheduled with
-// `rawAsap` unless and until one of those tasks throws an exception.
-// If a task throws an exception, `flush` ensures that its state will remain
-// consistent and will resume where it left off when called again.
-// However, `flush` does not make any arrangements to be called again if an
-// exception is thrown.
-function flush() {
-    while (index < queue.length) {
-        var currentIndex = index;
-        // Advance the index before calling the task. This ensures that we will
-        // begin flushing on the next task the task throws an error.
-        index = index + 1;
-        queue[currentIndex].call();
-        // Prevent leaking memory for long chains of recursive calls to `asap`.
-        // If we call `asap` within tasks scheduled by `asap`, the queue will
-        // grow, but to avoid an O(n) walk for every task we execute, we don't
-        // shift tasks off the queue after they have been executed.
-        // Instead, we periodically shift 1024 tasks off the queue.
-        if (index > capacity) {
-            // Manually shift all values starting at the index back to the
-            // beginning of the queue.
-            for (var scan = 0, newLength = queue.length - index; scan < newLength; scan++) {
-                queue[scan] = queue[scan + index];
-            }
-            queue.length -= index;
-            index = 0;
-        }
-    }
-    queue.length = 0;
-    index = 0;
-    flushing = false;
-}
-
-rawAsap.requestFlush = requestFlush;
-function requestFlush() {
-    // Ensure flushing is not bound to any domain.
-    // It is not sufficient to exit the domain, because domains exist on a stack.
-    // To execute code outside of any domain, the following dance is necessary.
-    var parentDomain = process.domain;
-    if (parentDomain) {
-        if (!domain) {
-            // Lazy execute the domain module.
-            // Only employed if the user elects to use domains.
-            domain = require("domain");
-        }
-        domain.active = process.domain = null;
-    }
-
-    // `setImmediate` is slower that `process.nextTick`, but `process.nextTick`
-    // cannot handle recursion.
-    // `requestFlush` will only be called recursively from `asap.js`, to resume
-    // flushing after an error is thrown into a domain.
-    // Conveniently, `setImmediate` was introduced in the same version
-    // `process.nextTick` started throwing recursion errors.
-    if (flushing && hasSetImmediate) {
-        setImmediate(flush);
-    } else {
-        process.nextTick(flush);
-    }
-
-    if (parentDomain) {
-        domain.active = process.domain = parentDomain;
-    }
-}
-
-}).call(this,require('_process'))
-},{"_process":17,"domain":15}]},{},[1])(1)
+},{}]},{},[1])(1)
 });

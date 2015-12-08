@@ -67,7 +67,7 @@ var _dzhyunDzhyunTokenManager2 = _interopRequireDefault(_dzhyunDzhyunTokenManage
 
 var connection;
 try {
-  connection = require('connection');
+  connection = require('html5-connection');
 } catch (err) {
   connection = window.connection;
 }
@@ -721,7 +721,7 @@ DataStore.pushInterval = 5000;
 // 全局暂停标识，对于http订阅数据有效，默认为false
 DataStore.pause = false;
 module.exports = exports['default'];
-},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":14,"connection":"connection"}],4:[function(require,module,exports){
+},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":14,"html5-connection":16}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -731,7 +731,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -759,9 +759,9 @@ var _pbTable = require('./pbTable');
 
 var _pbTable2 = _interopRequireDefault(_pbTable);
 
-var _yfloat = require('yfloat');
+var _html5Yfloat = require('html5-yfloat');
 
-var _yfloat2 = _interopRequireDefault(_yfloat);
+var _html5Yfloat2 = _interopRequireDefault(_html5Yfloat);
 
 var adapterMap = {
   //'dyna': MSGAdapter
@@ -835,14 +835,14 @@ exports['default'] = DzhyunDataParser;
 DzhyunDataParser.parser = _parser2['default'];
 DzhyunDataParser.MSGAdapter = _adapterMSGAdapter2['default'];
 DzhyunDataParser.pbTable = _pbTable2['default'];
-DzhyunDataParser.yfloat = _yfloat2['default'];
+DzhyunDataParser.yfloat = _html5Yfloat2['default'];
 
 // 将DzhyunDataParser暴露到全局，便于外部使用（之后应该要从datastore中提出成单独模块）
 var _global = global || undefined;
 _global.DzhyunDataParser = DzhyunDataParser;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":11,"./pbTable":12,"yfloat":"yfloat"}],5:[function(require,module,exports){
+},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":11,"./pbTable":12,"html5-yfloat":25}],5:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -858,9 +858,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _connection = require('connection');
+var _html5Connection = require('html5-connection');
 
-var _connection2 = _interopRequireDefault(_connection);
+var _html5Connection2 = _interopRequireDefault(_html5Connection);
 
 var _util = require('../util');
 
@@ -898,7 +898,7 @@ var DzhyunTokenManager = (function () {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
-        _connection2['default'].https(_this.address, {}, {
+        _html5Connection2['default'].https(_this.address, {}, {
           response: resolve,
           error: reject
         }).request(service + '?' + util.param(params));
@@ -993,7 +993,7 @@ var _global = global || undefined;
 _global.DzhyunTokenManager = DzhyunTokenManager;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":14,"./DzhyunDataParser":4,"connection":"connection"}],6:[function(require,module,exports){
+},{"../util":14,"./DzhyunDataParser":4,"html5-connection":16}],6:[function(require,module,exports){
 /**
  * 数据转换器，负责将各种响应数据类型转换为用于DataStore统一存储用格式
  */
@@ -1039,7 +1039,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -1059,9 +1059,9 @@ var _BaseDataAdapter2 = require('./BaseDataAdapter');
 
 var _BaseDataAdapter3 = _interopRequireDefault(_BaseDataAdapter2);
 
-var _yfloat = require('yfloat');
+var _html5Yfloat = require('html5-yfloat');
 
-var _yfloat2 = _interopRequireDefault(_yfloat);
+var _html5Yfloat2 = _interopRequireDefault(_html5Yfloat);
 
 var _protobuf = require('../protobuf');
 
@@ -1091,7 +1091,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
       if (!data) {
         return data;
       } else if (typeof data === 'number' || data instanceof Long) {
-        return _yfloat2['default'].unmakeValueToNumber(data);
+        return _html5Yfloat2['default'].unmakeValueToNumber(data);
       } else if (data instanceof Array) {
         var newArray = [];
         data.forEach(function (eachData) {
@@ -1130,7 +1130,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
                 // 第一次记录精度
                 if (dq === undefined) {
-                  var arr = _yfloat2['default'].unmakeValue(value);
+                  var arr = _html5Yfloat2['default'].unmakeValue(value);
                   dq = differObject.dq = arr[1];
                   return differObject.previousValue = arr[0];
                 } else {
@@ -1141,7 +1141,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
                   return differObject.previousValue = Number((previousValue * w + value).toFixed()) / w;
                 }
               } else {
-                return isPb ? _yfloat2['default'].unmakeValueToNumber(value) : value;
+                return isPb ? _html5Yfloat2['default'].unmakeValueToNumber(value) : value;
               }
             }
             return true;
@@ -1208,7 +1208,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
 exports['default'] = MSGAdapter;
 module.exports = exports['default'];
-},{"../jsonTable":10,"../pbTable":12,"../protobuf":13,"./BaseDataAdapter":6,"yfloat":"yfloat"}],8:[function(require,module,exports){
+},{"../jsonTable":10,"../pbTable":12,"../protobuf":13,"./BaseDataAdapter":6,"html5-yfloat":25}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -1217,7 +1217,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -3768,1109 +3768,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "F10GsgkOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zqlx",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gsdm",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gsmc",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ywqc",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zcdz",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "bgdz",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ssqy",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "sshy",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gswz",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dzxx",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ssrq",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zgrq",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "fxl",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "fxj",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "srkpj",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "sstjr",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zcxs",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "frdb",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dsz",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zjl",
-                    "id": 21
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dm",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zqdb",
-                    "id": 23
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dh",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "cz",
-                    "id": 25
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "yb",
-                    "id": 26
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "kjsws",
-                    "id": 27
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zyfw",
-                    "id": 28
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gsjs",
-                    "id": 29
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dmdh",
-                    "id": 30
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dmcz",
-                    "id": 31
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dmdzyx",
-                    "id": 32
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "RegionName",
-                    "id": 33
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsZycwzb",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "kjssjyj",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jbmgsy",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "kchjbmgsy",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tbmgsy",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgjzc",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgwfplr",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mggjj",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xsmll",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yylrl",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlrl",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jqjzcsyl",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tbjzcsyl",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "gdqy",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ldbl",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "sdbl",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgjyxjll",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "bbgbr",
-                    "id": 18
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsZycwzbOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10CwtsZycwzb",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsXjllbzy",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xjjzje",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dw",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jyxjlr",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jyxjlc",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jyxjje",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzxjlr",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzxjlc",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzxjje",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "czxjlr",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "czxjlc",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "czxjje",
-                    "id": 12
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsXjllbzyOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10CwtsXjllbzy",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10ZxjbDjdcwzb",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlrhb",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgsy",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xsjll",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jzcsyl",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgjyxjll",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "zysrtb",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlrtb",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "zysrhb",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "F10ZxjbDjdcwzbOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10ZxjbDjdcwzb",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10Zxjbdjdleb",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ssgdsy",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yysr",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yycb",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yysjjfj",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xsfy",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "glfy",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "cwfy",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzsy",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yylr",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yywsr",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yywzc",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "lrze",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "sdsfy",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlr",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgzjlr",
-                    "id": 16
-                }
-            ]
-        },
-        {
-            "name": "F10ZxjbdjdlebOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10Zxjbdjdleb",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcGdhs",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Gdzhs",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Hbzj",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Hbbh",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Rjcg",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltgdhs",
-                    "id": 6
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcGdhsOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GdjcGdhs",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdgd",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Gdrs",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xh",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gdmc",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Cgs",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zzgs",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Zjqk",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gbxz",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gsdm",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdgdOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GdjcSdgd",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdltgd",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Gdrs",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xh",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gdmc",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Cgs",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zzgs",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Zjqk",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gbxz",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gsdm",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdltgdOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GdjcSdltgd",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhFhkg",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgsg",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgzz",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgfh",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgp",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Pgjg",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zfgfsl",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zfjg",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gqdjr",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Cqcxr",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Zhjyr",
-                    "id": 11
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhFhkgOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GbfhFhkg",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhGbjg",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zgb",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltgf",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltag",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltbg",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Lthg",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Qtltgf",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsltg",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsltag",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsltbg",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xslthg",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsgjcg",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsgyfrcg",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjnfrcg",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjnzrrcg",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsggcg",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjwfrcg",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjwzrrcg",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Wltg",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Gjg",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Gyfrg",
-                    "id": 21
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Jnfgyfr",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zpg",
-                    "id": 23
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Nbzgg",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Yxg",
-                    "id": 25
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Jwfrg",
-                    "id": 26
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Qtwltgf",
-                    "id": 27
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhGbjgOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GbfhGbjg",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
             "name": "ZhiBiao",
             "fields": [
                 {
@@ -7139,6 +6036,36 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "LingZhangGuShuJu",
                     "name": "LingZhangGu",
                     "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShiFouReMenZhuTi",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiPingJunZhangFuPaiMing14",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiPingJunZhangFuPaiMing30",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiReDuZhi14",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiReDuZhi30",
+                    "id": 15
                 }
             ]
         },
@@ -7508,6 +6435,35 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "PaiMing",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Value",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Text",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MingCi",
+                    "id": 4
+                }
+            ]
+        },
+        {
             "name": "NewsInfoValue",
             "fields": [
                 {
@@ -7537,6 +6493,35 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "XinWenXinXiEx",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "source",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "context",
+                    "id": 4
+                }
+            ]
+        },
+        {
             "name": "XinWenXinXiOutput",
             "fields": [
                 {
@@ -7546,33 +6531,21 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 1
                 },
                 {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "date",
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
                     "id": 2
                 },
                 {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "title",
+                    "rule": "repeated",
+                    "type": "XinWenXinXiEx",
+                    "name": "Data",
                     "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "context",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "source",
-                    "id": 5
                 }
             ]
         },
         {
-            "name": "XinWenXinXiZhongXinOutput",
+            "name": "XinWenXinXiZhongXin",
             "fields": [
                 {
                     "rule": "optional",
@@ -7597,6 +6570,121 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "string",
                     "name": "source",
                     "id": 4
+                }
+            ]
+        },
+        {
+            "name": "XinWenXinXiZhongXinOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "XinWenXinXiZhongXin",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXi",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "source",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "context",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXiOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXi",
+                    "name": "Data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXiZhongXin",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "context",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "source",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXiZhongXinOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXiZhongXin",
+                    "name": "data",
+                    "id": 2
                 }
             ]
         },
@@ -7684,19 +6772,30 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "AppKey",
+            "name": "Privilege",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "AppId",
+                    "name": "name",
                     "id": 1
                 },
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Secret",
+                    "name": "value",
                     "id": 2
+                }
+            ]
+        },
+        {
+            "name": "Privileges",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "Privilege",
+                    "name": "items",
+                    "id": 1
                 }
             ]
         },
@@ -7712,7 +6811,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Ower",
+                    "name": "Owner",
                     "id": 2
                 },
                 {
@@ -7729,38 +6828,51 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
+                    "type": "string",
                     "name": "ExpireTime",
                     "id": 5
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
+                    "type": "string",
                     "name": "CreateTime",
                     "id": 6
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "CrmAppId",
+                    "name": "Limit",
                     "id": 7
-                }
-            ]
-        },
-        {
-            "name": "AppValue",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Secret",
-                    "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "AppInfo",
-                    "name": "Info",
-                    "id": 2
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Duration",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "AppId",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "SecretKey",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "ServiceAuth",
+                    "name": "Auth",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "CrmAppId",
+                    "id": 12
                 }
             ]
         },
@@ -7774,9 +6886,9 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Value",
+                    "rule": "repeated",
+                    "type": "Privilege",
+                    "name": "Priv",
                     "id": 2
                 }
             ]
@@ -7794,6 +6906,107 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "repeated",
                     "type": "ProfileValue",
                     "name": "BitProfileValue",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "AccOpResponse",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Result",
+                    "id": 1,
+                    "options": {
+                        "default": "0"
+                    }
+                },
+                {
+                    "rule": "optional",
+                    "type": "AppInfo",
+                    "name": "Info",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "TokenData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Token",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Appid",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "CreatedTime",
+                    "id": 3
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ExpireTime",
+                    "id": 4
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "RefreshTime",
+                    "id": 5
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "Duration",
+                    "id": 6
+                },
+                {
+                    "rule": "required",
+                    "type": "ServiceAuth",
+                    "name": "Auth",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "AppKey",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "AppId",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Secret",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "AppValue",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Secret",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "AppInfo",
+                    "name": "Info",
                     "id": 2
                 }
             ]
@@ -7863,26 +7076,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "ExpireTime",
                     "id": 3
-                }
-            ]
-        },
-        {
-            "name": "AccOpResponse",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "AppId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "Result",
-                    "id": 2,
-                    "options": {
-                        "default": 0
-                    }
                 }
             ]
         },
@@ -8037,54 +7230,60 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "Privilege",
+            "name": "PrivConst",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "key_word",
+                    "name": "name",
                     "id": 1
                 },
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "short_name",
+                    "name": "urlKey",
                     "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "position",
-                    "id": 3
                 },
                 {
                     "rule": "required",
                     "type": "string",
                     "name": "attribute",
-                    "id": 4
+                    "id": 3
                 },
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "value",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
                     "name": "description",
-                    "id": 6
+                    "id": 4
                 }
             ]
         },
         {
-            "name": "Privileges",
+            "name": "ServiceAuthConsts",
             "fields": [
                 {
-                    "rule": "repeated",
-                    "type": "Privilege",
-                    "name": "items",
+                    "rule": "required",
+                    "type": "int32",
+                    "name": "pos",
                     "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "name",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "description",
+                    "id": 3
+                },
+                {
+                    "rule": "repeated",
+                    "type": "PrivConst",
+                    "name": "items",
+                    "id": 4
                 }
             ]
         },
@@ -8477,6 +7676,173 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "DXSpiritStat",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "HjfsTotal",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "KsftTotal",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "GttsTotal",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JsxdTotal",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmrTotal",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmrStatistics",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmcTotal",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmcStatistics",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FztbTotal",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FdtbTotal",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DkztTotal",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DkdtTotal",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "YdmcPTotal",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "YdmrPTotal",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "LszsTotal",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DyzsTotal",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JgmrgdTotal",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JgmcgdTotal",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DcjmrdTotal",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DcjmcdTotal",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FdmrgdTotal",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FdmcgdTotal",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MrcdTotal",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MccdTotal",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MrxdTotal",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "McxdTotal",
+                    "id": 27
+                }
+            ]
+        },
+        {
             "name": "Stock",
             "fields": [
                 {
@@ -8500,7 +7866,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "StkPoolOuput",
+            "name": "StkPool",
             "fields": [
                 {
                     "rule": "required",
@@ -8512,6 +7878,23 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "repeated",
                     "type": "Stock",
                     "name": "Stk",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "StkPoolOuput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "CeWenShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "StkPool",
+                    "name": "Pooldata",
                     "id": 2
                 }
             ]
@@ -8559,6 +7942,3327 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "EventNews",
                     "name": "dataList",
                     "id": 1
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdZxzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "shiq",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjzc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgb",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ltag",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzcsyl",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgxjl",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mggjj",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgwfplr",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zylrtbzz",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrtbzz",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fpyan",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cq",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cym",
+                    "id": 16
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdKpqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdhs",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rjcltg",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tcsdrjcltg",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "CpbdCjhbData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cjl",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cjje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdlx",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zdz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yybmc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mlje",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mcje",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdCjhb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "CpbdCjhbData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsLrfpbzy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yysr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yycb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "glfy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yyfy",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cwfy",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yylr",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzsy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yywszje",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lrze",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZcfzbzy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ldzc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "hbzj",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjrzc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ch",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yszkze",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qtysk",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdzcje",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "kgcsjrzc",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "wxzc",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dqjk",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yszk",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yfzk",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ldfz",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cqfz",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zfz",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdqy",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zbgjj",
+                    "id": 20
+                }
+            ]
+        },
+        {
+            "name": "ZygcData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hy",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrzb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrtbbh",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zycb",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zycbtbbh",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zylr",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mll",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mlltbbh",
+                    "id": 10
+                }
+            ]
+        },
+        {
+            "name": "F10Zygc",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZygcData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJjlt",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jjgf",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzgf",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gflx",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10DstxRzrq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rzje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rzmre",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rqyl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rqye",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rqmcl",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "DstxJgccData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgjs",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgs",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zltgbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "type",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJgcc",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "DstxJgccData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxGdzjc",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gdmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdfx",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gdlx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bdsl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzgb",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10DstxDzjy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jg",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "drspj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zjl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cjl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cjje",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mf",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mf2",
+                    "id": 8
+                }
+            ]
+        },
+        {
+            "name": "F10DstxCgbdqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bdsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jcgs",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "djg",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdyy",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "GlcData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lb",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "rzsj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmcgs",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xcjzrq",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xc",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xb",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "csrq",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jl",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "px",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10GlcOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GlcData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GlcNdbcqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ndbcze",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgqswdsbcze",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgqswgjglrybcze",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dldsjt",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdxjllb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjje",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjje",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlr",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlc",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjje",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xjjzje",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcKggdOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "frdb",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zczb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "clrq",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jyyw",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qylx",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSjkzrOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sm",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbbd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgb",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yltag",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yltbg",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdrqgbsm",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zxjg",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "ZbyzCyqtsszqData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "btzzqdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "btzzqjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cstzje",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyqtsszq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzCyqtsszqData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "ZbyzCyfssgqData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "scdxmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cstzje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmzmjz",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyfssgq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzCyfssgqData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10zbyzRzqkzfyss",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "rzlb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yarq",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gddh",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgyxspl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lgdgqdjr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sgr",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fajc",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxfs",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxgplx",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzfx",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcxs",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mjzjze",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqsyje",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlsyje",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "ZbyzXmtzMjzjcnxmData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cnxmmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ntrje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sfbgxm",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjtrje",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjsy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sffhjd",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgyycxsm",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjcnxm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzXmtzMjzjcnxmData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "ZbyzXmtzMjzjbgxmData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bghxmmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ycnxmmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ntrje",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjtrje",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjsy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmjd",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgxmqksm",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjbgxm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzXmtzMjzjbgxmData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "ZbyzXmtzFmjzjxmData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xmje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmjd",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmsyqk",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzFmjzjxm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzXmtzFmjzjxmData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "HydwData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ltg",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm1",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm2",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm3",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm4",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgb",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm5",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzc",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm6",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm7",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzcsyl",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm8",
+                    "id": 18
+                }
+            ]
+        },
+        {
+            "name": "F10HydwOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sshy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zjhhy",
+                    "id": 4
+                },
+                {
+                    "rule": "repeated",
+                    "type": "HydwData",
+                    "name": "data",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "RsrProForecastData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "enddate",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrtb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrtb",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yyyqbhl",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "itnum",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjzc",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lnzz",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "syl",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjl",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "peg2",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sxl",
+                    "id": 14
+                }
+            ]
+        },
+        {
+            "name": "F10RsrProForecastOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RsrProForecastData",
+                    "name": "data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "RsrInvestRatingData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sjdValue",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jgzs",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10RsrInvestRatingOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RsrInvestRatingData",
+                    "name": "data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "RsrEarnPSForeData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "endDate",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "pj",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "value",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10RsrEarnPSFore",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "companyName",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RsrEarnPSForeData",
+                    "name": "data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10RsrResReport",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "companyName",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "titles",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "investAdvice",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "psName",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10GsgkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqlx",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gsdm",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gsmc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ywqc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcdz",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgdz",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssqy",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sshy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gswz",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dzxx",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgrq",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxl",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxj",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "srkpj",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sstjr",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcxs",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "frdb",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dsz",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zjl",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dm",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqdb",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dh",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cz",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yb",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kjsws",
+                    "id": 27
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zyfw",
+                    "id": 28
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gsjs",
+                    "id": 29
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dmdh",
+                    "id": 30
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dmcz",
+                    "id": 31
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dmdzyx",
+                    "id": 32
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "RegionName",
+                    "id": 33
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZycwzb",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kjssjyj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jbmgsy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "kchjbmgsy",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tbmgsy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjzc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgwfplr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mggjj",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xsmll",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yylrl",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrl",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jqjzcsyl",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tbjzcsyl",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdqy",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ldbl",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sdbl",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjyxjll",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bbgbr",
+                    "id": 18
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZycwzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsZycwzb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsXjllbzy",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xjjzje",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjje",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlc",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjje",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlc",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjje",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsXjllbzyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsXjllbzy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdcwzb",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrhb",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xsjll",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzcsyl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjyxjll",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrtb",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrtb",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrhb",
+                    "id": 9
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdcwzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZxjbDjdcwzb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10Zxjbdjdleb",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ssgdsy",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yysr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yycb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yysjjfj",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xsfy",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "glfy",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cwfy",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzsy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yylr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yywsr",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yywzc",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lrze",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sdsfy",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgzjlr",
+                    "id": 16
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbdjdlebOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10Zxjbdjdleb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcGdhs",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gdzhs",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Hbzj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Hbbh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Rjcg",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltgdhs",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcGdhsOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcGdhs",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcGd",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gdrs",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xh",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gdmc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Cgs",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zzgs",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Zjqk",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gbxz",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gsdm",
+                    "id": 8
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdgd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcGd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdgdOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcSdgd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdltgd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcGd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdltgdOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcSdltgd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhFhkg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgsg",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgzz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgfh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgp",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Pgjg",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zfgfsl",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zfjg",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gqdjr",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Cqcxr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Zhjyr",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhFhkgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhFhkg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbjg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zgb",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltgf",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltag",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltbg",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Lthg",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Qtltgf",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsltg",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsltag",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsltbg",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xslthg",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsgjcg",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsgyfrcg",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjnfrcg",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjnzrrcg",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsggcg",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjwfrcg",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjwzrrcg",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Wltg",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gjg",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gyfrg",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Jnfgyfr",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zpg",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Nbzgg",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Yxg",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Jwfrg",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Qtwltgf",
+                    "id": 27
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbjgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhGbjg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdKpqkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdKpqk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdCjhbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdCjhb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsLrfpbzyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsLrfpbzy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZcfzbzyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsZcfzbzy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZygcOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10Zygc",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJjltOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJjlt",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxRzrqOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxRzrq",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJgccOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJgcc",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxGdzjcOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxGdzjc",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxDzjyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxDzjy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxCgbdqkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxCgbdqk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GlcNdbcqkOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GlcNdbcqk",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdxjllbOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZxjbDjdxjllb",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbbdOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhGbbd",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyqtsszqOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyqtsszq",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyfssgqOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyfssgq",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10zbyzRzqkzfyssOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10zbyzRzqkzfyss",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjqkOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjqk",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjcnxmOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjcnxm",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjbgxmOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjbgxm",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzFmjzjxmOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzFmjzjxm",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10RsrEarnPSForeOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrEarnPSFore",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10RsrResReportOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrResReport",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FluxValue",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Appid",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Flux",
+                    "id": 2
                 }
             ]
         },
@@ -8948,6 +11652,222 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "EventNews",
                     "name": "RepDataEventNews",
                     "id": 79
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXiOutput",
+                    "name": "RepDataGongGaoXinXiOutput",
+                    "id": 80
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXiZhongXinOutput",
+                    "name": "RepDataGongGaoXinXiZhongXinOutput",
+                    "id": 81
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdZxzbOutput",
+                    "name": "RepDataF10CpbdZxzbOutput",
+                    "id": 82
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdKpqkOutput",
+                    "name": "RepDataF10CpbdKpqkOutput",
+                    "id": 83
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdCjhbOutput",
+                    "name": "RepDataF10CpbdCjhbOutput",
+                    "id": 84
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsLrfpbzyOutput",
+                    "name": "RepDataF10CwtsLrfpbzyOutput",
+                    "id": 85
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsZcfzbzyOutput",
+                    "name": "RepDataF10CwtsZcfzbzyOutput",
+                    "id": 86
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZygcOutput",
+                    "name": "RepDataF10ZygcOutput",
+                    "id": 87
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJjltOutput",
+                    "name": "RepDataF10DstxJjltOutput",
+                    "id": 88
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxRzrqOutput",
+                    "name": "RepDataF10DstxRzrqOutput",
+                    "id": 89
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJgccOutput",
+                    "name": "RepDataF10DstxJgccOutput",
+                    "id": 90
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxGdzjcOutput",
+                    "name": "RepDataF10DstxGdzjcOutput",
+                    "id": 91
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxDzjyOutput",
+                    "name": "RepDataF10DstxDzjyOutput",
+                    "id": 92
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxCgbdqkOutput",
+                    "name": "RepDataF10DstxCgbdqkOutput",
+                    "id": 93
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GlcOutPut",
+                    "name": "RepDataF10GlcOutPut",
+                    "id": 94
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GlcNdbcqkOutPut",
+                    "name": "RepDataF10GlcNdbcqkOutPut",
+                    "id": 95
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZxjbDjdxjllbOutPut",
+                    "name": "RepDataF10ZxjbDjdxjllbOutPut",
+                    "id": 96
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcKggdOutPut",
+                    "name": "RepDataF10GdjcKggdOutPut",
+                    "id": 97
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcSjkzrOutPut",
+                    "name": "RepDataF10GdjcSjkzrOutPut",
+                    "id": 98
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhGbbdOutPut",
+                    "name": "RepDataF10GbfhGbbdOutPut",
+                    "id": 99
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyqtsszqOutPut",
+                    "name": "RepDataF10ZbyzCyqtsszqOutPut",
+                    "id": 100
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyfssgqOutPut",
+                    "name": "RepDataF10ZbyzCyfssgqOutPut",
+                    "id": 101
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10zbyzRzqkzfyssOutPut",
+                    "name": "RepDataF10zbyzRzqkzfyssOutPut",
+                    "id": 102
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjqkOutPut",
+                    "name": "RepDataF10ZbyzXmtzMjzjqkOutPut",
+                    "id": 103
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjcnxmOutPut",
+                    "name": "RepDataF10ZbyzXmtzMjzjcnxmOutPut",
+                    "id": 104
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjbgxmOutPut",
+                    "name": "RepDataF10ZbyzXmtzMjzjbgxmOutPut",
+                    "id": 105
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzFmjzjxmOutPut",
+                    "name": "RepDataF10ZbyzXmtzFmjzjxmOutPut",
+                    "id": 106
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10HydwOutPut",
+                    "name": "RepDataF10HydwOutPut",
+                    "id": 107
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrProForecastOutPut",
+                    "name": "RepDataF10RsrProForecastOutPut",
+                    "id": 108
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrInvestRatingOutPut",
+                    "name": "RepDataF10RsrInvestRatingOutPut",
+                    "id": 109
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrEarnPSForeOutPut",
+                    "name": "RepDataF10RsrEarnPSForeOutPut",
+                    "id": 110
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrResReportOutPut",
+                    "name": "RepDataF10RsrResReportOutPut",
+                    "id": 111
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ServiceAuthConsts",
+                    "name": "RepDataServiceAuthConsts",
+                    "id": 112
+                },
+                {
+                    "rule": "repeated",
+                    "type": "DXSpiritStat",
+                    "name": "RepDataDXSpiritStat",
+                    "id": 113
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FluxValue",
+                    "name": "RepDataFluxValue",
+                    "id": 114
+                },
+                {
+                    "rule": "repeated",
+                    "type": "PaiMing",
+                    "name": "RepDataPaiMing",
+                    "id": 115
                 }
             ]
         },
@@ -9363,6 +12283,150 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDEventNews",
                     "id": 79
+                },
+                {
+                    "name": "IDGongGaoXinXiOutput",
+                    "id": 80
+                },
+                {
+                    "name": "IDGongGaoXinXiZhongXinOutput",
+                    "id": 81
+                },
+                {
+                    "name": "IDF10CpbdZxzbOutput",
+                    "id": 82
+                },
+                {
+                    "name": "IDF10CpbdKpqkOutput",
+                    "id": 83
+                },
+                {
+                    "name": "IDF10CpbdCjhbOutput",
+                    "id": 84
+                },
+                {
+                    "name": "IDF10CwtsLrfpbzyOutput",
+                    "id": 85
+                },
+                {
+                    "name": "IDF10CwtsZcfzbzyOutput",
+                    "id": 86
+                },
+                {
+                    "name": "IDF10ZygcOutput",
+                    "id": 87
+                },
+                {
+                    "name": "IDF10DstxJjltOutput",
+                    "id": 88
+                },
+                {
+                    "name": "IDF10DstxRzrqOutput",
+                    "id": 89
+                },
+                {
+                    "name": "IDF10DstxJgccOutput",
+                    "id": 90
+                },
+                {
+                    "name": "IDF10DstxGdzjcOutput",
+                    "id": 91
+                },
+                {
+                    "name": "IDF10DstxDzjyOutput",
+                    "id": 92
+                },
+                {
+                    "name": "IDF10DstxCgbdqkOutput",
+                    "id": 93
+                },
+                {
+                    "name": "IDF10GlcOutPut",
+                    "id": 94
+                },
+                {
+                    "name": "IDF10GlcNdbcqkOutPut",
+                    "id": 95
+                },
+                {
+                    "name": "IDF10ZxjbDjdxjllbOutPut",
+                    "id": 96
+                },
+                {
+                    "name": "IDF10GdjcKggdOutPut",
+                    "id": 97
+                },
+                {
+                    "name": "IDF10GdjcSjkzrOutPut",
+                    "id": 98
+                },
+                {
+                    "name": "IDF10GbfhGbbdOutPut",
+                    "id": 99
+                },
+                {
+                    "name": "IDF10ZbyzCyqtsszqOutPut",
+                    "id": 100
+                },
+                {
+                    "name": "IDF10ZbyzCyfssgqOutPut",
+                    "id": 101
+                },
+                {
+                    "name": "IDF10zbyzRzqkzfyssOutPut",
+                    "id": 102
+                },
+                {
+                    "name": "IDF10ZbyzXmtzMjzjqkOutPut",
+                    "id": 103
+                },
+                {
+                    "name": "IDF10ZbyzXmtzMjzjcnxmOutPut",
+                    "id": 104
+                },
+                {
+                    "name": "IDF10ZbyzXmtzMjzjbgxmOutPut",
+                    "id": 105
+                },
+                {
+                    "name": "IDF10ZbyzXmtzFmjzjxmOutPut",
+                    "id": 106
+                },
+                {
+                    "name": "IDF10HydwOutPut",
+                    "id": 107
+                },
+                {
+                    "name": "IDF10RsrProForecastOutPut",
+                    "id": 108
+                },
+                {
+                    "name": "IDF10RsrInvestRatingOutPut",
+                    "id": 109
+                },
+                {
+                    "name": "IDF10RsrEarnPSForeOutPut",
+                    "id": 110
+                },
+                {
+                    "name": "IDF10RsrResReportOutPut",
+                    "id": 111
+                },
+                {
+                    "name": "IDServiceAuthConsts",
+                    "id": 112
+                },
+                {
+                    "name": "IDDXSpiritStat",
+                    "id": 113
+                },
+                {
+                    "name": "IDFluxValue",
+                    "id": 114
+                },
+                {
+                    "name": "IDPaiMing",
+                    "id": 115
                 }
             ]
         }
@@ -9986,9 +13050,9 @@ function _interopExportWildcard(obj, defaults) { var newObj = defaults({}, obj);
 
 function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
-var _connectionLibUtil = require('connection/lib/util');
+var _html5ConnectionLibUtil = require('html5-connection/lib/util');
 
-_defaults(exports, _interopExportWildcard(_connectionLibUtil, _defaults));
+_defaults(exports, _interopExportWildcard(_html5ConnectionLibUtil, _defaults));
 
 function unParam(searchStr) {
   if (searchStr.indexOf('?') === 0) {
@@ -10008,9 +13072,916 @@ function unParam(searchStr) {
 
   return obj;
 }
-},{"connection/lib/util":16}],15:[function(require,module,exports){
+},{"html5-connection/lib/util":24}],15:[function(require,module,exports){
 
 },{}],16:[function(require,module,exports){
+require('./lib/HttpConnection');
+require('./lib/WebSocketConnection');
+
+module.exports = require('./lib/connection');
+},{"./lib/HttpConnection":18,"./lib/WebSocketConnection":20,"./lib/connection":23}],17:[function(require,module,exports){
+/**
+ * connection基类
+ */
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var BaseConnection = (function () {
+
+  /**
+   * 构造方法
+   * @param {!string} address 连接地址
+   * @param {!object} options 设置参数
+   * @param {object=} handler 事件处理对象
+   * @param {boolean=} [secure=false]
+   */
+
+  function BaseConnection(address, options, handler, secure) {
+    _classCallCheck(this, BaseConnection);
+
+    this._address = address;
+    this.options = options || {};
+
+    if (typeof handler === 'boolean') {
+      this._secure = handler;
+      this._handler = null;
+    } else {
+      this._secure = secure || false;
+      this._handler = handler;
+    }
+
+    // 默认协议
+    this._protocol = 'http';
+
+    this._listenerMap = {};
+  }
+
+  _createClass(BaseConnection, [{
+    key: 'getAddress',
+    value: function getAddress() {
+      return this.getProtocol() + '://' + this._address.replace(/^(\w+:\/\/)?/, '');
+    }
+  }, {
+    key: 'getProtocol',
+    value: function getProtocol() {
+      return this._protocol + (this._secure ? 's' : '');
+    }
+  }, {
+    key: 'request',
+    value: function request(message, options) {}
+  }, {
+    key: 'send',
+    value: function send(message, options) {
+      this.request(message, options);
+    }
+  }, {
+    key: 'close',
+    value: function close() {}
+  }, {
+    key: 'on',
+
+    /**
+     * 事件监听接口
+     */
+
+    value: function on(type, listener) {
+      if (typeof listener === 'function') {
+        var listeners = this._listenerMap[type] || (this._listenerMap[type] = []);
+        if (listeners.indexOf(listener) < 0) {
+          listeners.push(listener);
+        }
+      }
+      return this;
+    }
+  }, {
+    key: 'off',
+    value: function off(type, listener) {
+      if (typeof listener === 'function') {
+        var listeners = this._listenerMap[type] || (this._listenerMap[type] = []);
+        var index = listeners.indexOf(listener);
+        index >= 0 && listeners.splice(index, 1);
+      }
+      return this;
+    }
+  }, {
+    key: 'trigger',
+    value: function trigger(type) {
+      var _this = this;
+
+      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      var listeners = this._listenerMap[type];
+      listeners && listeners.forEach(function (listener) {
+        return listener.apply(_this, args);
+      });
+
+      // 同时触发handler中对应方法
+      this._handler && typeof this._handler[type] === 'function' && this._handler[type].apply(this._handler, args);
+      return this;
+    }
+  }]);
+
+  return BaseConnection;
+})();
+
+BaseConnection.EVENT_OPEN = 'open';
+BaseConnection.EVENT_CLOSE = 'close';
+BaseConnection.EVENT_ERROR = 'error';
+BaseConnection.EVENT_REQUEST = 'request';
+BaseConnection.EVENT_SEND = 'send';
+BaseConnection.EVENT_RESPONSE = 'response';
+BaseConnection.EVENT_MESSAGE = 'message';
+BaseConnection.EVENT_PROGRESS = 'progress';
+
+exports['default'] = BaseConnection;
+module.exports = exports['default'];
+},{}],18:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+var _connection = require('./connection');
+
+var _connection2 = _interopRequireDefault(_connection);
+
+var _BaseConnection2 = require('./BaseConnection');
+
+var _BaseConnection3 = _interopRequireDefault(_BaseConnection2);
+
+var _util = require('./util');
+
+var _ajax = require('./ajax');
+
+var _ajax2 = _interopRequireDefault(_ajax);
+
+var HttpConnection = (function (_BaseConnection) {
+  function HttpConnection() {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _classCallCheck(this, HttpConnection);
+
+    _get(Object.getPrototypeOf(HttpConnection.prototype), 'constructor', this).apply(this, args);
+
+    // 用于记录当前未关闭的请求
+    this._request = [];
+  }
+
+  _inherits(HttpConnection, _BaseConnection);
+
+  _createClass(HttpConnection, [{
+    key: 'request',
+    value: function request(message, options) {
+      var _this = this;
+
+      options = (0, _util.extend)({}, this.options, options);
+
+      options.success = function (data, textStatus, jqXHR) {
+        _this.trigger(_BaseConnection3['default'].EVENT_MESSAGE, data);
+        _this.trigger(_BaseConnection3['default'].EVENT_RESPONSE, data);
+      };
+
+      options.error = function (jqXHR, textStatus, errorThrown) {
+        _this.trigger(_BaseConnection3['default'].EVENT_ERROR, errorThrown);
+      };
+
+      options.complete = function () {
+        var index = _this._request.indexOf(xhr);
+        _this._request.splice(index, 1);
+      };
+
+      options.url = this.getAddress() + (message ? message : '');
+
+      var xhr = (0, _ajax2['default'])(options);
+
+      xhr && (xhr.onreadystatechange = (function (origFun) {
+        return function () {
+          if (xhr.readyState === 2) {
+
+            // 发出了请求
+            _this.trigger(_BaseConnection3['default'].EVENT_SEND);
+            _this.trigger(_BaseConnection3['default'].EVENT_REQUEST);
+          }
+          origFun && origFun();
+        };
+      })(xhr.onreadystatechange));
+
+      // 打开了连接
+      this.trigger(_BaseConnection3['default'].EVENT_OPEN);
+
+      this._request.push(xhr);
+
+      xhr.onprogress = function (event) {
+        _this.trigger(_BaseConnection3['default'].EVENT_PROGRESS, event);
+      };
+
+      return this;
+    }
+  }, {
+    key: 'close',
+    value: function close() {
+      var _this2 = this;
+
+      // 取消全部未结束的请求
+      this._request.forEach(function (xhr, index) {
+        xhr.abort();
+        _this2._request.splice(index, 1);
+      });
+
+      this.trigger(_BaseConnection3['default'].EVENT_CLOSE);
+      return this;
+    }
+  }]);
+
+  return HttpConnection;
+})(_BaseConnection3['default']);
+
+exports['default'] = HttpConnection;
+;
+
+_connection2['default'].http = function (url, options, handler) {
+  return new HttpConnection(url, options, handler, false);
+};
+
+_connection2['default'].https = function (url, options, handler) {
+  return new HttpConnection(url, options, handler, true);
+};
+module.exports = exports['default'];
+},{"./BaseConnection":17,"./ajax":22,"./connection":23,"./util":24}],19:[function(require,module,exports){
+// WebSocket 依赖，node环境使用模块ws
+'use strict';
+
+if (typeof window !== 'undefined') {
+  if (window.WebSocket) {
+    module.exports = window.WebSocket;
+  } else {
+    console.log('当前浏览器不支持WebSocket');
+  }
+} else {
+  var wsDep = 'ws';
+  module.exports = require(wsDep);
+}
+},{}],20:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
+var _connection = require('./connection');
+
+var _connection2 = _interopRequireDefault(_connection);
+
+var _BaseConnection2 = require('./BaseConnection');
+
+var _BaseConnection3 = _interopRequireDefault(_BaseConnection2);
+
+var _WebSocket = require('./WebSocket');
+
+var _WebSocket2 = _interopRequireDefault(_WebSocket);
+
+var WebSocketConnection = (function (_BaseConnection) {
+
+  /**
+   *
+   * @param address
+   * @param {{deferred: boolean}} options
+   *  deferred: false 创建连接时马上连接websocket，默认
+   *            true  延时在第一次请求时连接websocket
+   */
+
+  function WebSocketConnection(address, options, handler) {
+    _classCallCheck(this, WebSocketConnection);
+
+    _get(Object.getPrototypeOf(WebSocketConnection.prototype), 'constructor', this).apply(this, arguments);
+
+    this._protocol = 'ws';
+    this._ws = null;
+
+    var deferred = options && options.deferred === true || false;
+
+    if (deferred === false) {
+      this._connect();
+    }
+  }
+
+  _inherits(WebSocketConnection, _BaseConnection);
+
+  _createClass(WebSocketConnection, [{
+    key: 'getStatus',
+    value: function getStatus() {
+      return this._ws ? this._ws.readyState : _WebSocket2['default'].CLOSED;
+    }
+  }, {
+    key: '_connect',
+    value: function _connect() {
+      var _this = this;
+
+      // 连接创建websocket
+      if (typeof _WebSocket2['default'] !== 'undefined') {
+        this._ws = new _WebSocket2['default'](this.getAddress());
+
+        // 避免WebSocket上没有状态静态值
+        if (_WebSocket2['default'].OPEN === undefined) {
+          _WebSocket2['default'].CONNECTING = this._ws.CONNECTING;
+          _WebSocket2['default'].OPEN = this._ws.OPEN;
+          _WebSocket2['default'].CLOSING = this._ws.CLOSING;
+          _WebSocket2['default'].CLOSED = this._ws.CLOSED;
+        }
+        this._ws.binaryType = this.options.binaryType || this.options.dataType || 'arraybuffer';
+
+        this._ws.addEventListener('open', function () {
+          _this.trigger(_BaseConnection3['default'].EVENT_OPEN);
+        });
+        this._ws.addEventListener('error', function () {
+          _this.trigger(_BaseConnection3['default'].EVENT_ERROR);
+        });
+        this._ws.addEventListener('close', function () {
+          _this.trigger(_BaseConnection3['default'].EVENT_CLOSE);
+        });
+        this._ws.addEventListener('message', function (message) {
+          _this.trigger(_BaseConnection3['default'].EVENT_MESSAGE, message.data);
+          _this.trigger(_BaseConnection3['default'].EVENT_RESPONSE, message.data);
+        });
+      } else {
+        throw Error('Don\'t support WebSocket');
+      }
+    }
+  }, {
+    key: 'request',
+    value: function request(message, options) {
+      var _this2 = this;
+
+      message = message || '';
+      if (this.getStatus() === _WebSocket2['default'].CLOSED) {
+        this._connect();
+      }
+
+      if (this.getStatus() !== _WebSocket2['default'].OPEN) {
+        this._ws.addEventListener('open', function () {
+          _this2._ws.send(message);
+          _this2.trigger(_BaseConnection3['default'].EVENT_SEND);
+          _this2.trigger(_BaseConnection3['default'].EVENT_REQUEST);
+        });
+      } else {
+        this._ws.send(message);
+        this.trigger(_BaseConnection3['default'].EVENT_SEND);
+        this.trigger(_BaseConnection3['default'].EVENT_REQUEST);
+      }
+      return this;
+    }
+  }, {
+    key: 'close',
+    value: function close() {
+      if (this.getStatus() !== _WebSocket2['default'].CLOSED) {
+        this._ws.close();
+        this._ws = null;
+      }
+      return this;
+    }
+  }]);
+
+  return WebSocketConnection;
+})(_BaseConnection3['default']);
+
+exports['default'] = WebSocketConnection;
+;
+
+_connection2['default'].ws = function (url, options, handler) {
+  return new WebSocketConnection(url, options, handler, false);
+};
+
+_connection2['default'].wss = function (url, options, handler) {
+  return new WebSocketConnection(url, options, handler, true);
+};
+module.exports = exports['default'];
+},{"./BaseConnection":17,"./WebSocket":19,"./connection":23}],21:[function(require,module,exports){
+// 判断环境，浏览器环境存在window对象
+'use strict';
+
+if (typeof window !== 'undefined') {
+
+  // 不考虑IE6以下的ActiveX方式
+  if (window.XMLHttpRequest) {
+    module.exports = window.XMLHttpRequest;
+  } else {
+    console.log('当前浏览器不支持XMLHttpRequest');
+  }
+} else {
+
+  // nodejs中使用xhr2模块
+  var xmlhttprequestDep = 'xhr2';
+  var xmlhttprequest = require(xmlhttprequestDep);
+  module.exports = xmlhttprequest.XMLHttpRequest || xmlhttprequest;
+}
+},{}],22:[function(require,module,exports){
+'use strict';
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); }
+
+var _XMLHttpRequest = require('./XMLHttpRequest');
+
+var _XMLHttpRequest2 = _interopRequireDefault(_XMLHttpRequest);
+
+var _util = require('./util');
+
+/**
+ * 模拟jquery的ajax接口
+ */
+
+/**
+ * 得到ArrayBuffer类型的响应数据
+ * @param xhr
+ * @returns {ArrayBuffer}
+ */
+function getArrayBufferResponse(xhr) {
+  if (typeof ArrayBuffer === 'undefined') {
+    throw new Error('不支持ArrayBuffer类型');
+  } else if (xhr.response instanceof ArrayBuffer) {
+    return xhr.response;
+  } else {
+
+    var text = xhr.responseText;
+    var length = text.length;
+    var buf = new ArrayBuffer(length);
+    var bufView = new Uint8Array(buf);
+    for (var i = 0; i < length; i++) {
+
+      // "& 0xff"，表示在每个字符的两个字节之中，只保留后一个字节，将前一个字节扔掉。原因是浏览器解读字符的时候，会把字符自动解读成Unicode的0xF700-0xF7ff区段。
+      // http://www.ruanyifeng.com/blog/2012/09/xmlhttprequest_level_2.html
+      bufView[i] = text.charCodeAt(i) & 255;
+    }
+    return buf;
+  }
+}
+
+/**
+ * 得到Blob类型的响应数据
+ * @param xhr
+ */
+function getBlobResponse(xhr) {
+  if (typeof Blob === 'undefined') {
+    throw new Error('不支持Blob类型');
+  } else if (xhr.response instanceof Blob) {
+    return xhr.response;
+  } else {
+    var buf = getArrayBufferResponse(xhr);
+
+    // TODO 未知类型
+    return new Blob([buf]);
+  }
+}
+
+// 判断如果$.ajax存在则直接使用$.ajax
+if (typeof $ !== 'undefined' && typeof $.ajax === 'function' && typeof XDomainRequest === 'undefined') {
+  var binaryTransport = function (options, originalOptions, jqXHR) {
+    return {
+      send: function send(headers, callback) {
+        var data, type, url, xhr;
+        xhr = options.xhr();
+
+        url = options.url;
+        type = options.type;
+        data = options.data || null;
+        xhr.onload = function () {
+
+          var response = options.dataType === 'arraybuffer' ? getArrayBufferResponse(xhr) : getBlobResponse(xhr);
+
+          var result = _defineProperty({}, options.dataType, response);
+          return callback(xhr.status, xhr.statusText, result, xhr.getAllResponseHeaders());
+        };
+        xhr.onerror = 'error', function (err) {
+          return callback(-1, err);
+        };
+        xhr.ontimeout = function (err) {
+          return callback(-1, err);
+        };
+
+        xhr.open(type, url, true);
+
+        // 因为IE的问题，只能将设置responseType的操作放在xhr.open之后
+        // https://connect.microsoft.com/IE/feedback/details/795580/ie11-xmlhttprequest-incorrectly-throws-invalidstateerror-when-setting-responsetype
+        // 判断是否支持设置responseType
+        var supported = typeof xhr.responseType === 'string';
+
+        // 支持二进制请求直接设置responseType
+        if (supported) {
+
+          // 响应类型默认arraybuffer，可以设置为blob（响应回来使用response取得数据）
+          xhr.responseType = options.dataType;
+        } else {
+
+          // 不支持则尝试使用用户自定义的字符集方式（响应回来使用responseText取得数据）
+          xhr.overrideMimeType ? xhr.overrideMimeType('text/plain; charset=x-user-defined') : xhr.setRequestHeader('Accept-Charset', 'x-user-defined');
+        }
+
+        for (var i in headers) {
+          xhr.setRequestHeader(i, headers[i]);
+        }
+
+        return xhr.send(data);
+      },
+      abort: function abort() {
+        return jqXHR.abort();
+      }
+    };
+  };
+
+  // 从jqXHR中暴露原生的xhr
+  var generateXHRFun = $.ajaxSettings.xhr;
+
+  // jquery强制支持异步跨域
+  $.support.cors = true;
+
+  $.ajaxSetup({
+    xhr: function xhr() {
+      var xhr = generateXHRFun();
+      this.setXHR(xhr);
+      return xhr;
+    },
+    beforeSend: function beforeSend(jqXHR, settings) {
+      settings.setXHR = function (xhr) {
+        xhr.abort = jqXHR.abort;
+        jqXHR.xhr = xhr;
+      };
+    },
+    crossDomain: true
+  });
+
+  $.ajaxTransport('+arraybuffer', binaryTransport);
+  $.ajaxTransport('+blob', binaryTransport);
+
+  module.exports = function ajax() {
+    var jqXHR = $.ajax.apply($, [].slice.call(arguments));
+    return jqXHR.xhr;
+  };
+} else {
+  var jsonpID, nodejs, document, key, name, rscript, scriptTypeRE, xmlTypeRE, jsonType, htmlType, blankRE;
+  var ajax;
+
+  (function () {
+
+    // trigger a custom event and return false if it was cancelled
+
+    var triggerAndReturn = function (context, eventName, data) {
+      //todo: Fire off some events
+      //var event = $.Event(eventName)
+      //$(context).trigger(event, data)
+      return true; //!event.defaultPrevented
+    };
+
+    // trigger an Ajax "global" event
+
+    var triggerGlobal = function (settings, context, eventName, data) {
+      if (settings.global) return triggerAndReturn(context || document, eventName, data);
+    };
+
+    var ajaxStart = function (settings) {
+      if (settings.global && ajax.active++ === 0) triggerGlobal(settings, null, 'ajaxStart');
+    };
+
+    var ajaxStop = function (settings) {
+      if (settings.global && ! --ajax.active) triggerGlobal(settings, null, 'ajaxStop');
+    };
+
+    // triggers an extra global event "ajaxBeforeSend" that's like "ajaxSend" but cancelable
+
+    var ajaxBeforeSend = function (xhr, settings) {
+      var context = settings.context;
+      if (settings.beforeSend.call(context, xhr, settings) === false || triggerGlobal(settings, context, 'ajaxBeforeSend', [xhr, settings]) === false) return false;
+
+      triggerGlobal(settings, context, 'ajaxSend', [xhr, settings]);
+    };
+
+    var ajaxSuccess = function (data, xhr, settings) {
+      var context = settings.context,
+          status = 'success';
+      settings.success.call(context, data, status, xhr);
+      triggerGlobal(settings, context, 'ajaxSuccess', [xhr, settings, data]);
+      ajaxComplete(status, xhr, settings);
+    };
+
+    // type: "timeout", "error", "abort", "parsererror"
+
+    var ajaxError = function (error, type, xhr, settings) {
+      var context = settings.context;
+      settings.error.call(context, xhr, type, error);
+      triggerGlobal(settings, context, 'ajaxError', [xhr, settings, error]);
+      ajaxComplete(type, xhr, settings);
+    };
+
+    // status: "success", "notmodified", "error", "timeout", "abort", "parsererror"
+
+    var ajaxComplete = function (status, xhr, settings) {
+      var context = settings.context;
+      settings.complete.call(context, xhr, status);
+      triggerGlobal(settings, context, 'ajaxComplete', [xhr, settings]);
+      ajaxStop(settings);
+    };
+
+    // Empty function, used as default callback
+
+    var empty = function () {};
+
+    var mimeToDataType = function (mime) {
+      return mime && (mime == htmlType ? 'html' : mime == jsonType ? 'json' : scriptTypeRE.test(mime) ? 'script' : xmlTypeRE.test(mime) && 'xml') || 'text';
+    };
+
+    var appendQuery = function (url, query) {
+      return (url + '&' + query).replace(/[&?]{1,2}/, '?');
+    };
+
+    // serialize payload and append it to the URL for GET requests
+
+    var serializeData = function (options) {
+      if (typeof options.data === 'object') options.data = (0, _util.param)(options.data);
+      if (options.data && (!options.type || options.type.toUpperCase() == 'GET')) options.url = appendQuery(options.url, options.data);
+    };
+
+    // 修改自https://github.com/ForbesLindesay/ajax
+    jsonpID = 0;
+    nodejs = typeof window === 'undefined';
+    document = !nodejs && window.document;
+    rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+    scriptTypeRE = /^(?:text|application)\/javascript/i;
+    xmlTypeRE = /^(?:text|application)\/xml/i;
+    jsonType = 'application/json';
+    htmlType = 'text/html';
+    blankRE = /^\s*$/;
+
+    ajax = module.exports = function (options) {
+      var settings = (0, _util.extend)({}, options || {});
+      for (key in ajax.settings) if (settings[key] === undefined) settings[key] = ajax.settings[key];
+
+      ajaxStart(settings);
+
+      if (!settings.crossDomain) {
+        settings.crossDomain = /^([\w-]+:)?\/\/([^\/]+)/.test(settings.url) && !nodejs && !!window.location && RegExp.$2 != window.location.host;
+      }
+
+      var dataType = settings.dataType,
+          hasPlaceholder = /=\?/.test(settings.url);
+      if (dataType == 'jsonp' || hasPlaceholder) {
+        if (!hasPlaceholder) settings.url = appendQuery(settings.url, 'callback=?');
+        return ajax.JSONP(settings);
+      }
+
+      if (!settings.url) settings.url = !nodejs && !!window.location && window.location.toString();
+      serializeData(settings);
+
+      var mime = settings.accepts[dataType],
+          baseHeaders = {},
+          protocol = /^([\w-]+:)\/\//.test(settings.url) ? RegExp.$1 : !nodejs && !!window.location && window.location.protocol,
+          xhr = ajax.settings.xhr(),
+          abortTimeout;
+
+      if (!settings.crossDomain) baseHeaders['X-Requested-With'] = 'XMLHttpRequest';else if (typeof XDomainRequest !== 'undefined') {
+        xhr = new XDomainRequest();
+        xhr.onload = function () {
+          xhr.readyState = 4;
+          xhr.status = 200;
+          xhr.onreadystatechange();
+        };
+        xhr.error = function () {
+          xhr.readyState = 4;
+          xhr.status = 400;
+          xhr.onreadystatechange();
+        };
+      }
+      if (mime) {
+        baseHeaders['Accept'] = mime;
+        if (mime.indexOf(',') > -1) mime = mime.split(',', 2)[0];
+        xhr.overrideMimeType && xhr.overrideMimeType(mime);
+      }
+      if (settings.contentType || settings.data && settings.type.toUpperCase() != 'GET') baseHeaders['Content-Type'] = settings.contentType || 'application/x-www-form-urlencoded';
+      settings.headers = (0, _util.extend)(baseHeaders, settings.headers || {});
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+          clearTimeout(abortTimeout);
+          var result,
+              error = false;
+          if (xhr.status >= 200 && xhr.status < 300 || xhr.status == 304 || xhr.status == 0 && protocol == 'file:') {
+            dataType = dataType || mimeToDataType(xhr.contentType || xhr.getResponseHeader && xhr.getResponseHeader('content-type'));
+
+            try {
+              if (dataType == 'script') (1, eval)(result);else if (dataType == 'xml') result = xhr.responseXML;else if (dataType == 'json') result = blankRE.test(xhr.responseText) ? null : JSON.parse(xhr.responseText);else if (dataType === 'arraybuffer') result = getArrayBufferResponse(xhr);else if (dataType === 'blob') result = getBlobResponse(xhr);else result = xhr.responseText;
+            } catch (e) {
+              error = e;
+            }
+
+            if (error) ajaxError(error, 'parsererror', xhr, settings);else ajaxSuccess(result, xhr, settings);
+          } else {
+            ajaxError(null, 'error', xhr, settings);
+          }
+        }
+      };
+
+      var async = 'async' in settings ? settings.async : true;
+      xhr.open(settings.type, settings.url, async);
+
+      if (dataType == 'arraybuffer' || dataType == 'blob') {
+
+        // 因为IE的问题，只能将设置responseType的操作放在xhr.open之后
+        // https://connect.microsoft.com/IE/feedback/details/795580/ie11-xmlhttprequest-incorrectly-throws-invalidstateerror-when-setting-responsetype
+        // 判断是否支持设置responseType
+        var supported = typeof xhr.responseType === 'string';
+
+        // 支持二进制请求直接设置responseType
+        if (supported) {
+
+          // 响应类型默认arraybuffer，可以设置为blob（响应回来使用response取得数据）
+          xhr.responseType = options.dataType;
+        } else {
+
+          // 不支持则尝试使用用户自定义的字符集方式（响应回来使用responseText取得数据）
+          xhr.overrideMimeType ? xhr.overrideMimeType('text/plain; charset=x-user-defined') : xhr.setRequestHeader('Accept-Charset', 'x-user-defined');
+        }
+      }
+
+      for (name in settings.headers) xhr.setRequestHeader(name, settings.headers[name]);
+
+      if (ajaxBeforeSend(xhr, settings) === false) {
+        xhr.abort();
+        return false;
+      }
+
+      if (settings.timeout > 0) abortTimeout = setTimeout(function () {
+        xhr.onreadystatechange = empty;
+        xhr.abort();
+        ajaxError(null, 'timeout', xhr, settings);
+      }, settings.timeout);
+
+      // avoid sending empty string (#319)
+      xhr.send(settings.data ? settings.data : null);
+      return xhr;
+    };
+
+    // Number of active Ajax requests
+    ajax.active = 0;
+
+    ajax.JSONP = function (options) {
+      if (!('type' in options)) return ajax(options);
+
+      var callbackName = 'jsonp' + ++jsonpID,
+          script = document.createElement('script'),
+          abort = function abort() {
+        //todo: remove script
+        //$(script).remove()
+        if (!nodejs && callbackName in window) window[callbackName] = empty;
+        ajaxComplete('abort', xhr, options);
+      },
+          xhr = { abort: abort },
+          abortTimeout,
+          head = document.getElementsByTagName('head')[0] || document.documentElement;
+
+      if (options.error) script.onerror = function () {
+        xhr.abort();
+        options.error();
+      };
+
+      if (!nodejs) window[callbackName] = function (data) {
+        clearTimeout(abortTimeout);
+        //todo: remove script
+        //$(script).remove()
+        delete window[callbackName];
+        ajaxSuccess(data, xhr, options);
+      };
+
+      serializeData(options);
+      script.src = options.url.replace(/=\?/, '=' + callbackName);
+
+      // Use insertBefore instead of appendChild to circumvent an IE6 bug.
+      // This arises when a base node is used (see jQuery bugs #2709 and #4378).
+      head.insertBefore(script, head.firstChild);
+
+      if (options.timeout > 0) abortTimeout = setTimeout(function () {
+        xhr.abort();
+        ajaxComplete('timeout', xhr, options);
+      }, options.timeout);
+
+      return xhr;
+    };
+
+    ajax.settings = {
+      // Default type of request
+      type: 'GET',
+      // Callback that is executed before request
+      beforeSend: empty,
+      // Callback that is executed if the request succeeds
+      success: empty,
+      // Callback that is executed the the server drops error
+      error: empty,
+      // Callback that is executed on request complete (both: error and success)
+      complete: empty,
+      // The context for the callbacks
+      context: null,
+      // Whether to trigger "global" Ajax events
+      global: true,
+      // Transport
+      xhr: function xhr() {
+        return new _XMLHttpRequest2['default']();
+      },
+      // MIME types mapping
+      accepts: {
+        script: 'text/javascript, application/javascript',
+        json: jsonType,
+        xml: 'application/xml, text/xml',
+        html: htmlType,
+        text: 'text/plain'
+      },
+      // Whether the request is to another domain
+      crossDomain: false,
+      // Default timeout
+      timeout: 0
+    };
+
+    ajax.get = function (url, success) {
+      return ajax({ url: url, success: success });
+    };
+
+    ajax.post = function (url, data, success, dataType) {
+      if (typeof data === 'function') dataType = dataType || success, success = data, data = null;
+      return ajax({ type: 'POST', url: url, data: data, success: success, dataType: dataType });
+    };
+
+    ajax.getJSON = function (url, success) {
+      return ajax({ url: url, success: success, dataType: 'json' });
+    };
+  })();
+}
+},{"./XMLHttpRequest":21,"./util":24}],23:[function(require,module,exports){
+/**
+ * 解析url，根据url中指定的协议创建对应的连接对象
+ * @param url
+ * @param options
+ * @returns {*}
+ */
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+function _slicedToArray(arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }
+
+function connection(url, options, handler) {
+  if (typeof url !== 'string') {
+    throw new Error('url is incorrect');
+  }
+
+  var _w$exec = /^((\w+):\/\/)?(.*)/.exec(url);
+
+  var _w$exec2 = _slicedToArray(_w$exec, 4);
+
+  var _w$exec2$2 = _w$exec2[2];
+  var protocol = _w$exec2$2 === undefined ? 'http' : _w$exec2$2;
+  var urlWithoutProtocol = _w$exec2[3];
+
+  var func = connection[protocol];
+  if (!func) {
+    throw new Error('protocol "' + protocol + '" no support');
+  }
+  return func(urlWithoutProtocol, options, handler);
+}
+
+exports['default'] = connection;
+module.exports = exports['default'];
+},{}],24:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -10050,5 +14021,108 @@ function extend(target) {
 }
 
 // recurse into nested objects
+},{}],25:[function(require,module,exports){
+/**
+ * yfloat格式数据的解析模块
+ * Created by jiagang on 2015/10/15.
+ */
+
+var TWO_PWR_16_DBL = 1 << 16;
+var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+
+/**
+ * 得到value中高32位数值
+ * @param {number} value
+ * @returns {number}
+ */
+function getHighBits(value) {
+  return (value / TWO_PWR_32_DBL) | 0;
+}
+
+/**
+ * 得到value中低32位数值
+ * @param {number} value
+ * @returns {number}
+ */
+function getLowBits(value) {
+  return (value % TWO_PWR_32_DBL) | 0;
+}
+
+/**
+ * 高位和低位合并为一个数字
+ * @param {number} low
+ * @param {number} high
+ * @returns {number}
+ */
+function toNumber(low, high) {
+  return ((high >>> 0) * TWO_PWR_32_DBL) + (low >>> 0);
+}
+
+/**
+ * 解析yfloat类型数字，返回数值和精度的数组
+ * @param {number|Long} value
+ * @returns {Array}
+ */
+function unmakeValue(value) {
+  var high, low;
+
+  // 数字类型
+  if (typeof value === 'number' && value > 0) {
+    high = getHighBits(value);
+    low = getLowBits(value);
+  }
+
+  // Long型
+  else if (value && typeof value['getHighBits'] === 'function' && typeof value['getLowBits'] === 'function') {
+    high = value.getHighBits();
+    low = value.getLowBits();
+  }
+
+  // 其它类型不支持
+  else {
+    console.warn('unmakeValue: invalid value');
+    return [NaN, 0];
+  }
+
+  var b = (low >> 16) & 0xFF,
+    l = b & 0x0F,
+    h = (b >> 4) & 0x0F,
+    bx = toNumber((high << 24) + ((low >>> 24) << 16) + (low & 0xFFFF), high >> 8),
+    dq = [2, 1, null, 3, 4, 5, 6, 7, 8, 9, 0][l],
+    temp = dq != null ? bx / (Math.pow(10, dq) || 1) : NaN;
+
+  if (h != 0) {
+    temp = -temp;
+  }
+  return [temp, dq];
+}
+
+/**
+ * 解析yfloat类型数字，返回数字类型
+ * @param {number|Long} value
+ * @returns {number}
+ */
+function unmakeValueToNumber(value) {
+  return unmakeValue(value)[0];
+}
+
+/**
+ * 解析yfloat类型数字，返回根据精度格式化后的字符串
+ * @param {number|Long} value
+ * @returns {string}
+ */
+function unmakeValueToString (value) {
+  var result = unmakeValue(value),
+    resultValue = result[0],
+    dq = result[1];
+  return dq !== null ? resultValue.toFixed(dq) : resultValue.toString();
+}
+
+module.exports = {
+  unmakeValue: unmakeValue,
+  unmakeValueToNumber: unmakeValueToNumber,
+  unmakeValueToString: unmakeValueToString
+};
+
 },{}]},{},[1])(1)
 });

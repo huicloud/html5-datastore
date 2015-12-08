@@ -6,7 +6,7 @@ if (typeof Promise === 'undefined') {
 }
 module.exports = require('./lib/DataStore');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/DataStore":3,"promise":29}],2:[function(require,module,exports){
+},{"./lib/DataStore":3,"promise":27}],2:[function(require,module,exports){
 // 数据解析接口
 'use strict';
 
@@ -67,7 +67,7 @@ var _dzhyunDzhyunTokenManager2 = _interopRequireDefault(_dzhyunDzhyunTokenManage
 
 var connection;
 try {
-  connection = require('connection');
+  connection = require('html5-connection');
 } catch (err) {
   connection = window.connection;
 }
@@ -721,7 +721,7 @@ DataStore.pushInterval = 5000;
 // 全局暂停标识，对于http订阅数据有效，默认为false
 DataStore.pause = false;
 module.exports = exports['default'];
-},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":14,"connection":20}],4:[function(require,module,exports){
+},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":14,"html5-connection":17}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -731,7 +731,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -759,9 +759,9 @@ var _pbTable = require('./pbTable');
 
 var _pbTable2 = _interopRequireDefault(_pbTable);
 
-var _yfloat = require('yfloat');
+var _html5Yfloat = require('html5-yfloat');
 
-var _yfloat2 = _interopRequireDefault(_yfloat);
+var _html5Yfloat2 = _interopRequireDefault(_html5Yfloat);
 
 var adapterMap = {
   //'dyna': MSGAdapter
@@ -835,14 +835,14 @@ exports['default'] = DzhyunDataParser;
 DzhyunDataParser.parser = _parser2['default'];
 DzhyunDataParser.MSGAdapter = _adapterMSGAdapter2['default'];
 DzhyunDataParser.pbTable = _pbTable2['default'];
-DzhyunDataParser.yfloat = _yfloat2['default'];
+DzhyunDataParser.yfloat = _html5Yfloat2['default'];
 
 // 将DzhyunDataParser暴露到全局，便于外部使用（之后应该要从datastore中提出成单独模块）
 var _global = global || undefined;
 _global.DzhyunDataParser = DzhyunDataParser;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":11,"./pbTable":12,"yfloat":42}],5:[function(require,module,exports){
+},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":11,"./pbTable":12,"html5-yfloat":26}],5:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -858,9 +858,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _connection = require('connection');
+var _html5Connection = require('html5-connection');
 
-var _connection2 = _interopRequireDefault(_connection);
+var _html5Connection2 = _interopRequireDefault(_html5Connection);
 
 var _util = require('../util');
 
@@ -898,7 +898,7 @@ var DzhyunTokenManager = (function () {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
-        _connection2['default'].https(_this.address, {}, {
+        _html5Connection2['default'].https(_this.address, {}, {
           response: resolve,
           error: reject
         }).request(service + '?' + util.param(params));
@@ -993,7 +993,7 @@ var _global = global || undefined;
 _global.DzhyunTokenManager = DzhyunTokenManager;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":14,"./DzhyunDataParser":4,"connection":20}],6:[function(require,module,exports){
+},{"../util":14,"./DzhyunDataParser":4,"html5-connection":17}],6:[function(require,module,exports){
 /**
  * 数据转换器，负责将各种响应数据类型转换为用于DataStore统一存储用格式
  */
@@ -1039,7 +1039,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -1059,9 +1059,9 @@ var _BaseDataAdapter2 = require('./BaseDataAdapter');
 
 var _BaseDataAdapter3 = _interopRequireDefault(_BaseDataAdapter2);
 
-var _yfloat = require('yfloat');
+var _html5Yfloat = require('html5-yfloat');
 
-var _yfloat2 = _interopRequireDefault(_yfloat);
+var _html5Yfloat2 = _interopRequireDefault(_html5Yfloat);
 
 var _protobuf = require('../protobuf');
 
@@ -1091,7 +1091,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
       if (!data) {
         return data;
       } else if (typeof data === 'number' || data instanceof Long) {
-        return _yfloat2['default'].unmakeValueToNumber(data);
+        return _html5Yfloat2['default'].unmakeValueToNumber(data);
       } else if (data instanceof Array) {
         var newArray = [];
         data.forEach(function (eachData) {
@@ -1130,7 +1130,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
                 // 第一次记录精度
                 if (dq === undefined) {
-                  var arr = _yfloat2['default'].unmakeValue(value);
+                  var arr = _html5Yfloat2['default'].unmakeValue(value);
                   dq = differObject.dq = arr[1];
                   return differObject.previousValue = arr[0];
                 } else {
@@ -1141,7 +1141,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
                   return differObject.previousValue = Number((previousValue * w + value).toFixed()) / w;
                 }
               } else {
-                return isPb ? _yfloat2['default'].unmakeValueToNumber(value) : value;
+                return isPb ? _html5Yfloat2['default'].unmakeValueToNumber(value) : value;
               }
             }
             return true;
@@ -1208,7 +1208,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
 exports['default'] = MSGAdapter;
 module.exports = exports['default'];
-},{"../jsonTable":10,"../pbTable":12,"../protobuf":13,"./BaseDataAdapter":6,"yfloat":42}],8:[function(require,module,exports){
+},{"../jsonTable":10,"../pbTable":12,"../protobuf":13,"./BaseDataAdapter":6,"html5-yfloat":26}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -1217,7 +1217,7 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -3768,1109 +3768,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "F10GsgkOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zqlx",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gsdm",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gsmc",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ywqc",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zcdz",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "bgdz",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ssqy",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "sshy",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gswz",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dzxx",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ssrq",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zgrq",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "fxl",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "fxj",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "srkpj",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "sstjr",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zcxs",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "frdb",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dsz",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zjl",
-                    "id": 21
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dm",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zqdb",
-                    "id": 23
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dh",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "cz",
-                    "id": 25
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "yb",
-                    "id": 26
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "kjsws",
-                    "id": 27
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "zyfw",
-                    "id": 28
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "gsjs",
-                    "id": 29
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dmdh",
-                    "id": 30
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dmcz",
-                    "id": 31
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dmdzyx",
-                    "id": 32
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "RegionName",
-                    "id": 33
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsZycwzb",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "kjssjyj",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jbmgsy",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "kchjbmgsy",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tbmgsy",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgjzc",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgwfplr",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mggjj",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xsmll",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yylrl",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlrl",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jqjzcsyl",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tbjzcsyl",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "gdqy",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ldbl",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "sdbl",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgjyxjll",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "bbgbr",
-                    "id": 18
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsZycwzbOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10CwtsZycwzb",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsXjllbzy",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xjjzje",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "dw",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jyxjlr",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jyxjlc",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jyxjje",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzxjlr",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzxjlc",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzxjje",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "czxjlr",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "czxjlc",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "czxjje",
-                    "id": 12
-                }
-            ]
-        },
-        {
-            "name": "F10CwtsXjllbzyOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10CwtsXjllbzy",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10ZxjbDjdcwzb",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlrhb",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgsy",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xsjll",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jzcsyl",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgjyxjll",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "zysrtb",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlrtb",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "zysrhb",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "F10ZxjbDjdcwzbOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10ZxjbDjdcwzb",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10Zxjbdjdleb",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ssgdsy",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yysr",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yycb",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yysjjfj",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "xsfy",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "glfy",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "cwfy",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "tzsy",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yylr",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yywsr",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "yywzc",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "lrze",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "sdsfy",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "jlr",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "mgzjlr",
-                    "id": 16
-                }
-            ]
-        },
-        {
-            "name": "F10ZxjbdjdlebOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10Zxjbdjdleb",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcGdhs",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Gdzhs",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Hbzj",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Hbbh",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Rjcg",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltgdhs",
-                    "id": 6
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcGdhsOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GdjcGdhs",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdgd",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Gdrs",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xh",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gdmc",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Cgs",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zzgs",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Zjqk",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gbxz",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gsdm",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdgdOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GdjcSdgd",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdltgd",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Gdrs",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xh",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gdmc",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Cgs",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zzgs",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Zjqk",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gbxz",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gsdm",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "F10GdjcSdltgdOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GdjcSdltgd",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhFhkg",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgsg",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgzz",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgfh",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Mgp",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Pgjg",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zfgfsl",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zfjg",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Gqdjr",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Cqcxr",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Zhjyr",
-                    "id": 11
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhFhkgOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GbfhFhkg",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhGbjg",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zgb",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltgf",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltag",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Ltbg",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Lthg",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Qtltgf",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsltg",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsltag",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsltbg",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xslthg",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsgjcg",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsgyfrcg",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjnfrcg",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjnzrrcg",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsggcg",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjwfrcg",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Xsjwzrrcg",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Wltg",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Gjg",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Gyfrg",
-                    "id": 21
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Jnfgyfr",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zpg",
-                    "id": 23
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Nbzgg",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Yxg",
-                    "id": 25
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Jwfrg",
-                    "id": 26
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Qtwltgf",
-                    "id": 27
-                }
-            ]
-        },
-        {
-            "name": "F10GbfhGbjgOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "F10GbfhGbjg",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
             "name": "ZhiBiao",
             "fields": [
                 {
@@ -7139,6 +6036,36 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "LingZhangGuShuJu",
                     "name": "LingZhangGu",
                     "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShiFouReMenZhuTi",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiPingJunZhangFuPaiMing14",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiPingJunZhangFuPaiMing30",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiReDuZhi14",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiReDuZhi30",
+                    "id": 15
                 }
             ]
         },
@@ -7508,6 +6435,35 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "PaiMing",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Value",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Text",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MingCi",
+                    "id": 4
+                }
+            ]
+        },
+        {
             "name": "NewsInfoValue",
             "fields": [
                 {
@@ -7537,6 +6493,35 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "XinWenXinXiEx",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "source",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "context",
+                    "id": 4
+                }
+            ]
+        },
+        {
             "name": "XinWenXinXiOutput",
             "fields": [
                 {
@@ -7546,33 +6531,21 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 1
                 },
                 {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "date",
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
                     "id": 2
                 },
                 {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "title",
+                    "rule": "repeated",
+                    "type": "XinWenXinXiEx",
+                    "name": "Data",
                     "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "context",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "source",
-                    "id": 5
                 }
             ]
         },
         {
-            "name": "XinWenXinXiZhongXinOutput",
+            "name": "XinWenXinXiZhongXin",
             "fields": [
                 {
                     "rule": "optional",
@@ -7597,6 +6570,121 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "string",
                     "name": "source",
                     "id": 4
+                }
+            ]
+        },
+        {
+            "name": "XinWenXinXiZhongXinOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "XinWenXinXiZhongXin",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXi",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "source",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "context",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXiOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXi",
+                    "name": "Data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXiZhongXin",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "context",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "source",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "GongGaoXinXiZhongXinOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "TotalCount",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXiZhongXin",
+                    "name": "data",
+                    "id": 2
                 }
             ]
         },
@@ -7684,19 +6772,30 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "AppKey",
+            "name": "Privilege",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "AppId",
+                    "name": "name",
                     "id": 1
                 },
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Secret",
+                    "name": "value",
                     "id": 2
+                }
+            ]
+        },
+        {
+            "name": "Privileges",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "Privilege",
+                    "name": "items",
+                    "id": 1
                 }
             ]
         },
@@ -7712,7 +6811,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Ower",
+                    "name": "Owner",
                     "id": 2
                 },
                 {
@@ -7729,38 +6828,51 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
+                    "type": "string",
                     "name": "ExpireTime",
                     "id": 5
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
+                    "type": "string",
                     "name": "CreateTime",
                     "id": 6
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "CrmAppId",
+                    "name": "Limit",
                     "id": 7
-                }
-            ]
-        },
-        {
-            "name": "AppValue",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Secret",
-                    "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "AppInfo",
-                    "name": "Info",
-                    "id": 2
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Duration",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "AppId",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "SecretKey",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "ServiceAuth",
+                    "name": "Auth",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "CrmAppId",
+                    "id": 12
                 }
             ]
         },
@@ -7774,9 +6886,9 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Value",
+                    "rule": "repeated",
+                    "type": "Privilege",
+                    "name": "Priv",
                     "id": 2
                 }
             ]
@@ -7794,6 +6906,107 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "repeated",
                     "type": "ProfileValue",
                     "name": "BitProfileValue",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "AccOpResponse",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Result",
+                    "id": 1,
+                    "options": {
+                        "default": "0"
+                    }
+                },
+                {
+                    "rule": "optional",
+                    "type": "AppInfo",
+                    "name": "Info",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "TokenData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Token",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Appid",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "CreatedTime",
+                    "id": 3
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ExpireTime",
+                    "id": 4
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "RefreshTime",
+                    "id": 5
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "Duration",
+                    "id": 6
+                },
+                {
+                    "rule": "required",
+                    "type": "ServiceAuth",
+                    "name": "Auth",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "AppKey",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "AppId",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Secret",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "AppValue",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Secret",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "AppInfo",
+                    "name": "Info",
                     "id": 2
                 }
             ]
@@ -7863,26 +7076,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "ExpireTime",
                     "id": 3
-                }
-            ]
-        },
-        {
-            "name": "AccOpResponse",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "AppId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "Result",
-                    "id": 2,
-                    "options": {
-                        "default": 0
-                    }
                 }
             ]
         },
@@ -8037,54 +7230,60 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "Privilege",
+            "name": "PrivConst",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "key_word",
+                    "name": "name",
                     "id": 1
                 },
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "short_name",
+                    "name": "urlKey",
                     "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "position",
-                    "id": 3
                 },
                 {
                     "rule": "required",
                     "type": "string",
                     "name": "attribute",
-                    "id": 4
+                    "id": 3
                 },
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "value",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
                     "name": "description",
-                    "id": 6
+                    "id": 4
                 }
             ]
         },
         {
-            "name": "Privileges",
+            "name": "ServiceAuthConsts",
             "fields": [
                 {
-                    "rule": "repeated",
-                    "type": "Privilege",
-                    "name": "items",
+                    "rule": "required",
+                    "type": "int32",
+                    "name": "pos",
                     "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "name",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "description",
+                    "id": 3
+                },
+                {
+                    "rule": "repeated",
+                    "type": "PrivConst",
+                    "name": "items",
+                    "id": 4
                 }
             ]
         },
@@ -8477,6 +7676,173 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "DXSpiritStat",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "HjfsTotal",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "KsftTotal",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "GttsTotal",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JsxdTotal",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmrTotal",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmrStatistics",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmcTotal",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DbmcStatistics",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FztbTotal",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FdtbTotal",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DkztTotal",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DkdtTotal",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "YdmcPTotal",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "YdmrPTotal",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "LszsTotal",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DyzsTotal",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JgmrgdTotal",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JgmcgdTotal",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DcjmrdTotal",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DcjmcdTotal",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FdmrgdTotal",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "FdmcgdTotal",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MrcdTotal",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MccdTotal",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "MrxdTotal",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "McxdTotal",
+                    "id": 27
+                }
+            ]
+        },
+        {
             "name": "Stock",
             "fields": [
                 {
@@ -8500,7 +7866,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "StkPoolOuput",
+            "name": "StkPool",
             "fields": [
                 {
                     "rule": "required",
@@ -8512,6 +7878,23 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "repeated",
                     "type": "Stock",
                     "name": "Stk",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "StkPoolOuput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "CeWenShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "StkPool",
+                    "name": "Pooldata",
                     "id": 2
                 }
             ]
@@ -8559,6 +7942,3327 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "EventNews",
                     "name": "dataList",
                     "id": 1
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdZxzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "shiq",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjzc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgb",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ltag",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzcsyl",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgxjl",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mggjj",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgwfplr",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zylrtbzz",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrtbzz",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fpyan",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cq",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cym",
+                    "id": 16
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdKpqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdhs",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rjcltg",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tcsdrjcltg",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "CpbdCjhbData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cjl",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cjje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdlx",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zdz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yybmc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mlje",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mcje",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdCjhb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "CpbdCjhbData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsLrfpbzy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yysr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yycb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "glfy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yyfy",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cwfy",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yylr",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzsy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yywszje",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lrze",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZcfzbzy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ldzc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "hbzj",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjrzc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ch",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yszkze",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qtysk",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdzcje",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "kgcsjrzc",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "wxzc",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dqjk",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yszk",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yfzk",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ldfz",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cqfz",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zfz",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdqy",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zbgjj",
+                    "id": 20
+                }
+            ]
+        },
+        {
+            "name": "ZygcData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hy",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrzb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrtbbh",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zycb",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zycbtbbh",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zylr",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mll",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mlltbbh",
+                    "id": 10
+                }
+            ]
+        },
+        {
+            "name": "F10Zygc",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZygcData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJjlt",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jjgf",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzgf",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gflx",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10DstxRzrq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rzje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rzmre",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rqyl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rqye",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rqmcl",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "DstxJgccData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgjs",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgs",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zltgbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "type",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJgcc",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "DstxJgccData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxGdzjc",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gdmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdfx",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gdlx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bdsl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzgb",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10DstxDzjy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jg",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "drspj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zjl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cjl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cjje",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mf",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mf2",
+                    "id": 8
+                }
+            ]
+        },
+        {
+            "name": "F10DstxCgbdqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bdsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jcgs",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "djg",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdyy",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "GlcData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lb",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "rzsj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmcgs",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xcjzrq",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xc",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xb",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "csrq",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jl",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "px",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10GlcOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GlcData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GlcNdbcqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ndbcze",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgqswdsbcze",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgqswgjglrybcze",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dldsjt",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdxjllb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjje",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjje",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlr",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlc",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjje",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xjjzje",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcKggdOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "frdb",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zczb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "clrq",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jyyw",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qylx",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSjkzrOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sm",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbbd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgb",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yltag",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yltbg",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdrqgbsm",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zxjg",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "ZbyzCyqtsszqData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "btzzqdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "btzzqjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cstzje",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyqtsszq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzCyqtsszqData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "ZbyzCyfssgqData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "scdxmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cstzje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cgsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmzmjz",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyfssgq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzCyfssgqData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10zbyzRzqkzfyss",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "rzlb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yarq",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gddh",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgyxspl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lgdgqdjr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sgr",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fajc",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxfs",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxgplx",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzfx",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcxs",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mjzjze",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqsyje",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlsyje",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "ZbyzXmtzMjzjcnxmData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cnxmmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ntrje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sfbgxm",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjtrje",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjsy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sffhjd",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgyycxsm",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjcnxm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzXmtzMjzjcnxmData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "ZbyzXmtzMjzjbgxmData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bghxmmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ycnxmmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ntrje",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjtrje",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjsy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmjd",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgxmqksm",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjbgxm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzXmtzMjzjbgxmData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "ZbyzXmtzFmjzjxmData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xmje",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmjd",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xmsyqk",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzFmjzjxm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZbyzXmtzFmjzjxmData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "HydwData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ltg",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm1",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm2",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm3",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm4",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zgb",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm5",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzc",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm6",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm7",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzcsyl",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pm8",
+                    "id": 18
+                }
+            ]
+        },
+        {
+            "name": "F10HydwOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sshy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zjhhy",
+                    "id": 4
+                },
+                {
+                    "rule": "repeated",
+                    "type": "HydwData",
+                    "name": "data",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "RsrProForecastData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "enddate",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrtb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrtb",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yyyqbhl",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "itnum",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjzc",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lnzz",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "syl",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sjl",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "peg2",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sxl",
+                    "id": 14
+                }
+            ]
+        },
+        {
+            "name": "F10RsrProForecastOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RsrProForecastData",
+                    "name": "data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "RsrInvestRatingData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sjdValue",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jgzs",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10RsrInvestRatingOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RsrInvestRatingData",
+                    "name": "data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "RsrEarnPSForeData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "endDate",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "pj",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "value",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10RsrEarnPSFore",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "companyName",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RsrEarnPSForeData",
+                    "name": "data",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10RsrResReport",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "companyName",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "titles",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "investAdvice",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "psName",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10GsgkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqlx",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gsdm",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gsmc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ywqc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcdz",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgdz",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssqy",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sshy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gswz",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dzxx",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgrq",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxl",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxj",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "srkpj",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sstjr",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcxs",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "frdb",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dsz",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zjl",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dm",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqdb",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dh",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cz",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yb",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kjsws",
+                    "id": 27
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zyfw",
+                    "id": 28
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gsjs",
+                    "id": 29
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dmdh",
+                    "id": 30
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dmcz",
+                    "id": 31
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dmdzyx",
+                    "id": 32
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "RegionName",
+                    "id": 33
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZycwzb",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kjssjyj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jbmgsy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "kchjbmgsy",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tbmgsy",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjzc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgwfplr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mggjj",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xsmll",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yylrl",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrl",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jqjzcsyl",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tbjzcsyl",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gdqy",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ldbl",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sdbl",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjyxjll",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bbgbr",
+                    "id": 18
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZycwzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsZycwzb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsXjllbzy",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xjjzje",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjlc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jyxjje",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjlc",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzxjje",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjlc",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "czxjje",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsXjllbzyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsXjllbzy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdcwzb",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrhb",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgsy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xsjll",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzcsyl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgjyxjll",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrtb",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlrtb",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zysrhb",
+                    "id": 9
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdcwzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZxjbDjdcwzb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10Zxjbdjdleb",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ssgdsy",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yysr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yycb",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yysjjfj",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xsfy",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "glfy",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cwfy",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzsy",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yylr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yywsr",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yywzc",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lrze",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sdsfy",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jlr",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mgzjlr",
+                    "id": 16
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbdjdlebOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10Zxjbdjdleb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcGdhs",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gdzhs",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Hbzj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Hbbh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Rjcg",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltgdhs",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcGdhsOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcGdhs",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcGd",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gdrs",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xh",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gdmc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Cgs",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zzgs",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Zjqk",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gbxz",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gsdm",
+                    "id": 8
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdgd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcGd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdgdOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcSdgd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdltgd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcGd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GdjcSdltgdOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcSdltgd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhFhkg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgsg",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgzz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgfh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Mgp",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Pgjg",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zfgfsl",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zfjg",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Gqdjr",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Cqcxr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Zhjyr",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhFhkgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhFhkg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbjg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Date",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zgb",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltgf",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltag",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Ltbg",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Lthg",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Qtltgf",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsltg",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsltag",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsltbg",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xslthg",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsgjcg",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsgyfrcg",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjnfrcg",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjnzrrcg",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsggcg",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjwfrcg",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Xsjwzrrcg",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Wltg",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gjg",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Gyfrg",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Jnfgyfr",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Zpg",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Nbzgg",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Yxg",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Jwfrg",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Qtwltgf",
+                    "id": 27
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbjgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhGbjg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdKpqkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdKpqk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CpbdCjhbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdCjhb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsLrfpbzyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsLrfpbzy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10CwtsZcfzbzyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsZcfzbzy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZygcOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10Zygc",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJjltOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJjlt",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxRzrqOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxRzrq",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxJgccOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJgcc",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxGdzjcOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxGdzjc",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxDzjyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxDzjy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10DstxCgbdqkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxCgbdqk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GlcNdbcqkOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GlcNdbcqk",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZxjbDjdxjllbOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZxjbDjdxjllb",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10GbfhGbbdOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhGbbd",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyqtsszqOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyqtsszq",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzCyfssgqOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyfssgq",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10zbyzRzqkzfyssOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10zbyzRzqkzfyss",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjqkOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjqk",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjcnxmOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjcnxm",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzMjzjbgxmOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjbgxm",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ZbyzXmtzFmjzjxmOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzFmjzjxm",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10RsrEarnPSForeOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrEarnPSFore",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10RsrResReportOutPut",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrResReport",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FluxValue",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Appid",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Flux",
+                    "id": 2
                 }
             ]
         },
@@ -8948,6 +11652,222 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "EventNews",
                     "name": "RepDataEventNews",
                     "id": 79
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXiOutput",
+                    "name": "RepDataGongGaoXinXiOutput",
+                    "id": 80
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GongGaoXinXiZhongXinOutput",
+                    "name": "RepDataGongGaoXinXiZhongXinOutput",
+                    "id": 81
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdZxzbOutput",
+                    "name": "RepDataF10CpbdZxzbOutput",
+                    "id": 82
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdKpqkOutput",
+                    "name": "RepDataF10CpbdKpqkOutput",
+                    "id": 83
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CpbdCjhbOutput",
+                    "name": "RepDataF10CpbdCjhbOutput",
+                    "id": 84
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsLrfpbzyOutput",
+                    "name": "RepDataF10CwtsLrfpbzyOutput",
+                    "id": 85
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10CwtsZcfzbzyOutput",
+                    "name": "RepDataF10CwtsZcfzbzyOutput",
+                    "id": 86
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZygcOutput",
+                    "name": "RepDataF10ZygcOutput",
+                    "id": 87
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJjltOutput",
+                    "name": "RepDataF10DstxJjltOutput",
+                    "id": 88
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxRzrqOutput",
+                    "name": "RepDataF10DstxRzrqOutput",
+                    "id": 89
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxJgccOutput",
+                    "name": "RepDataF10DstxJgccOutput",
+                    "id": 90
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxGdzjcOutput",
+                    "name": "RepDataF10DstxGdzjcOutput",
+                    "id": 91
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxDzjyOutput",
+                    "name": "RepDataF10DstxDzjyOutput",
+                    "id": 92
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10DstxCgbdqkOutput",
+                    "name": "RepDataF10DstxCgbdqkOutput",
+                    "id": 93
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GlcOutPut",
+                    "name": "RepDataF10GlcOutPut",
+                    "id": 94
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GlcNdbcqkOutPut",
+                    "name": "RepDataF10GlcNdbcqkOutPut",
+                    "id": 95
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZxjbDjdxjllbOutPut",
+                    "name": "RepDataF10ZxjbDjdxjllbOutPut",
+                    "id": 96
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcKggdOutPut",
+                    "name": "RepDataF10GdjcKggdOutPut",
+                    "id": 97
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GdjcSjkzrOutPut",
+                    "name": "RepDataF10GdjcSjkzrOutPut",
+                    "id": 98
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10GbfhGbbdOutPut",
+                    "name": "RepDataF10GbfhGbbdOutPut",
+                    "id": 99
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyqtsszqOutPut",
+                    "name": "RepDataF10ZbyzCyqtsszqOutPut",
+                    "id": 100
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzCyfssgqOutPut",
+                    "name": "RepDataF10ZbyzCyfssgqOutPut",
+                    "id": 101
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10zbyzRzqkzfyssOutPut",
+                    "name": "RepDataF10zbyzRzqkzfyssOutPut",
+                    "id": 102
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjqkOutPut",
+                    "name": "RepDataF10ZbyzXmtzMjzjqkOutPut",
+                    "id": 103
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjcnxmOutPut",
+                    "name": "RepDataF10ZbyzXmtzMjzjcnxmOutPut",
+                    "id": 104
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzMjzjbgxmOutPut",
+                    "name": "RepDataF10ZbyzXmtzMjzjbgxmOutPut",
+                    "id": 105
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ZbyzXmtzFmjzjxmOutPut",
+                    "name": "RepDataF10ZbyzXmtzFmjzjxmOutPut",
+                    "id": 106
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10HydwOutPut",
+                    "name": "RepDataF10HydwOutPut",
+                    "id": 107
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrProForecastOutPut",
+                    "name": "RepDataF10RsrProForecastOutPut",
+                    "id": 108
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrInvestRatingOutPut",
+                    "name": "RepDataF10RsrInvestRatingOutPut",
+                    "id": 109
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrEarnPSForeOutPut",
+                    "name": "RepDataF10RsrEarnPSForeOutPut",
+                    "id": 110
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10RsrResReportOutPut",
+                    "name": "RepDataF10RsrResReportOutPut",
+                    "id": 111
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ServiceAuthConsts",
+                    "name": "RepDataServiceAuthConsts",
+                    "id": 112
+                },
+                {
+                    "rule": "repeated",
+                    "type": "DXSpiritStat",
+                    "name": "RepDataDXSpiritStat",
+                    "id": 113
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FluxValue",
+                    "name": "RepDataFluxValue",
+                    "id": 114
+                },
+                {
+                    "rule": "repeated",
+                    "type": "PaiMing",
+                    "name": "RepDataPaiMing",
+                    "id": 115
                 }
             ]
         },
@@ -9363,6 +12283,150 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDEventNews",
                     "id": 79
+                },
+                {
+                    "name": "IDGongGaoXinXiOutput",
+                    "id": 80
+                },
+                {
+                    "name": "IDGongGaoXinXiZhongXinOutput",
+                    "id": 81
+                },
+                {
+                    "name": "IDF10CpbdZxzbOutput",
+                    "id": 82
+                },
+                {
+                    "name": "IDF10CpbdKpqkOutput",
+                    "id": 83
+                },
+                {
+                    "name": "IDF10CpbdCjhbOutput",
+                    "id": 84
+                },
+                {
+                    "name": "IDF10CwtsLrfpbzyOutput",
+                    "id": 85
+                },
+                {
+                    "name": "IDF10CwtsZcfzbzyOutput",
+                    "id": 86
+                },
+                {
+                    "name": "IDF10ZygcOutput",
+                    "id": 87
+                },
+                {
+                    "name": "IDF10DstxJjltOutput",
+                    "id": 88
+                },
+                {
+                    "name": "IDF10DstxRzrqOutput",
+                    "id": 89
+                },
+                {
+                    "name": "IDF10DstxJgccOutput",
+                    "id": 90
+                },
+                {
+                    "name": "IDF10DstxGdzjcOutput",
+                    "id": 91
+                },
+                {
+                    "name": "IDF10DstxDzjyOutput",
+                    "id": 92
+                },
+                {
+                    "name": "IDF10DstxCgbdqkOutput",
+                    "id": 93
+                },
+                {
+                    "name": "IDF10GlcOutPut",
+                    "id": 94
+                },
+                {
+                    "name": "IDF10GlcNdbcqkOutPut",
+                    "id": 95
+                },
+                {
+                    "name": "IDF10ZxjbDjdxjllbOutPut",
+                    "id": 96
+                },
+                {
+                    "name": "IDF10GdjcKggdOutPut",
+                    "id": 97
+                },
+                {
+                    "name": "IDF10GdjcSjkzrOutPut",
+                    "id": 98
+                },
+                {
+                    "name": "IDF10GbfhGbbdOutPut",
+                    "id": 99
+                },
+                {
+                    "name": "IDF10ZbyzCyqtsszqOutPut",
+                    "id": 100
+                },
+                {
+                    "name": "IDF10ZbyzCyfssgqOutPut",
+                    "id": 101
+                },
+                {
+                    "name": "IDF10zbyzRzqkzfyssOutPut",
+                    "id": 102
+                },
+                {
+                    "name": "IDF10ZbyzXmtzMjzjqkOutPut",
+                    "id": 103
+                },
+                {
+                    "name": "IDF10ZbyzXmtzMjzjcnxmOutPut",
+                    "id": 104
+                },
+                {
+                    "name": "IDF10ZbyzXmtzMjzjbgxmOutPut",
+                    "id": 105
+                },
+                {
+                    "name": "IDF10ZbyzXmtzFmjzjxmOutPut",
+                    "id": 106
+                },
+                {
+                    "name": "IDF10HydwOutPut",
+                    "id": 107
+                },
+                {
+                    "name": "IDF10RsrProForecastOutPut",
+                    "id": 108
+                },
+                {
+                    "name": "IDF10RsrInvestRatingOutPut",
+                    "id": 109
+                },
+                {
+                    "name": "IDF10RsrEarnPSForeOutPut",
+                    "id": 110
+                },
+                {
+                    "name": "IDF10RsrResReportOutPut",
+                    "id": 111
+                },
+                {
+                    "name": "IDServiceAuthConsts",
+                    "id": 112
+                },
+                {
+                    "name": "IDDXSpiritStat",
+                    "id": 113
+                },
+                {
+                    "name": "IDFluxValue",
+                    "id": 114
+                },
+                {
+                    "name": "IDPaiMing",
+                    "id": 115
                 }
             ]
         }
@@ -9974,7 +13038,7 @@ if (!ProtoBuf) {
 
 exports['default'] = ProtoBuf;
 module.exports = exports['default'];
-},{"protobufjs/dist/ProtoBuf-light":39}],14:[function(require,module,exports){
+},{"protobufjs/dist/ProtoBuf-light":36}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -9986,9 +13050,9 @@ function _interopExportWildcard(obj, defaults) { var newObj = defaults({}, obj);
 
 function _defaults(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
-var _connectionLibUtil = require('connection/lib/util');
+var _html5ConnectionLibUtil = require('html5-connection/lib/util');
 
-_defaults(exports, _interopExportWildcard(_connectionLibUtil, _defaults));
+_defaults(exports, _interopExportWildcard(_html5ConnectionLibUtil, _defaults));
 
 function unParam(searchStr) {
   if (searchStr.indexOf('?') === 0) {
@@ -10008,608 +13072,9 @@ function unParam(searchStr) {
 
   return obj;
 }
-},{"connection/lib/util":28}],15:[function(require,module,exports){
+},{"html5-connection/lib/util":25}],15:[function(require,module,exports){
 
 },{}],16:[function(require,module,exports){
-/*global define:false require:false */
-module.exports = (function(){
-	// Import Events
-	var events = require('events')
-
-	// Export Domain
-	var domain = {}
-	domain.createDomain = domain.create = function(){
-		var d = new events.EventEmitter()
-
-		function emitError(e) {
-			d.emit('error', e)
-		}
-
-		d.add = function(emitter){
-			emitter.on('error', emitError)
-		}
-		d.remove = function(emitter){
-			emitter.removeListener('error', emitError)
-		}
-		d.bind = function(fn){
-			return function(){
-				var args = Array.prototype.slice.call(arguments)
-				try {
-					fn.apply(null, args)
-				}
-				catch (err){
-					emitError(err)
-				}
-			}
-		}
-		d.intercept = function(fn){
-			return function(err){
-				if ( err ) {
-					emitError(err)
-				}
-				else {
-					var args = Array.prototype.slice.call(arguments, 1)
-					try {
-						fn.apply(null, args)
-					}
-					catch (err){
-						emitError(err)
-					}
-				}
-			}
-		}
-		d.run = function(fn){
-			try {
-				fn()
-			}
-			catch (err) {
-				emitError(err)
-			}
-			return this
-		};
-		d.dispose = function(){
-			this.removeAllListeners()
-			return this
-		};
-		d.enter = d.exit = function(){
-			return this
-		}
-		return d
-	};
-	return domain
-}).call(this)
-},{"events":17}],17:[function(require,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      }
-      throw TypeError('Uncaught, unspecified "error" event.');
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        len = arguments.length;
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++)
-          args[i - 1] = arguments[i];
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    len = arguments.length;
-    args = new Array(len - 1);
-    for (i = 1; i < len; i++)
-      args[i - 1] = arguments[i];
-
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    var m;
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  var ret;
-  if (!emitter._events || !emitter._events[type])
-    ret = 0;
-  else if (isFunction(emitter._events[type]))
-    ret = 1;
-  else
-    ret = emitter._events[type].length;
-  return ret;
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-},{}],18:[function(require,module,exports){
-(function (process){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-  for (var i = parts.length - 1; i >= 0; i--) {
-    var last = parts[i];
-    if (last === '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  }
-
-  // if the path is allowed to go above the root, restore leading ..s
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-}
-
-// Split a filename into [root, dir, basename, ext], unix version
-// 'root' is just a slash, or nothing.
-var splitPathRe =
-    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-var splitPath = function(filename) {
-  return splitPathRe.exec(filename).slice(1);
-};
-
-// path.resolve([from ...], to)
-// posix version
-exports.resolve = function() {
-  var resolvedPath = '',
-      resolvedAbsolute = false;
-
-  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = (i >= 0) ? arguments[i] : process.cwd();
-
-    // Skip empty and invalid entries
-    if (typeof path !== 'string') {
-      throw new TypeError('Arguments to path.resolve must be strings');
-    } else if (!path) {
-      continue;
-    }
-
-    resolvedPath = path + '/' + resolvedPath;
-    resolvedAbsolute = path.charAt(0) === '/';
-  }
-
-  // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-  // Normalize the path
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-};
-
-// path.normalize(path)
-// posix version
-exports.normalize = function(path) {
-  var isAbsolute = exports.isAbsolute(path),
-      trailingSlash = substr(path, -1) === '/';
-
-  // Normalize the path
-  path = normalizeArray(filter(path.split('/'), function(p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-};
-
-// posix version
-exports.isAbsolute = function(path) {
-  return path.charAt(0) === '/';
-};
-
-// posix version
-exports.join = function() {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
-    if (typeof p !== 'string') {
-      throw new TypeError('Arguments to path.join must be strings');
-    }
-    return p;
-  }).join('/'));
-};
-
-
-// path.relative(from, to)
-// posix version
-exports.relative = function(from, to) {
-  from = exports.resolve(from).substr(1);
-  to = exports.resolve(to).substr(1);
-
-  function trim(arr) {
-    var start = 0;
-    for (; start < arr.length; start++) {
-      if (arr[start] !== '') break;
-    }
-
-    var end = arr.length - 1;
-    for (; end >= 0; end--) {
-      if (arr[end] !== '') break;
-    }
-
-    if (start > end) return [];
-    return arr.slice(start, end - start + 1);
-  }
-
-  var fromParts = trim(from.split('/'));
-  var toParts = trim(to.split('/'));
-
-  var length = Math.min(fromParts.length, toParts.length);
-  var samePartsLength = length;
-  for (var i = 0; i < length; i++) {
-    if (fromParts[i] !== toParts[i]) {
-      samePartsLength = i;
-      break;
-    }
-  }
-
-  var outputParts = [];
-  for (var i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push('..');
-  }
-
-  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-  return outputParts.join('/');
-};
-
-exports.sep = '/';
-exports.delimiter = ':';
-
-exports.dirname = function(path) {
-  var result = splitPath(path),
-      root = result[0],
-      dir = result[1];
-
-  if (!root && !dir) {
-    // No dirname whatsoever
-    return '.';
-  }
-
-  if (dir) {
-    // It has a dirname, strip trailing slash
-    dir = dir.substr(0, dir.length - 1);
-  }
-
-  return root + dir;
-};
-
-
-exports.basename = function(path, ext) {
-  var f = splitPath(path)[2];
-  // TODO: make this comparison case-insensitive on windows?
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-  return f;
-};
-
-
-exports.extname = function(path) {
-  return splitPath(path)[3];
-};
-
-function filter (xs, f) {
-    if (xs.filter) return xs.filter(f);
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (f(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
-}
-
-// String.prototype.substr - negative index don't work in IE8
-var substr = 'ab'.substr(-1) === 'b'
-    ? function (str, start, len) { return str.substr(start, len) }
-    : function (str, start, len) {
-        if (start < 0) start = str.length + start;
-        return str.substr(start, len);
-    }
-;
-
-}).call(this,require('_process'))
-},{"_process":19}],19:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -10642,7 +13107,9 @@ function drainQueue() {
         currentQueue = queue;
         queue = [];
         while (++queueIndex < len) {
-            currentQueue[queueIndex].run();
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
         }
         queueIndex = -1;
         len = queue.length;
@@ -10694,19 +13161,18 @@ process.binding = function (name) {
     throw new Error('process.binding is not supported');
 };
 
-// TODO(shtylman)
 process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
 
-},{}],20:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 require('./lib/HttpConnection');
 require('./lib/WebSocketConnection');
 
 module.exports = require('./lib/connection');
-},{"./lib/HttpConnection":22,"./lib/WebSocketConnection":24,"./lib/connection":27}],21:[function(require,module,exports){
+},{"./lib/HttpConnection":19,"./lib/WebSocketConnection":21,"./lib/connection":24}],18:[function(require,module,exports){
 /**
  * connection基类
  */
@@ -10831,7 +13297,7 @@ BaseConnection.EVENT_PROGRESS = 'progress';
 
 exports['default'] = BaseConnection;
 module.exports = exports['default'];
-},{}],22:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -10956,7 +13422,7 @@ _connection2['default'].https = function (url, options, handler) {
   return new HttpConnection(url, options, handler, true);
 };
 module.exports = exports['default'];
-},{"./BaseConnection":21,"./ajax":26,"./connection":27,"./util":28}],23:[function(require,module,exports){
+},{"./BaseConnection":18,"./ajax":23,"./connection":24,"./util":25}],20:[function(require,module,exports){
 // WebSocket 依赖，node环境使用模块ws
 'use strict';
 
@@ -10970,7 +13436,7 @@ if (typeof window !== 'undefined') {
   var wsDep = 'ws';
   module.exports = require(wsDep);
 }
-},{}],24:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -11114,7 +13580,7 @@ _connection2['default'].wss = function (url, options, handler) {
   return new WebSocketConnection(url, options, handler, true);
 };
 module.exports = exports['default'];
-},{"./BaseConnection":21,"./WebSocket":23,"./connection":27}],25:[function(require,module,exports){
+},{"./BaseConnection":18,"./WebSocket":20,"./connection":24}],22:[function(require,module,exports){
 // 判断环境，浏览器环境存在window对象
 'use strict';
 
@@ -11133,7 +13599,7 @@ if (typeof window !== 'undefined') {
   var xmlhttprequest = require(xmlhttprequestDep);
   module.exports = xmlhttprequest.XMLHttpRequest || xmlhttprequest;
 }
-},{}],26:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -11571,7 +14037,7 @@ if (typeof $ !== 'undefined' && typeof $.ajax === 'function' && typeof XDomainRe
     };
   })();
 }
-},{"./XMLHttpRequest":25,"./util":28}],27:[function(require,module,exports){
+},{"./XMLHttpRequest":22,"./util":25}],24:[function(require,module,exports){
 /**
  * 解析url，根据url中指定的协议创建对应的连接对象
  * @param url
@@ -11608,7 +14074,7 @@ function connection(url, options, handler) {
 
 exports['default'] = connection;
 module.exports = exports['default'];
-},{}],28:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -11648,12 +14114,115 @@ function extend(target) {
 }
 
 // recurse into nested objects
-},{}],29:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
+/**
+ * yfloat格式数据的解析模块
+ * Created by jiagang on 2015/10/15.
+ */
+
+var TWO_PWR_16_DBL = 1 << 16;
+var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
+
+/**
+ * 得到value中高32位数值
+ * @param {number} value
+ * @returns {number}
+ */
+function getHighBits(value) {
+  return (value / TWO_PWR_32_DBL) | 0;
+}
+
+/**
+ * 得到value中低32位数值
+ * @param {number} value
+ * @returns {number}
+ */
+function getLowBits(value) {
+  return (value % TWO_PWR_32_DBL) | 0;
+}
+
+/**
+ * 高位和低位合并为一个数字
+ * @param {number} low
+ * @param {number} high
+ * @returns {number}
+ */
+function toNumber(low, high) {
+  return ((high >>> 0) * TWO_PWR_32_DBL) + (low >>> 0);
+}
+
+/**
+ * 解析yfloat类型数字，返回数值和精度的数组
+ * @param {number|Long} value
+ * @returns {Array}
+ */
+function unmakeValue(value) {
+  var high, low;
+
+  // 数字类型
+  if (typeof value === 'number' && value > 0) {
+    high = getHighBits(value);
+    low = getLowBits(value);
+  }
+
+  // Long型
+  else if (value && typeof value['getHighBits'] === 'function' && typeof value['getLowBits'] === 'function') {
+    high = value.getHighBits();
+    low = value.getLowBits();
+  }
+
+  // 其它类型不支持
+  else {
+    console.warn('unmakeValue: invalid value');
+    return [NaN, 0];
+  }
+
+  var b = (low >> 16) & 0xFF,
+    l = b & 0x0F,
+    h = (b >> 4) & 0x0F,
+    bx = toNumber((high << 24) + ((low >>> 24) << 16) + (low & 0xFFFF), high >> 8),
+    dq = [2, 1, null, 3, 4, 5, 6, 7, 8, 9, 0][l],
+    temp = dq != null ? bx / (Math.pow(10, dq) || 1) : NaN;
+
+  if (h != 0) {
+    temp = -temp;
+  }
+  return [temp, dq];
+}
+
+/**
+ * 解析yfloat类型数字，返回数字类型
+ * @param {number|Long} value
+ * @returns {number}
+ */
+function unmakeValueToNumber(value) {
+  return unmakeValue(value)[0];
+}
+
+/**
+ * 解析yfloat类型数字，返回根据精度格式化后的字符串
+ * @param {number|Long} value
+ * @returns {string}
+ */
+function unmakeValueToString (value) {
+  var result = unmakeValue(value),
+    resultValue = result[0],
+    dq = result[1];
+  return dq !== null ? resultValue.toFixed(dq) : resultValue.toString();
+}
+
+module.exports = {
+  unmakeValue: unmakeValue,
+  unmakeValueToNumber: unmakeValueToNumber,
+  unmakeValueToString: unmakeValueToString
+};
+
+},{}],27:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib')
 
-},{"./lib":34}],30:[function(require,module,exports){
+},{"./lib":32}],28:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -11839,7 +14408,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":38}],31:[function(require,module,exports){
+},{"asap/raw":35}],29:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -11854,7 +14423,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
   });
 };
 
-},{"./core.js":30}],32:[function(require,module,exports){
+},{"./core.js":28}],30:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -11963,7 +14532,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":30}],33:[function(require,module,exports){
+},{"./core.js":28}],31:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -11981,7 +14550,7 @@ Promise.prototype['finally'] = function (f) {
   });
 };
 
-},{"./core.js":30}],34:[function(require,module,exports){
+},{"./core.js":28}],32:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./core.js');
@@ -11990,7 +14559,7 @@ require('./finally.js');
 require('./es6-extensions.js');
 require('./node-extensions.js');
 
-},{"./core.js":30,"./done.js":31,"./es6-extensions.js":32,"./finally.js":33,"./node-extensions.js":35}],35:[function(require,module,exports){
+},{"./core.js":28,"./done.js":29,"./es6-extensions.js":30,"./finally.js":31,"./node-extensions.js":33}],33:[function(require,module,exports){
 'use strict';
 
 // This file contains then/promise specific extensions that are only useful
@@ -12063,7 +14632,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   });
 }
 
-},{"./core.js":30,"asap":36}],36:[function(require,module,exports){
+},{"./core.js":28,"asap":34}],34:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -12131,7 +14700,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":37}],37:[function(require,module,exports){
+},{"./raw":35}],35:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -12355,112 +14924,7 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],38:[function(require,module,exports){
-(function (process){
-"use strict";
-
-var domain; // The domain module is executed on demand
-var hasSetImmediate = typeof setImmediate === "function";
-
-// Use the fastest means possible to execute a task in its own turn, with
-// priority over other events including network IO events in Node.js.
-//
-// An exception thrown by a task will permanently interrupt the processing of
-// subsequent tasks. The higher level `asap` function ensures that if an
-// exception is thrown by a task, that the task queue will continue flushing as
-// soon as possible, but if you use `rawAsap` directly, you are responsible to
-// either ensure that no exceptions are thrown from your task, or to manually
-// call `rawAsap.requestFlush` if an exception is thrown.
-module.exports = rawAsap;
-function rawAsap(task) {
-    if (!queue.length) {
-        requestFlush();
-        flushing = true;
-    }
-    // Avoids a function call
-    queue[queue.length] = task;
-}
-
-var queue = [];
-// Once a flush has been requested, no further calls to `requestFlush` are
-// necessary until the next `flush` completes.
-var flushing = false;
-// The position of the next task to execute in the task queue. This is
-// preserved between calls to `flush` so that it can be resumed if
-// a task throws an exception.
-var index = 0;
-// If a task schedules additional tasks recursively, the task queue can grow
-// unbounded. To prevent memory excaustion, the task queue will periodically
-// truncate already-completed tasks.
-var capacity = 1024;
-
-// The flush function processes all tasks that have been scheduled with
-// `rawAsap` unless and until one of those tasks throws an exception.
-// If a task throws an exception, `flush` ensures that its state will remain
-// consistent and will resume where it left off when called again.
-// However, `flush` does not make any arrangements to be called again if an
-// exception is thrown.
-function flush() {
-    while (index < queue.length) {
-        var currentIndex = index;
-        // Advance the index before calling the task. This ensures that we will
-        // begin flushing on the next task the task throws an error.
-        index = index + 1;
-        queue[currentIndex].call();
-        // Prevent leaking memory for long chains of recursive calls to `asap`.
-        // If we call `asap` within tasks scheduled by `asap`, the queue will
-        // grow, but to avoid an O(n) walk for every task we execute, we don't
-        // shift tasks off the queue after they have been executed.
-        // Instead, we periodically shift 1024 tasks off the queue.
-        if (index > capacity) {
-            // Manually shift all values starting at the index back to the
-            // beginning of the queue.
-            for (var scan = 0, newLength = queue.length - index; scan < newLength; scan++) {
-                queue[scan] = queue[scan + index];
-            }
-            queue.length -= index;
-            index = 0;
-        }
-    }
-    queue.length = 0;
-    index = 0;
-    flushing = false;
-}
-
-rawAsap.requestFlush = requestFlush;
-function requestFlush() {
-    // Ensure flushing is not bound to any domain.
-    // It is not sufficient to exit the domain, because domains exist on a stack.
-    // To execute code outside of any domain, the following dance is necessary.
-    var parentDomain = process.domain;
-    if (parentDomain) {
-        if (!domain) {
-            // Lazy execute the domain module.
-            // Only employed if the user elects to use domains.
-            domain = require("domain");
-        }
-        domain.active = process.domain = null;
-    }
-
-    // `setImmediate` is slower that `process.nextTick`, but `process.nextTick`
-    // cannot handle recursion.
-    // `requestFlush` will only be called recursively from `asap.js`, to resume
-    // flushing after an error is thrown into a domain.
-    // Conveniently, `setImmediate` was introduced in the same version
-    // `process.nextTick` started throwing recursion errors.
-    if (flushing && hasSetImmediate) {
-        setImmediate(flush);
-    } else {
-        process.nextTick(flush);
-    }
-
-    if (parentDomain) {
-        domain.active = process.domain = parentDomain;
-    }
-}
-
-}).call(this,require('_process'))
-},{"_process":19,"domain":16}],39:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function (process){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
@@ -12488,11 +14952,11 @@ function requestFlush() {
     /* AMD */ if (typeof define === 'function' && define["amd"])
         define(["ByteBuffer"], factory);
     /* CommonJS */ else if (typeof require === "function" && typeof module === "object" && module && module["exports"])
-        module["exports"] = factory(require("bytebuffer"));
+        module["exports"] = factory(require("bytebuffer"), true);
     /* Global */ else
         (global["dcodeIO"] = global["dcodeIO"] || {})["ProtoBuf"] = factory(global["dcodeIO"]["ByteBuffer"]);
 
-})(this, function(ByteBuffer) {
+})(this, function(ByteBuffer, isCommonJS) {
     "use strict";
 
     /**
@@ -12521,7 +14985,7 @@ function requestFlush() {
      * @const
      * @expose
      */
-    ProtoBuf.VERSION = "4.0.0";
+    ProtoBuf.VERSION = "4.1.3";
 
     /**
      * Wire types.
@@ -12774,12 +15238,7 @@ function requestFlush() {
          * @expose
          */
         Util.IS_NODE = !!(
-            // Feature detection causes packaging for the browser to fail or include
-            // redundant modules.
-            // * Works for browserify because node-process does not implement toString
-            //   https://github.com/defunctzombie/node-process
-            typeof process === 'object' &&
-            process+'' === '[object process]'
+            typeof process === 'object' && process+'' === '[object process]' && !process['browser']
         );
 
         /**
@@ -12820,8 +15279,9 @@ function requestFlush() {
             if (callback && typeof callback != 'function')
                 callback = null;
             if (Util.IS_NODE) {
+                var fs = require("fs");
                 if (callback) {
-                    require("fs").readFile(path, function(err, data) {
+                    fs.readFile(path, function(err, data) {
                         if (err)
                             callback(null);
                         else
@@ -12829,7 +15289,7 @@ function requestFlush() {
                     });
                 } else
                     try {
-                        return require("fs").readFileSync(path);
+                        return fs.readFileSync(path);
                     } catch (e) {
                         return null;
                     }
@@ -12876,44 +15336,67 @@ function requestFlush() {
 
     /**
      * Language expressions.
-     * @type {!Object.<string,string|!RegExp>}
+     * @type {!Object.<string,!RegExp>}
      * @expose
      */
     ProtoBuf.Lang = {
-        OPEN: "{",
-        CLOSE: "}",
-        OPTOPEN: "[",
-        OPTCLOSE: "]",
-        OPTEND: ",",
-        EQUAL: "=",
-        END: ";",
-        COMMA: ",",
-        STRINGOPEN: '"',
-        STRINGCLOSE: '"',
-        STRINGOPEN_SQ: "'",
-        STRINGCLOSE_SQ: "'",
-        COPTOPEN: '(',
-        COPTCLOSE: ')',
-        LT: '<',
-        GT: '>',
-        DELIM: /[\s\{\}=;\[\],'"\(\)<>]/g,
-        // KEYWORD: /^(?:package|option|import|message|enum|extend|service|syntax|extensions|group)$/,
+
+        // Characters always ending a statement
+        DELIM: /[\s\{\}=;:\[\],'"\(\)<>]/g,
+
+        // Field rules
         RULE: /^(?:required|optional|repeated|map)$/,
+
+        // Field types
         TYPE: /^(?:double|float|int32|uint32|sint32|int64|uint64|sint64|fixed32|sfixed32|fixed64|sfixed64|bool|string|bytes)$/,
+
+        // Names
         NAME: /^[a-zA-Z_][a-zA-Z_0-9]*$/,
+
+        // Type definitions
         TYPEDEF: /^[a-zA-Z][a-zA-Z_0-9]*$/,
+
+        // Type references
         TYPEREF: /^(?:\.?[a-zA-Z_][a-zA-Z_0-9]*)+$/,
+
+        // Fully qualified type references
         FQTYPEREF: /^(?:\.[a-zA-Z][a-zA-Z_0-9]*)+$/,
+
+        // All numbers
         NUMBER: /^-?(?:[1-9][0-9]*|0|0[xX][0-9a-fA-F]+|0[0-7]+|([0-9]*(\.[0-9]*)?([Ee][+-]?[0-9]+)?)|inf|nan)$/,
+
+        // Decimal numbers
         NUMBER_DEC: /^(?:[1-9][0-9]*|0)$/,
+
+        // Hexadecimal numbers
         NUMBER_HEX: /^0[xX][0-9a-fA-F]+$/,
+
+        // Octal numbers
         NUMBER_OCT: /^0[0-7]+$/,
+
+        // Floating point numbers
         NUMBER_FLT: /^([0-9]*(\.[0-9]*)?([Ee][+-]?[0-9]+)?|inf|nan)$/,
+
+        // Booleans
+        BOOL: /^(?:true|false)$/i,
+
+        // Id numbers
         ID: /^(?:[1-9][0-9]*|0|0[xX][0-9a-fA-F]+|0[0-7]+)$/,
+
+        // Negative id numbers (enum values)
         NEGID: /^\-?(?:[1-9][0-9]*|0|0[xX][0-9a-fA-F]+|0[0-7]+)$/,
+
+        // Whitespaces
         WHITESPACE: /\s/,
+
+        // All strings
         STRING: /(?:"([^"\\]*(?:\\.[^"\\]*)*)")|(?:'([^'\\]*(?:\\.[^'\\]*)*)')/g,
-        BOOL: /^(?:true|false)$/i
+
+        // Double quoted strings
+        STRING_DQ: /(?:"([^"\\]*(?:\\.[^"\\]*)*)")/g,
+
+        // Single quoted strings
+        STRING_SQ: /(?:'([^'\\]*(?:\\.[^'\\]*)*)')/g
     };
 
 
@@ -13302,7 +15785,7 @@ function requestFlush() {
          * @param type {string|{name: string, wireType: number}} the field type
          * @returns {*} Default value
          */
-        ElementPrototype.defaultFieldValue = mkDefault;
+        Element.defaultFieldValue = mkDefault;
 
         /**
          * Makes a Long from a value.
@@ -14011,13 +16494,14 @@ function requestFlush() {
                         this[field.name] = (value = field.verifyValue(value)); // May throw
                     } else
                         this[keyOrObj] = value;
-                    if (field && field.oneof) {
+                    if (field && field.oneof) { // Field is part of an OneOf (not a virtual OneOf field)
+                        var currentField = this[field.oneof.name]; // Virtual field references currently set field
                         if (value !== null) {
-                            if (this[field.oneof.name] !== null)
-                                this[this[field.oneof.name]] = null; // Unset the previous (field name is the oneof field's value)
-                            this[field.oneof.name] = field.name;
-                        } else if (field.oneof.name === keyOrObj)
-                            this[field.oneof.name] = null;
+                            if (currentField !== null && currentField !== field.name)
+                                this[currentField] = null; // Clear currently set field
+                            this[field.oneof.name] = field.name; // Point virtual field at this field
+                        } else if (/* value === null && */currentField === keyOrObj)
+                            this[field.oneof.name] = null; // Clear virtual field (current field explicitly cleared)
                     }
                     return this;
                 };
@@ -14364,61 +16848,54 @@ function requestFlush() {
                  * @param {*} obj Object to clone
                  * @param {boolean} binaryAsBase64 Whether to include binary data as base64 strings or as a buffer otherwise
                  * @param {boolean} longsAsStrings Whether to encode longs as strings
-                 * @param {{name: string, wireType: number}} fieldType The field type, if
-                 * appropriate
-                 * @param {ProtoBuf.Reflect.T} resolvedType The resolved field type, if appropriate
+                 * @param {!ProtoBuf.Reflect.T=} resolvedType The resolved field type if a field
                  * @returns {*} Cloned object
                  * @inner
                  */
-                function cloneRaw(obj, binaryAsBase64, longsAsStrings, fieldType, resolvedType) {
-                    var clone = undefined;
+                function cloneRaw(obj, binaryAsBase64, longsAsStrings, resolvedType) {
                     if (obj === null || typeof obj !== 'object') {
-                        if (fieldType == ProtoBuf.TYPES["enum"]) {
-                            var values = resolvedType.getChildren(ProtoBuf.Reflect.Enum.Value);
-                            for (var i = 0; i < values.length; i++) {
-                                if (values[i]['id'] === obj) {
-                                    obj = values[i]['name'];
-                                    break;
-                                }
-                            }
+                        // Convert enum values to their respective names
+                        if (resolvedType && resolvedType instanceof ProtoBuf.Reflect.Enum) {
+                            var name = ProtoBuf.Reflect.Enum.getName(resolvedType.object, obj);
+                            if (name !== null)
+                                return name;
                         }
-                        clone = obj;
-                    } else if (ByteBuffer.isByteBuffer(obj)) {
-                        if (binaryAsBase64) {
-                            clone = obj.toBase64();
-                        } else {
-                            clone = obj.toBuffer();
-                        }
-                    } else if (Array.isArray(obj)) {
-                        var src = obj;
-                        clone = [];
-                        for (var idx = 0; idx < src.length; idx++)
-                            clone.push(cloneRaw(src[idx], binaryAsBase64, longsAsStrings, fieldType, resolvedType));
-                    } else if (obj instanceof ProtoBuf.Map) {
-                        var it = obj.entries();
-                        clone = {};
-                        for (var e = it.next(); !e.done; e = it.next())
-                            clone[obj.keyElem.valueToString(e.value[0])] = cloneRaw(e.value[1], binaryAsBase64, longsAsStrings, obj.valueElem.type, obj.valueElem.resolvedType);
-                    } else if (obj instanceof ProtoBuf.Long) {
-                        if (longsAsStrings)
-                            // int64s are encoded as strings
-                            clone = obj.toString();
-                        else
-                            clone = new ProtoBuf.Long(obj);
-                    } else { // is a non-null object
-                        clone = {};
-                        var type = obj.$type;
-                        var field = undefined;
-                        for (var i in obj) {
-                            if (obj.hasOwnProperty(i)) {
-                                var value = obj[i];
-                                if (type) {
-                                    field = type.getChild(i);
-                                }
-                                clone[i] = cloneRaw(value, binaryAsBase64, longsAsStrings, field.type, field.resolvedType);
-                            }
-                        }
+                        // Pass-through string, number, boolean, null...
+                        return obj;
                     }
+                    // Convert ByteBuffers to raw buffer or strings
+                    if (ByteBuffer.isByteBuffer(obj))
+                        return binaryAsBase64 ? obj.toBase64() : obj.toBuffer();
+                    // Convert Longs to proper objects or strings
+                    if (ProtoBuf.Long.isLong(obj))
+                        return longsAsStrings ? obj.toString() : ProtoBuf.Long.fromValue(obj);
+                    var clone;
+                    // Clone arrays
+                    if (Array.isArray(obj)) {
+                        clone = [];
+                        obj.forEach(function(v, k) {
+                            clone[k] = cloneRaw(v, binaryAsBase64, longsAsStrings, resolvedType);
+                        });
+                        return clone;
+                    }
+                    clone = {};
+                    // Convert maps to objects
+                    if (obj instanceof ProtoBuf.Map) {
+                        var it = obj.entries();
+                        for (var e = it.next(); !e.done; e = it.next())
+                            clone[obj.keyElem.valueToString(e.value[0])] = cloneRaw(e.value[1], binaryAsBase64, longsAsStrings, obj.valueElem.resolvedType);
+                        return clone;
+                    }
+                    // Everything else is a non-null object
+                    var type = obj.$type,
+                        field = undefined;
+                    for (var i in obj)
+                        if (obj.hasOwnProperty(i)) {
+                            if (type && (field = type.getChild(i)))
+                                clone[i] = cloneRaw(obj[i], binaryAsBase64, longsAsStrings, field.resolvedType);
+                            else
+                                clone[i] = cloneRaw(obj[i], binaryAsBase64, longsAsStrings);
+                        }
                     return clone;
                 }
 
@@ -14430,7 +16907,7 @@ function requestFlush() {
                  * @expose
                  */
                 MessagePrototype.toRaw = function(binaryAsBase64, longsAsStrings) {
-                    return cloneRaw(this, !!binaryAsBase64, !!longsAsStrings, ProtoBuf.TYPES["message"], this.$type);
+                    return cloneRaw(this, !!binaryAsBase64, !!longsAsStrings, this.$type);
                 };
 
                 /**
@@ -14443,7 +16920,6 @@ function requestFlush() {
                         cloneRaw(this,
                              /* binary-as-base64 */ true,
                              /* longs-as-strings */ true,
-                             ProtoBuf.TYPES["message"],
                              this.$type
                         )
                     );
@@ -14650,7 +17126,7 @@ function requestFlush() {
                     if (fieldMissing === null)
                         fieldMissing = field;
                 } else
-                    field.encode(noVerify ? val : field.verifyValue(val), buffer);
+                    field.encode(noVerify ? val : field.verifyValue(val), buffer, message);
             }
             if (fieldMissing !== null) {
                 var err = Error("Missing at least one required field for "+this.toString(true)+": "+fieldMissing);
@@ -14674,7 +17150,7 @@ function requestFlush() {
                 if (field.required && val === null)
                    throw Error("Missing at least one required field for "+this.toString(true)+": "+field);
                 else
-                    n += field.calculate(val);
+                    n += field.calculate(val, message);
             }
             return n;
         };
@@ -14774,10 +17250,11 @@ function requestFlush() {
                     msg[field.name].set(keyval[0], keyval[1]);
                 } else {
                     msg[field.name] = field.decode(wireType, buffer);
-                    if (field.oneof) {
-                        if (this[field.oneof.name] !== null)
-                            this[this[field.oneof.name]] = null;
-                        msg[field.oneof.name] = field.name;
+                    if (field.oneof) { // Field is part of an OneOf (not a virtual OneOf field)
+                        var currentField = msg[field.oneof.name]; // Virtual field references currently set field
+                        if (currentField !== null && currentField !== field.name)
+                            msg[currentField] = null; // Clear currently set field
+                        msg[field.oneof.name] = field.name; // Point virtual field at this field
                     }
                 }
             }
@@ -14785,13 +17262,16 @@ function requestFlush() {
             // Check if all required fields are present and set default values for optional fields that are not
             for (var i=0, k=this._fields.length; i<k; ++i) {
                 field = this._fields[i];
-                if (msg[field.name] === null)
-                    if (field.required) {
-                        var err = Error("Missing at least one required field for "+this.toString(true)+": "+field.name);
+                if (msg[field.name] === null) {
+                    if (this.syntax === "proto3") { // Proto3 sets default values by specification
+                        msg[field.name] = field.defaultValue;
+                    } else if (field.required) {
+                        var err = Error("Missing at least one required field for " + this.toString(true) + ": " + field.name);
                         err["decoded"] = msg; // Still expose what we got
                         throw(err);
                     } else if (ProtoBuf.populateDefaults && field.defaultValue !== null)
                         msg[field.name] = field.defaultValue;
+                }
             }
             return msg;
         };
@@ -14949,12 +17429,14 @@ function requestFlush() {
             if (this.map)
                 this.keyElement = new Element(this.keyType, undefined, true, this.syntax);
 
-            this.defaultValue = typeof this.options['default'] !== 'undefined' ? this.verifyValue(this.options['default']) : null;
-
             // In proto3, fields do not have field presence, and every field is set to
             // its type's default value ("", 0, 0.0, or false).
             if (this.syntax === 'proto3' && !this.repeated && !this.map)
-                this.defaultValue = this.element.defaultFieldValue(this.type);
+                this.defaultValue = Element.defaultFieldValue(this.type);
+
+            // Otherwise, default values are present when explicitly specified
+            else if (typeof this.options['default'] !== 'undefined')
+                this.defaultValue = this.verifyValue(this.options['default']);
         };
 
         /**
@@ -15009,48 +17491,49 @@ function requestFlush() {
          * Determines whether the field will have a presence on the wire given its
          * value.
          * @param {*} value Verified field value
+         * @param {!ProtoBuf.Builder.Message} message Runtime message
          * @return {boolean} Whether the field will be present on the wire
          */
-        FieldPrototype.hasWirePresence = function(value) {
-            if (this.syntax !== 'proto3') {
+        FieldPrototype.hasWirePresence = function(value, message) {
+            if (this.syntax !== 'proto3')
                 return (value !== null);
-            } else {
-                switch (this.type) {
-                    case ProtoBuf.TYPES["int32"]:
-                    case ProtoBuf.TYPES["sint32"]:
-                    case ProtoBuf.TYPES["sfixed32"]:
-                    case ProtoBuf.TYPES["uint32"]:
-                    case ProtoBuf.TYPES["fixed32"]:
-                        return value !== 0;
+            if (this.oneof && message[this.oneof.name] === this.name)
+                return true;
+            switch (this.type) {
+                case ProtoBuf.TYPES["int32"]:
+                case ProtoBuf.TYPES["sint32"]:
+                case ProtoBuf.TYPES["sfixed32"]:
+                case ProtoBuf.TYPES["uint32"]:
+                case ProtoBuf.TYPES["fixed32"]:
+                    return value !== 0;
 
-                    case ProtoBuf.TYPES["int64"]:
-                    case ProtoBuf.TYPES["sint64"]:
-                    case ProtoBuf.TYPES["sfixed64"]:
-                    case ProtoBuf.TYPES["uint64"]:
-                    case ProtoBuf.TYPES["fixed64"]:
-                        return value.low !== 0 || value.high !== 0;
+                case ProtoBuf.TYPES["int64"]:
+                case ProtoBuf.TYPES["sint64"]:
+                case ProtoBuf.TYPES["sfixed64"]:
+                case ProtoBuf.TYPES["uint64"]:
+                case ProtoBuf.TYPES["fixed64"]:
+                    return value.low !== 0 || value.high !== 0;
 
-                    case ProtoBuf.TYPES["bool"]:
-                        return value;
+                case ProtoBuf.TYPES["bool"]:
+                    return value;
 
-                    case ProtoBuf.TYPES["float"]:
-                    case ProtoBuf.TYPES["double"]:
-                        return value !== 0.0;
+                case ProtoBuf.TYPES["float"]:
+                case ProtoBuf.TYPES["double"]:
+                    return value !== 0.0;
 
-                    case ProtoBuf.TYPES["string"]:
-                        return value.length > 0;
+                case ProtoBuf.TYPES["string"]:
+                    return value.length > 0;
 
-                    case ProtoBuf.TYPES["bytes"]:
-                        return value.remaining() > 0;
+                case ProtoBuf.TYPES["bytes"]:
+                    return value.remaining() > 0;
 
-                    case ProtoBuf.TYPES["enum"]:
-                        return value !== 0;
+                case ProtoBuf.TYPES["enum"]:
+                    return value !== 0;
 
-                    case ProtoBuf.TYPES["message"]:
-                        return value !== null;
-                    default:
-                        return true;
-                }
+                case ProtoBuf.TYPES["message"]:
+                    return value !== null;
+                default:
+                    return true;
             }
         };
 
@@ -15058,11 +17541,12 @@ function requestFlush() {
          * Encodes the specified field value to the specified buffer.
          * @param {*} value Verified field value
          * @param {ByteBuffer} buffer ByteBuffer to encode to
+         * @param {!ProtoBuf.Builder.Message} message Runtime message
          * @return {ByteBuffer} The ByteBuffer for chaining
          * @throws {Error} If the field cannot be encoded
          * @expose
          */
-        FieldPrototype.encode = function(value, buffer) {
+        FieldPrototype.encode = function(value, buffer, message) {
             if (this.type === null || typeof this.type !== 'object')
                 throw Error("[INTERNAL] Unresolved type in "+this.toString(true)+": "+this.type);
             if (value === null || (this.repeated && value.length == 0))
@@ -15118,7 +17602,7 @@ function requestFlush() {
                         this.element.encodeValue(2, val, buffer);
                     }, this);
                 } else {
-                    if (this.hasWirePresence(value)) {
+                    if (this.hasWirePresence(value, message)) {
                         buffer.writeVarint32((this.id << 3) | this.type.wireType);
                         this.element.encodeValue(this.id, value, buffer);
                     }
@@ -15132,10 +17616,11 @@ function requestFlush() {
         /**
          * Calculates the length of this field's value on the network level.
          * @param {*} value Field value
+         * @param {!ProtoBuf.Builder.Message} message Runtime message
          * @returns {number} Byte length
          * @expose
          */
-        FieldPrototype.calculate = function(value) {
+        FieldPrototype.calculate = function(value, message) {
             value = this.verifyValue(value); // May throw
             if (this.type === null || typeof this.type !== 'object')
                 throw Error("[INTERNAL] Unresolved type in "+this.toString(true)+": "+this.type);
@@ -15172,7 +17657,7 @@ function requestFlush() {
                         n += length;
                     }, this);
                 } else {
-                    if (this.hasWirePresence(value)) {
+                    if (this.hasWirePresence(value, message)) {
                         n += ByteBuffer.calculateVarint32((this.id << 3) | this.type.wireType);
                         n += this.element.calculateLength(this.id, value);
                     }
@@ -15222,8 +17707,8 @@ function requestFlush() {
             // Handle maps.
             if (this.map) {
                 // Read one (key, value) submessage, and return [key, value]
-                var key = this.keyElement.defaultFieldValue(this.keyType);
-                value = this.element.defaultFieldValue(this.type);
+                var key = Element.defaultFieldValue(this.keyType);
+                value = Element.defaultFieldValue(this.type);
 
                 // Read the length
                 nBytes = buffer.readVarint32();
@@ -15270,7 +17755,7 @@ function requestFlush() {
          * @param {string} type Data type, e.g. int32
          * @param {string} name Field name
          * @param {number} id Unique field id
-         * @param {Object.<string,*>=} options Options
+         * @param {!Object.<string,*>=} options Options
          * @constructor
          * @extends ProtoBuf.Reflect.Message.Field
          */
@@ -15348,6 +17833,21 @@ function requestFlush() {
         };
 
         /**
+         * Gets the string name of an enum value.
+         * @param {!ProtoBuf.Builder.Enum} enm Runtime enum
+         * @param {number} value Enum value
+         * @returns {?string} Name or `null` if not present
+         * @expose
+         */
+        Enum.getName = function(enm, value) {
+            var keys = Object.keys(enm);
+            for (var i=0, key; i<keys.length; ++i)
+                if (enm[key = keys[i]] === value)
+                    return key;
+            return null;
+        };
+
+        /**
          * @alias ProtoBuf.Reflect.Enum.prototype
          * @inner
          */
@@ -15355,16 +17855,22 @@ function requestFlush() {
 
         /**
          * Builds this enum and returns the runtime counterpart.
-         * @return {Object<string,*>}
+         * @param {boolean} rebuild Whether to rebuild or not, defaults to false
+         * @returns {!Object.<string,number>}
          * @expose
          */
-        EnumPrototype.build = function() {
-            var enm = {},
+        EnumPrototype.build = function(rebuild) {
+            if (this.object && !rebuild)
+                return this.object;
+            var enm = new ProtoBuf.Builder.Enum(),
                 values = this.getChildren(Enum.Value);
             for (var i=0, k=values.length; i<k; ++i)
                 enm[values[i]['name']] = values[i]['id'];
             if (Object.defineProperty)
-                Object.defineProperty(enm, '$options', { "value": this.buildOpt() });
+                Object.defineProperty(enm, '$options', {
+                    "value": this.buildOpt(),
+                    "enumerable": false
+                });
             return this.object = enm;
         };
 
@@ -15550,10 +18056,10 @@ function requestFlush() {
                                     if (!(err instanceof TypeError))
                                         throw err;
                                 }
-                                if (!req || !(req instanceof method.resolvedRequestType.clazz)) {
-                                    setTimeout(callback.bind(this, Error("Illegal request type provided to service method "+T.name+"#"+method.name)), 0);
-                                    return;
-                                }
+                                if (req === null || typeof req !== 'object')
+                                    throw Error("Illegal arguments");
+                                if (!(req instanceof method.resolvedRequestType.clazz))
+                                    req = new method.resolvedRequestType.clazz(req);
                                 this.rpcImpl(method.fqn(), req, function(err, res) { // Assumes that this is properly async
                                     if (err) {
                                         callback(err);
@@ -15765,25 +18271,6 @@ function requestFlush() {
         "use strict";
 
         /**
-         * Helper for builder: propagate a top-level syntax annotation (e.g.,
-         * 'proto3') down to all message and enum JSON descriptions.
-         * @param {Object} msg The top-level JSON object
-         */
-        function propagateSyntax(syntax, msg) {
-          msg['syntax'] = syntax;
-          if (msg['messages']) {
-              msg['messages'].forEach(function(msg) {
-                  propagateSyntax(syntax, msg);
-              });
-          }
-          if (msg['enums']) {
-              msg['enums'].forEach(function(en) {
-                  propagateSyntax(syntax, en);
-              });
-          }
-        }
-
-        /**
          * Constructs a new Builder.
          * @exports ProtoBuf.Builder
          * @class Provides the functionality to build protocol messages.
@@ -15848,171 +18335,113 @@ function requestFlush() {
          */
         var BuilderPrototype = Builder.prototype;
 
+        // ----- Definition tests -----
+
+        /**
+         * Tests if a definition most likely describes a message.
+         * @param {!Object} def
+         * @returns {boolean}
+         * @expose
+         */
+        Builder.isMessage = function(def) {
+            // Messages require a string name
+            if (typeof def["name"] !== 'string')
+                return false;
+            // Messages do not contain values (enum) or rpc methods (service)
+            if (typeof def["values"] !== 'undefined' || typeof def["rpc"] !== 'undefined')
+                return false;
+            return true;
+        };
+
+        /**
+         * Tests if a definition most likely describes a message field.
+         * @param {!Object} def
+         * @returns {boolean}
+         * @expose
+         */
+        Builder.isMessageField = function(def) {
+            // Message fields require a string rule, name and type and an id
+            if (typeof def["rule"] !== 'string' || typeof def["name"] !== 'string' || typeof def["type"] !== 'string' || typeof def["id"] === 'undefined')
+                return false;
+            return true;
+        };
+
+        /**
+         * Tests if a definition most likely describes an enum.
+         * @param {!Object} def
+         * @returns {boolean}
+         * @expose
+         */
+        Builder.isEnum = function(def) {
+            // Enums require a string name
+            if (typeof def["name"] !== 'string')
+                return false;
+            // Enums require at least one value
+            if (typeof def["values"] === 'undefined' || !Array.isArray(def["values"]) || def["values"].length === 0)
+                return false;
+            return true;
+        };
+
+        /**
+         * Tests if a definition most likely describes a service.
+         * @param {!Object} def
+         * @returns {boolean}
+         * @expose
+         */
+        Builder.isService = function(def) {
+            // Services require a string name and an rpc object
+            if (typeof def["name"] !== 'string' || typeof def["rpc"] !== 'object' || !def["rpc"])
+                return false;
+            return true;
+        };
+
+        /**
+         * Tests if a definition most likely describes an extended message
+         * @param {!Object} def
+         * @returns {boolean}
+         * @expose
+         */
+        Builder.isExtend = function(def) {
+            // Extends rquire a string ref
+            if (typeof def["ref"] !== 'string')
+                return false;
+            return true;
+        };
+
+        // ----- Building -----
+
         /**
          * Resets the pointer to the root namespace.
+         * @returns {!ProtoBuf.Builder} this
          * @expose
          */
         BuilderPrototype.reset = function() {
             this.ptr = this.ns;
-        };
-
-        /**
-         * Defines a package on top of the current pointer position and places the pointer on it.
-         * @param {string} pkg
-         * @return {ProtoBuf.Builder} this
-         * @throws {Error} If the package name is invalid
-         * @expose
-         */
-        BuilderPrototype.define = function(pkg) {
-            if (typeof pkg !== 'string' || !Lang.TYPEREF.test(pkg))
-                throw Error("Illegal package: "+pkg);
-            var part = pkg.split("."), i, ns;
-            for (i=0; i<part.length; i++) // To be absolutely sure
-                if (!Lang.NAME.test(part[i]))
-                    throw Error("Illegal package: "+part[i]);
-            for (i=0; i<part.length; i++) {
-                ns = this.ptr.getChild(part[i]);
-                if (ns === null) // Keep existing
-                    this.ptr.addChild(ns = new Reflect.Namespace(this, this.ptr, part[i]));
-                this.ptr = ns;
-            }
             return this;
         };
 
         /**
-         * Tests if a definition is a valid message definition.
-         * @param {Object.<string,*>} def Definition
-         * @return {boolean} true if valid, else false
+         * Defines a namespace on top of the current pointer position and places the pointer on it.
+         * @param {string} namespace
+         * @return {!ProtoBuf.Builder} this
          * @expose
          */
-        Builder.isValidMessage = function(def) {
-            // Messages require a string name
-            if (typeof def["name"] !== 'string' || !Lang.NAME.test(def["name"]))
-                return false;
-            // Messages must not contain values (that'd be an enum) or methods (that'd be a service)
-            if (typeof def["values"] !== 'undefined' || typeof def["rpc"] !== 'undefined')
-                return false;
-            // Fields, enums and messages are arrays if provided
-            var i;
-            if (typeof def["fields"] !== 'undefined') {
-                if (!Array.isArray(def["fields"]))
-                    return false;
-                var ids = [], id; // IDs must be unique
-                for (i=0; i<def["fields"].length; i++) {
-                    if (!Builder.isValidMessageField(def["fields"][i]))
-                        return false;
-                    id = parseInt(def["fields"][i]["id"], 10);
-                    if (ids.indexOf(id) >= 0)
-                        return false;
-                    ids.push(id);
-                }
-                ids = null;
-            }
-            if (typeof def["enums"] !== 'undefined') {
-                if (!Array.isArray(def["enums"]))
-                    return false;
-                for (i=0; i<def["enums"].length; i++)
-                    if (!Builder.isValidEnum(def["enums"][i]))
-                        return false;
-            }
-            if (typeof def["messages"] !== 'undefined') {
-                if (!Array.isArray(def["messages"]))
-                    return false;
-                for (i=0; i<def["messages"].length; i++)
-                    if (!Builder.isValidMessage(def["messages"][i]) && !Builder.isValidExtend(def["messages"][i]))
-                        return false;
-            }
-            if (typeof def["extensions"] !== 'undefined')
-                if (!Array.isArray(def["extensions"]) || def["extensions"].length !== 2 || typeof def["extensions"][0] !== 'number' || typeof def["extensions"][1] !== 'number')
-                    return false;
-
-            if (def["syntax"] === 'proto3') {
-                for (i=0; i<def["fields"].length; i++) {
-                    var field = def["fields"][i];
-                    // proto3 messages cannot contain required fields.
-                    if (field["rule"] === "required")
-                        return false;
-                    // proto3 message fields cannot contain default values.
-                    if (field["default"])
-                        return false;
-                    if (field["options"]) {
-                        var optionKeys = Object.keys(field["options"]);
-                        for (var j=0; j<optionKeys.length; j++) {
-                            if (optionKeys[j] === "default") {
-                                return false;
-                            }
-                        }
-                    }
-                }
-                // proto3 messages cannot contain extensions.
-                if (def["extensions"])
-                    return false;
-            }
-            return true;
+        BuilderPrototype.define = function(namespace) {
+            if (typeof namespace !== 'string' || !Lang.TYPEREF.test(namespace))
+                throw Error("illegal namespace: "+namespace);
+            namespace.split(".").forEach(function(part) {
+                var ns = this.ptr.getChild(part);
+                if (ns === null) // Keep existing
+                    this.ptr.addChild(ns = new Reflect.Namespace(this, this.ptr, part));
+                this.ptr = ns;
+            }, this);
+            return this;
         };
 
         /**
-         * Tests if a definition is a valid message field definition.
-         * @param {Object} def Definition
-         * @return {boolean} true if valid, else false
-         * @expose
-         */
-        Builder.isValidMessageField = function(def) {
-            // Message fields require a string rule, name and type and an id
-            if (typeof def["rule"] !== 'string' || typeof def["name"] !== 'string' || typeof def["type"] !== 'string' || typeof def["id"] === 'undefined')
-                return false;
-            if (!Lang.RULE.test(def["rule"]) || !Lang.NAME.test(def["name"]) || !Lang.TYPEREF.test(def["type"]) || !Lang.ID.test(""+def["id"]))
-                return false;
-            if (typeof def["options"] !== 'undefined') {
-                // Options are objects
-                if (typeof def["options"] !== 'object')
-                    return false;
-                // Options are <string,string|number|boolean>
-                var keys = Object.keys(def["options"]);
-                for (var i=0, key; i<keys.length; i++)
-                    if (typeof (key = keys[i]) !== 'string' || (typeof def["options"][key] !== 'string' && typeof def["options"][key] !== 'number' && typeof def["options"][key] !== 'boolean'))
-                        return false;
-            }
-            return true;
-        };
-
-        /**
-         * Tests if a definition is a valid enum definition.
-         * @param {Object} def Definition
-         * @return {boolean} true if valid, else false
-         * @expose
-         */
-        Builder.isValidEnum = function(def) {
-            // Enums require a string name
-            if (typeof def["name"] !== 'string' || !Lang.NAME.test(def["name"]))
-                return false;
-            // Enums require at least one value
-            if (typeof def["values"] === 'undefined' || !Array.isArray(def["values"]) || def["values"].length == 0)
-                return false;
-            for (var i=0; i<def["values"].length; i++) {
-                // Values are objects
-                if (typeof def["values"][i] != "object")
-                    return false;
-                // Values require a string name and an id
-                if (typeof def["values"][i]["name"] !== 'string' || typeof def["values"][i]["id"] === 'undefined')
-                    return false;
-                if (!Lang.NAME.test(def["values"][i]["name"]) || !Lang.NEGID.test(""+def["values"][i]["id"]))
-                    return false;
-            }
-            // If this is a proto3 enum, the default (first) value must be 0.
-            if (def["syntax"] === 'proto3') {
-                if (def["values"][0]["id"] !== 0) {
-                    return false;
-                }
-            }
-            // It's not important if there are other fields because ["values"] is already unique
-            return true;
-        };
-
-        /**
-         * Creates ths specified protocol types at the current pointer position.
-         * @param {Array.<Object.<string,*>>} defs Messages, enums or services to create
-         * @return {ProtoBuf.Builder} this
+         * Creates the specified definitions at the current pointer position.
+         * @param {!Array.<!Object>} defs Messages, enums or services to create
+         * @returns {!ProtoBuf.Builder} this
          * @throws {Error} If a message definition is invalid
          * @expose
          */
@@ -16028,125 +18457,131 @@ function requestFlush() {
             }
 
             // It's quite hard to keep track of scopes and memory here, so let's do this iteratively.
-            var stack = [];
-            stack.push(defs); // One level [a, b, c]
+            var stack = [defs];
             while (stack.length > 0) {
                 defs = stack.pop();
-                if (Array.isArray(defs)) { // Stack always contains entire namespaces
-                    while (defs.length > 0) {
-                        var def = defs.shift(); // Namespace always contains an array of messages, enums and services
-                        if (Builder.isValidMessage(def)) {
-                            var obj = new Reflect.Message(this, this.ptr, def["name"], def["options"], def["isGroup"], def["syntax"]);
-                            // Create OneOfs
-                            var oneofs = {};
-                            if (def["oneofs"]) {
-                                var keys = Object.keys(def["oneofs"]);
-                                for (var i=0, k=keys.length; i<k; ++i)
-                                    obj.addChild(oneofs[keys[i]] = new Reflect.Message.OneOf(this, obj, keys[i]));
-                            }
-                            // Create fields
-                            if (def["fields"] && def["fields"].length > 0) {
-                                for (i=0, k=def["fields"].length; i<k; ++i) { // i:k=Fields
-                                    var fld = def['fields'][i];
-                                    if (obj.getChild(fld['id']) !== null)
-                                        throw Error("Duplicate field id in message "+obj.name+": "+fld['id']);
-                                    if (fld["options"]) {
-                                        var opts = Object.keys(fld["options"]);
-                                        for (var j= 0,l=opts.length; j<l; ++j) { // j:l=Option names
-                                            if (typeof opts[j] !== 'string')
-                                                throw Error("Illegal field option name in message "+obj.name+"#"+fld["name"]+": "+opts[j]);
-                                            if (typeof fld["options"][opts[j]] !== 'string' && typeof fld["options"][opts[j]] !== 'number' && typeof fld["options"][opts[j]] !== 'boolean')
-                                                throw Error("Illegal field option value in message "+obj.name+"#"+fld["name"]+"#"+opts[j]+": "+fld["options"][opts[j]]);
-                                        }
-                                    }
-                                    var oneof = null;
-                                    if (typeof fld["oneof"] === 'string') {
-                                        oneof = oneofs[fld["oneof"]];
-                                        if (typeof oneof === 'undefined')
-                                            throw Error("Illegal oneof in message "+obj.name+"#"+fld["name"]+": "+fld["oneof"]);
-                                    }
-                                    fld = new Reflect.Message.Field(this, obj, fld["rule"], fld["keytype"], fld["type"], fld["name"], fld["id"], fld["options"], oneof, def["syntax"]);
-                                    if (oneof)
-                                        oneof.fields.push(fld);
-                                    obj.addChild(fld);
-                                }
-                            }
-                            // Push enums, messages and services to stack
-                            var subObj = [];
-                            if (typeof def["enums"] !== 'undefined' && def['enums'].length > 0)
-                                for (i=0; i<def["enums"].length; i++)
-                                    subObj.push(def["enums"][i]);
-                            if (def["messages"] && def["messages"].length > 0)
-                                for (i=0; i<def["messages"].length; i++)
-                                    subObj.push(def["messages"][i]);
-                            if (def["services"] && def["services"].length > 0)
-                                for (i=0; i<def["services"].length; i++)
-                                    subObj.push(def["services"][i]);
-                            // Set extension range
-                            if (def["extensions"]) {
-                                obj.extensions = def["extensions"];
-                                if (obj.extensions[0] < ProtoBuf.ID_MIN)
-                                    obj.extensions[0] = ProtoBuf.ID_MIN;
-                                if (obj.extensions[1] > ProtoBuf.ID_MAX)
-                                    obj.extensions[1] = ProtoBuf.ID_MAX;
-                            }
-                            this.ptr.addChild(obj); // Add to current namespace
-                            if (subObj.length > 0) {
-                                stack.push(defs); // Push the current level back
-                                defs = subObj; // Continue processing sub level
-                                subObj = null;
-                                this.ptr = obj; // And move the pointer to this namespace
-                                obj = null;
-                                continue;
-                            }
+
+                if (!Array.isArray(defs)) // Stack always contains entire namespaces
+                    throw Error("not a valid namespace: "+JSON.stringify(defs));
+
+                while (defs.length > 0) {
+                    var def = defs.shift(); // Namespaces always contain an array of messages, enums and services
+
+                    if (Builder.isMessage(def)) {
+                        var obj = new Reflect.Message(this, this.ptr, def["name"], def["options"], def["isGroup"], def["syntax"]);
+
+                        // Create OneOfs
+                        var oneofs = {};
+                        if (def["oneofs"])
+                            Object.keys(def["oneofs"]).forEach(function(name) {
+                                obj.addChild(oneofs[name] = new Reflect.Message.OneOf(this, obj, name));
+                            }, this);
+
+                        // Create fields
+                        if (def["fields"])
+                            def["fields"].forEach(function(fld) {
+                                if (obj.getChild(fld["id"]|0) !== null)
+                                    throw Error("duplicate or invalid field id in "+obj.name+": "+fld['id']);
+                                if (fld["options"] && typeof fld["options"] !== 'object')
+                                    throw Error("illegal field options in "+obj.name+"#"+fld["name"]);
+                                var oneof = null;
+                                if (typeof fld["oneof"] === 'string' && !(oneof = oneofs[fld["oneof"]]))
+                                    throw Error("illegal oneof in "+obj.name+"#"+fld["name"]+": "+fld["oneof"]);
+                                fld = new Reflect.Message.Field(this, obj, fld["rule"], fld["keytype"], fld["type"], fld["name"], fld["id"], fld["options"], oneof, def["syntax"]);
+                                if (oneof)
+                                    oneof.fields.push(fld);
+                                obj.addChild(fld);
+                            }, this);
+
+                        // Push children to stack
+                        var subObj = [];
+                        if (def["enums"])
+                            def["enums"].forEach(function(enm) {
+                                subObj.push(enm);
+                            });
+                        if (def["messages"])
+                            def["messages"].forEach(function(msg) {
+                                subObj.push(msg);
+                            });
+                        if (def["services"])
+                            def["services"].forEach(function(svc) {
+                                subObj.push(svc);
+                            });
+
+                        // Set extension range
+                        if (def["extensions"]) {
+                            obj.extensions = def["extensions"];
+                            if (obj.extensions[0] < ProtoBuf.ID_MIN)
+                                obj.extensions[0] = ProtoBuf.ID_MIN;
+                            if (obj.extensions[1] > ProtoBuf.ID_MAX)
+                                obj.extensions[1] = ProtoBuf.ID_MAX;
+                        }
+
+                        // Create on top of current namespace
+                        this.ptr.addChild(obj);
+                        if (subObj.length > 0) {
+                            stack.push(defs); // Push the current level back
+                            defs = subObj; // Continue processing sub level
                             subObj = null;
+                            this.ptr = obj; // And move the pointer to this namespace
                             obj = null;
-                        } else if (Builder.isValidEnum(def)) {
-                            obj = new Reflect.Enum(this, this.ptr, def["name"], def["options"], def["syntax"]);
-                            for (i=0; i<def["values"].length; i++)
-                                obj.addChild(new Reflect.Enum.Value(this, obj, def["values"][i]["name"], def["values"][i]["id"]));
-                            this.ptr.addChild(obj);
-                            obj = null;
-                        } else if (Builder.isValidService(def)) {
-                            obj = new Reflect.Service(this, this.ptr, def["name"], def["options"]);
-                            for (i in def["rpc"])
-                                if (def["rpc"].hasOwnProperty(i))
-                                    obj.addChild(new Reflect.Service.RPCMethod(this, obj, i, def["rpc"][i]["request"], def["rpc"][i]["response"], !!def["rpc"][i]["request_stream"], !!def["rpc"][i]["response_stream"], def["rpc"][i]["options"]));
-                            this.ptr.addChild(obj);
-                            obj = null;
-                        } else if (Builder.isValidExtend(def)) {
-                            obj = this.ptr.resolve(def["ref"], true);
-                            if (obj) {
-                                for (i=0; i<def["fields"].length; i++) { // i=Fields
-                                    if (obj.getChild(def['fields'][i]['id']) !== null)
-                                        throw Error("Duplicate extended field id in message "+obj.name+": "+def['fields'][i]['id']);
-                                    if (def['fields'][i]['id'] < obj.extensions[0] || def['fields'][i]['id'] > obj.extensions[1])
-                                        throw Error("Illegal extended field id in message "+obj.name+": "+def['fields'][i]['id']+" ("+obj.extensions.join(' to ')+" expected)");
-                                    // Convert extension field names to camel case notation if the override is set
-                                    var name = def["fields"][i]["name"];
-                                    if (this.options['convertFieldsToCamelCase'])
-                                        name = ProtoBuf.Util.toCamelCase(def["fields"][i]["name"]);
-                                    // see #161: Extensions use their fully qualified name as their runtime key and...
-                                    fld = new Reflect.Message.ExtensionField(this, obj, def["fields"][i]["rule"], def["fields"][i]["type"], this.ptr.fqn()+'.'+name, def["fields"][i]["id"], def["fields"][i]["options"]);
-                                    // ...are added on top of the current namespace as an extension which is used for
-                                    // resolving their type later on (the extension always keeps the original name to
-                                    // prevent naming collisions)
-                                    var ext = new Reflect.Extension(this, this.ptr, def["fields"][i]["name"], fld);
-                                    fld.extension = ext;
-                                    this.ptr.addChild(ext);
-                                    obj.addChild(fld);
-                                }
-                            } else if (!/\.?google\.protobuf\./.test(def["ref"])) // Silently skip internal extensions
-                                throw Error("Extended message "+def["ref"]+" is not defined");
-                        } else
-                            throw Error("Not a valid definition: "+JSON.stringify(def));
-                        def = null;
-                    }
-                    // Break goes here
-                } else
-                    throw Error("Not a valid namespace: "+JSON.stringify(defs));
+                            continue;
+                        }
+                        subObj = null;
+
+                    } else if (Builder.isEnum(def)) {
+
+                        obj = new Reflect.Enum(this, this.ptr, def["name"], def["options"], def["syntax"]);
+                        def["values"].forEach(function(val) {
+                            obj.addChild(new Reflect.Enum.Value(this, obj, val["name"], val["id"]));
+                        }, this);
+                        this.ptr.addChild(obj);
+
+                    } else if (Builder.isService(def)) {
+
+                        obj = new Reflect.Service(this, this.ptr, def["name"], def["options"]);
+                        Object.keys(def["rpc"]).forEach(function(name) {
+                            var mtd = def["rpc"][name];
+                            obj.addChild(new Reflect.Service.RPCMethod(this, obj, name, mtd["request"], mtd["response"], !!mtd["request_stream"], !!mtd["response_stream"], mtd["options"]));
+                        }, this);
+                        this.ptr.addChild(obj);
+
+                    } else if (Builder.isExtend(def)) {
+
+                        obj = this.ptr.resolve(def["ref"], true);
+                        if (obj) {
+                            def["fields"].forEach(function(fld) {
+                                if (obj.getChild(fld['id']|0) !== null)
+                                    throw Error("duplicate extended field id in "+obj.name+": "+fld['id']);
+                                if (fld['id'] < obj.extensions[0] || fld['id'] > obj.extensions[1])
+                                    throw Error("illegal extended field id in "+obj.name+": "+fld['id']+" ("+obj.extensions.join(' to ')+" expected)");
+                                // Convert extension field names to camel case notation if the override is set
+                                var name = fld["name"];
+                                if (this.options['convertFieldsToCamelCase'])
+                                    name = ProtoBuf.Util.toCamelCase(name);
+                                // see #161: Extensions use their fully qualified name as their runtime key and...
+                                var field = new Reflect.Message.ExtensionField(this, obj, fld["rule"], fld["type"], this.ptr.fqn()+'.'+name, fld["id"], fld["options"]);
+                                // ...are added on top of the current namespace as an extension which is used for
+                                // resolving their type later on (the extension always keeps the original name to
+                                // prevent naming collisions)
+                                var ext = new Reflect.Extension(this, this.ptr, fld["name"], field);
+                                field.extension = ext;
+                                this.ptr.addChild(ext);
+                                obj.addChild(field);
+                            }, this);
+
+                        } else if (!/\.?google\.protobuf\./.test(def["ref"])) // Silently skip internal extensions
+                            throw Error("extended message "+def["ref"]+" is not defined");
+
+                    } else
+                        throw Error("not a valid definition: "+JSON.stringify(def));
+
+                    def = null;
+                    obj = null;
+                }
+                // Break goes here
                 defs = null;
-                this.ptr = this.ptr.parent; // This namespace is s done
+                this.ptr = this.ptr.parent; // Namespace done, continue at parent
             }
             this.resolved = false; // Require re-resolve
             this.result = null; // Require re-build
@@ -16154,41 +18589,74 @@ function requestFlush() {
         };
 
         /**
+         * Propagates syntax to all children.
+         * @param {!Object} parent
+         * @inner
+         */
+        function propagateSyntax(parent) {
+            if (parent['messages']) {
+                parent['messages'].forEach(function(child) {
+                    child["syntax"] = parent["syntax"];
+                    propagateSyntax(child);
+                });
+            }
+            if (parent['enums']) {
+                parent['enums'].forEach(function(child) {
+                    child["syntax"] = parent["syntax"];
+                });
+            }
+        }
+
+        /**
          * Imports another definition into this builder.
          * @param {Object.<string,*>} json Parsed import
          * @param {(string|{root: string, file: string})=} filename Imported file name
-         * @return {ProtoBuf.Builder} this
+         * @returns {!ProtoBuf.Builder} this
          * @throws {Error} If the definition or file cannot be imported
          * @expose
          */
         BuilderPrototype["import"] = function(json, filename) {
+            var delim = '/';
+
+            // Make sure to skip duplicate imports
+
             if (typeof filename === 'string') {
+
                 if (ProtoBuf.Util.IS_NODE)
                     filename = require("path")['resolve'](filename);
-                if (this.files[filename] === true) {
-                    this.reset();
-                    return this; // Skip duplicate imports
-                }
+                if (this.files[filename] === true)
+                    return this.reset();
                 this.files[filename] = true;
-            } else if (typeof filename === 'object') { // Assume object with root, filename.
-                var root = filename.root
+
+            } else if (typeof filename === 'object') { // Object with root, file.
+
+                var root = filename.root;
                 if (ProtoBuf.Util.IS_NODE)
                     root = require("path")['resolve'](root);
-                var fname = [root, filename.file].join('/');
-                if (this.files[fname] === true) {
-                  this.reset();
-                  return this; // Skip duplicate imports
-                }
+                if (root.indexOf("\\") >= 0 || filename.file.indexOf("\\") >= 0)
+                    delim = '\\';
+                var fname = root + delim + filename.file;
+                if (this.files[fname] === true)
+                    return this.reset();
                 this.files[fname] = true;
             }
-            if (!!json['imports'] && json['imports'].length > 0) {
-                var importRoot, delim = '/', resetRoot = false;
+
+            // Import imports
+
+            if (json['imports'] && json['imports'].length > 0) {
+                var importRoot,
+                    resetRoot = false;
+
                 if (typeof filename === 'object') { // If an import root is specified, override
+
                     this.importRoot = filename["root"]; resetRoot = true; // ... and reset afterwards
                     importRoot = this.importRoot;
                     filename = filename["file"];
-                    if (importRoot.indexOf("\\") >= 0 || filename.indexOf("\\") >= 0) delim = '\\';
+                    if (importRoot.indexOf("\\") >= 0 || filename.indexOf("\\") >= 0)
+                        delim = '\\';
+
                 } else if (typeof filename === 'string') {
+
                     if (this.importRoot) // If import root is overridden, use it
                         importRoot = this.importRoot;
                     else { // Otherwise compute from filename
@@ -16202,13 +18670,14 @@ function requestFlush() {
                         } else
                             importRoot = ".";
                     }
+
                 } else
                     importRoot = null;
 
                 for (var i=0; i<json['imports'].length; i++) {
                     if (typeof json['imports'][i] === 'string') { // Import file
                         if (!importRoot)
-                            throw Error("Cannot determine import root: File name is unknown");
+                            throw Error("cannot determine import root");
                         var importFilename = json['imports'][i];
                         if (importFilename === "google/protobuf/descriptor.proto")
                             continue; // Not needed and therefore not used
@@ -16219,11 +18688,11 @@ function requestFlush() {
                             importFilename = importFilename.replace(/\.proto$/, ".json"); // always load the JSON file
                         var contents = ProtoBuf.Util.fetch(importFilename);
                         if (contents === null)
-                            throw Error("Failed to import '"+importFilename+"' in '"+filename+"': File not found");
+                            throw Error("failed to import '"+importFilename+"' in '"+filename+"': file not found");
                         if (/\.json$/i.test(importFilename)) // Always possible
                             this["import"](JSON.parse(contents+""), importFilename); // May throw
                         else
-                            this["import"]((new ProtoBuf.DotProto.Parser(contents+"")).parse(), importFilename); // May throw
+                            this["import"](ProtoBuf.DotProto.Parser.parse(contents), importFilename); // May throw
                     } else // Import structure
                         if (!filename)
                             this["import"](json['imports'][i]);
@@ -16235,12 +18704,13 @@ function requestFlush() {
                 if (resetRoot) // Reset import root override when all imports are done
                     this.importRoot = null;
             }
+
+            // Import structures
+
             if (json['package'])
                 this.define(json['package']);
-            if (json['syntax']) {
-                // Propagate syntax to all submessages and subenums
-                propagateSyntax(json['syntax'], json);
-            }
+            if (json['syntax'])
+                propagateSyntax(json);
             var base = this.ptr;
             if (json['options'])
                 Object.keys(json['options']).forEach(function(key) {
@@ -16257,98 +18727,60 @@ function requestFlush() {
                 this.ptr = base;
             if (json['extends'])
                 this.create(json['extends']);
-            this.reset();
-            return this;
-        };
 
-        /**
-         * Tests if a definition is a valid service definition.
-         * @param {Object} def Definition
-         * @return {boolean} true if valid, else false
-         * @expose
-         */
-        Builder.isValidService = function(def) {
-            // Services require a string name and an rpc object
-            return !(typeof def["name"] !== 'string' || !Lang.NAME.test(def["name"]) || typeof def["rpc"] !== 'object');
-        };
-
-        /**
-         * Tests if a definition is a valid extension.
-         * @param {Object} def Definition
-         * @returns {boolean} true if valid, else false
-         * @expose
-        */
-        Builder.isValidExtend = function(def) {
-            if (typeof def["ref"] !== 'string' || !Lang.TYPEREF.test(def["ref"]))
-                return false;
-            var i;
-            if (typeof def["fields"] !== 'undefined') {
-                if (!Array.isArray(def["fields"]))
-                    return false;
-                var ids = [], id; // IDs must be unique (does not yet test for the extended message's ids)
-                for (i=0; i<def["fields"].length; i++) {
-                    if (!Builder.isValidMessageField(def["fields"][i]))
-                        return false;
-                    id = parseInt(def["id"], 10);
-                    if (ids.indexOf(id) >= 0)
-                        return false;
-                    ids.push(id);
-                }
-                ids = null;
-            }
-            return true;
+            return this.reset();
         };
 
         /**
          * Resolves all namespace objects.
          * @throws {Error} If a type cannot be resolved
+         * @returns {!ProtoBuf.Builder} this
          * @expose
          */
         BuilderPrototype.resolveAll = function() {
             // Resolve all reflected objects
             var res;
             if (this.ptr == null || typeof this.ptr.type === 'object')
-                return; // Done (already resolved)
-            if (this.ptr instanceof Reflect.Namespace) {
-                // Build all children
-                var children = this.ptr.children;
-                for (var i= 0, k=children.length; i<k; ++i)
-                    this.ptr = children[i],
+                return this; // Done (already resolved)
+
+            if (this.ptr instanceof Reflect.Namespace) { // Resolve children
+
+                this.ptr.children.forEach(function(child) {
+                    this.ptr = child;
                     this.resolveAll();
-            } else if (this.ptr instanceof Reflect.Message.Field) {
-                if (!Lang.TYPE.test(this.ptr.type)) { // Resolve type...
+                }, this);
+
+            } else if (this.ptr instanceof Reflect.Message.Field) { // Resolve type
+
+                if (!Lang.TYPE.test(this.ptr.type)) {
                     if (!Lang.TYPEREF.test(this.ptr.type))
-                        throw Error("Illegal type reference in "+this.ptr.toString(true)+": "+this.ptr.type);
+                        throw Error("illegal type reference in "+this.ptr.toString(true)+": "+this.ptr.type);
                     res = (this.ptr instanceof Reflect.Message.ExtensionField ? this.ptr.extension.parent : this.ptr.parent).resolve(this.ptr.type, true);
                     if (!res)
-                        throw Error("Unresolvable type reference in "+this.ptr.toString(true)+": "+this.ptr.type);
+                        throw Error("unresolvable type reference in "+this.ptr.toString(true)+": "+this.ptr.type);
                     this.ptr.resolvedType = res;
                     if (res instanceof Reflect.Enum) {
                         this.ptr.type = ProtoBuf.TYPES["enum"];
                         if (this.ptr.syntax === 'proto3' && res.syntax !== 'proto3')
-                            throw Error("Proto3 message refers to proto2 enum; " +
-                                        "this is not allowed due to differing " +
-                                        "enum semantics in proto3");
+                            throw Error("proto3 message cannot reference proto2 enum");
                     }
                     else if (res instanceof Reflect.Message)
                         this.ptr.type = res.isGroup ? ProtoBuf.TYPES["group"] : ProtoBuf.TYPES["message"];
                     else
-                        throw Error("Illegal type reference in "+this.ptr.toString(true)+": "+this.ptr.type);
+                        throw Error("illegal type reference in "+this.ptr.toString(true)+": "+this.ptr.type);
                 } else
                     this.ptr.type = ProtoBuf.TYPES[this.ptr.type];
 
-                // If it's a map field, also resolve the key type. The key type can
-                // be only a numeric, string, or bool type (i.e., no enums or
-                // messages), so we don't need to resolve against the current
-                // namespace.
+                // If it's a map field, also resolve the key type. The key type can be only a numeric, string, or bool type
+                // (i.e., no enums or messages), so we don't need to resolve against the current namespace.
                 if (this.ptr.map) {
                     if (!Lang.TYPE.test(this.ptr.keyType))
-                        throw Error("Illegal key type for map field in "+this.ptr.toString(true)+": "+this.ptr.type);
+                        throw Error("illegal key type for map field in "+this.ptr.toString(true)+": "+this.ptr.keyType);
                     this.ptr.keyType = ProtoBuf.TYPES[this.ptr.keyType];
                 }
-            } else if (this.ptr instanceof ProtoBuf.Reflect.Enum.Value) {
-                // No need to build enum values (built in enum)
+
             } else if (this.ptr instanceof ProtoBuf.Reflect.Service.Method) {
+
                 if (this.ptr instanceof ProtoBuf.Reflect.Service.RPCMethod) {
                     res = this.ptr.parent.resolve(this.ptr.requestName, true);
                     if (!res || !(res instanceof ProtoBuf.Reflect.Message))
@@ -16358,20 +18790,24 @@ function requestFlush() {
                     if (!res || !(res instanceof ProtoBuf.Reflect.Message))
                         throw Error("Illegal type reference in "+this.ptr.toString(true)+": "+this.ptr.responseName);
                     this.ptr.resolvedResponseType = res;
-                } else {
-                    // Should not happen as nothing else is implemented
-                    throw Error("Illegal service type in "+this.ptr.toString(true));
-                }
-            } else if (!(this.ptr instanceof ProtoBuf.Reflect.Message.OneOf) && !(this.ptr instanceof ProtoBuf.Reflect.Extension))
-                throw Error("Illegal object in namespace: "+typeof(this.ptr)+":"+this.ptr);
-            this.reset();
+                } else // Should not happen as nothing else is implemented
+                    throw Error("illegal service type in "+this.ptr.toString(true));
+
+            } else if (
+                !(this.ptr instanceof ProtoBuf.Reflect.Message.OneOf) && // Not built
+                !(this.ptr instanceof ProtoBuf.Reflect.Extension) && // Not built
+                !(this.ptr instanceof ProtoBuf.Reflect.Enum.Value) // Built in enum
+            )
+                throw Error("illegal object in namespace: "+typeof(this.ptr)+": "+this.ptr);
+
+            return this.reset();
         };
 
         /**
          * Builds the protocol. This will first try to resolve all definitions and, if this has been successful,
          * return the built package.
          * @param {(string|Array.<string>)=} path Specifies what to return. If omitted, the entire namespace will be returned.
-         * @return {ProtoBuf.Builder.Message|Object.<string,*>}
+         * @returns {!ProtoBuf.Builder.Message|!Object.<string,*>}
          * @throws {Error} If a type could not be resolved
          * @expose
          */
@@ -16385,25 +18821,23 @@ function requestFlush() {
                 this.result = this.ns.build();
             if (!path)
                 return this.result;
-            else {
-                var part = typeof path === 'string' ? path.split(".") : path,
-                    ptr = this.result; // Build namespace pointer (no hasChild etc.)
-                for (var i=0; i<part.length; i++)
-                    if (ptr[part[i]])
-                        ptr = ptr[part[i]];
-                    else {
-                        ptr = null;
-                        break;
-                    }
-                return ptr;
-            }
+            var part = typeof path === 'string' ? path.split(".") : path,
+                ptr = this.result; // Build namespace pointer (no hasChild etc.)
+            for (var i=0; i<part.length; i++)
+                if (ptr[part[i]])
+                    ptr = ptr[part[i]];
+                else {
+                    ptr = null;
+                    break;
+                }
+            return ptr;
         };
 
         /**
          * Similar to {@link ProtoBuf.Builder#build}, but looks up the internal reflection descriptor.
          * @param {string=} path Specifies what to return. If omitted, the entire namespace wiil be returned.
          * @param {boolean=} excludeNonNamespace Excludes non-namespace types like fields, defaults to `false`
-         * @return {ProtoBuf.Reflect.T} Reflection descriptor or `null` if not found
+         * @returns {?ProtoBuf.Reflect.T} Reflection descriptor or `null` if not found
          */
         BuilderPrototype.lookup = function(path, excludeNonNamespace) {
             return path ? this.ns.resolve(path, excludeNonNamespace) : this.ns;
@@ -16418,9 +18852,22 @@ function requestFlush() {
             return "Builder";
         };
 
-        // Pseudo types documented in Reflect.js.
+        // ----- Base classes -----
         // Exist for the sole purpose of being able to "... instanceof ProtoBuf.Builder.Message" etc.
+
+        /**
+         * @alias ProtoBuf.Builder.Message
+         */
         Builder.Message = function() {};
+
+        /**
+         * @alias ProtoBuf.Builder.Enum
+         */
+        Builder.Enum = function() {};
+
+        /**
+         * @alias ProtoBuf.Builder.Message
+         */
         Builder.Service = function() {};
 
         return Builder;
@@ -16701,7 +19148,7 @@ function requestFlush() {
 });
 
 }).call(this,require('_process'))
-},{"_process":19,"bytebuffer":40,"fs":15,"path":18}],40:[function(require,module,exports){
+},{"_process":16,"bytebuffer":37,"fs":15,"path":15}],37:[function(require,module,exports){
 /*
  Copyright 2013-2014 Daniel Wirtz <dcode@dcode.io>
 
@@ -16828,7 +19275,7 @@ function requestFlush() {
      * @const
      * @expose
      */
-    ByteBuffer.VERSION = "4.0.0";
+    ByteBuffer.VERSION = "4.1.0";
 
     /**
      * Little endian constant that can be used instead of its boolean value. Evaluates to `true`.
@@ -18230,46 +20677,22 @@ function requestFlush() {
         if (offset > capacity10)
             this.resize((capacity10 *= 2) > offset ? capacity10 : offset);
         offset -= size;
-        // ref: http://code.google.com/searchframe#WTeibokF6gE/trunk/src/google/protobuf/io/coded_stream.cc
-        this.view[offset] = b = value | 0x80;
         value >>>= 0;
-        if (value >= 1 << 7) {
-            b = (value >> 7) | 0x80;
-            this.view[offset+1] = b;
-            if (value >= 1 << 14) {
-                b = (value >> 14) | 0x80;
-                this.view[offset+2] = b;
-                if (value >= 1 << 21) {
-                    b = (value >> 21) | 0x80;
-                    this.view[offset+3] = b;
-                    if (value >= 1 << 28) {
-                        this.view[offset+4] = (value >> 28) & 0x0F;
-                        size = 5;
-                    } else {
-                        this.view[offset+3] = b & 0x7F;
-                        size = 4;
-                    }
-                } else {
-                    this.view[offset+2] = b & 0x7F;
-                    size = 3;
-                }
-            } else {
-                this.view[offset+1] = b & 0x7F;
-                size = 2;
-            }
-        } else {
-            this.view[offset] = b & 0x7F;
-            size = 1;
+        while (value >= 0x80) {
+            b = (value & 0x7f) | 0x80;
+            this.view[offset++] = b;
+            value >>>= 7;
         }
+        this.view[offset++] = value;
         if (relative) {
-            this.offset += size;
+            this.offset = offset;
             return this;
         }
         return size;
     };
 
     /**
-     * Writes a zig-zag encoded 32bit base 128 variable-length integer.
+     * Writes a zig-zag encoded (signed) 32bit base 128 variable-length integer.
      * @param {number} value Value to write
      * @param {number=} offset Offset to write to. Will use and increase {@link ByteBuffer#offset} by the number of bytes
      *  written if omitted.
@@ -18300,36 +20723,33 @@ function requestFlush() {
             if (offset < 0 || offset + 1 > this.buffer.byteLength)
                 throw RangeError("Illegal offset: 0 <= "+offset+" (+"+1+") <= "+this.buffer.byteLength);
         }
-        // ref: src/google/protobuf/io/coded_stream.cc
-        var size = 0,
+        var c = 0,
             value = 0 >>> 0,
-            temp,
-            ioffset;
+            b;
         do {
-            ioffset = offset+size;
-            if (!this.noAssert && ioffset > this.limit) {
+            if (!this.noAssert && offset > this.limit) {
                 var err = Error("Truncated");
                 err['truncated'] = true;
                 throw err;
             }
-            temp = this.view[ioffset];
-            if (size < 5)
-                value |= ((temp&0x7F)<<(7*size)) >>> 0;
-            ++size;
-        } while ((temp & 0x80) === 0x80);
-        value = value | 0; // Make sure to discard the higher order bits
+            b = this.view[offset++];
+            if (c < 5)
+                value |= (b & 0x7f) << (7*c);
+            ++c;
+        } while ((b & 0x80) !== 0);
+        value |= 0;
         if (relative) {
-            this.offset += size;
+            this.offset = offset;
             return value;
         }
         return {
             "value": value,
-            "length": size
+            "length": c
         };
     };
 
     /**
-     * Reads a zig-zag encoded 32bit base 128 variable-length integer.
+     * Reads a zig-zag encoded (signed) 32bit base 128 variable-length integer.
      * @param {number=} offset Offset to read from. Will use and increase {@link ByteBuffer#offset} by the number of bytes
      *  written if omitted.
      * @returns {number|!{value: number, length: number}} The value read if offset is omitted, else the value read
@@ -19102,7 +21522,6 @@ function requestFlush() {
     ByteBufferPrototype.capacity = function() {
         return this.buffer.byteLength;
     };
-
     /**
      * Clears this ByteBuffer's offsets by setting {@link ByteBuffer#offset} to `0` and {@link ByteBuffer#limit} to the
      *  backing buffer's capacity. Discards {@link ByteBuffer#markedOffset}.
@@ -19783,6 +22202,7 @@ function requestFlush() {
      * @param {number=} begin Offset to begin at, defaults to {@link ByteBuffer#offset}.
      * @param {number=} end Offset to end at, defaults to {@link ByteBuffer#limit}.
      * @returns {string} Base64 encoded string
+     * @throws {RangeError} If `begin` or `end` is out of bounds
      * @expose
      */
     ByteBufferPrototype.toBase64 = function(begin, end) {
@@ -19790,16 +22210,9 @@ function requestFlush() {
             begin = this.offset;
         if (typeof end === 'undefined')
             end = this.limit;
-        if (!this.noAssert) {
-            if (typeof begin !== 'number' || begin % 1 !== 0)
-                throw TypeError("Illegal begin: Not an integer");
-            begin >>>= 0;
-            if (typeof end !== 'number' || end % 1 !== 0)
-                throw TypeError("Illegal end: Not an integer");
-            end >>>= 0;
-            if (begin < 0 || begin > end || end > this.buffer.byteLength)
-                throw RangeError("Illegal range: 0 <= "+begin+" <= "+end+" <= "+this.buffer.byteLength);
-        }
+        begin = begin | 0; end = end | 0;
+        if (begin < 0 || end > this.capacity || begin > end)
+            throw RangeError("begin, end");
         var sd; lxiv.encode(function() {
             return begin < end ? this.view[begin++] : null;
         }.bind(this), sd = stringDestination());
@@ -19811,19 +22224,13 @@ function requestFlush() {
      * @param {string} str String to decode
      * @param {boolean=} littleEndian Whether to use little or big endian byte order. Defaults to
      *  {@link ByteBuffer.DEFAULT_ENDIAN}.
-     * @param {boolean=} noAssert Whether to skip assertions of offsets and values. Defaults to
-     *  {@link ByteBuffer.DEFAULT_NOASSERT}.
      * @returns {!ByteBuffer} ByteBuffer
      * @expose
      */
-    ByteBuffer.fromBase64 = function(str, littleEndian, noAssert) {
-        if (!noAssert) {
-            if (typeof str !== 'string')
-                throw TypeError("Illegal str: Not a string");
-            if (str.length % 4 !== 0)
-                throw TypeError("Illegal str: Length not a multiple of 4");
-        }
-        var bb = new ByteBuffer(str.length/4*3, littleEndian, noAssert),
+    ByteBuffer.fromBase64 = function(str, littleEndian) {
+        if (typeof str !== 'string')
+            throw TypeError("str");
+        var bb = new ByteBuffer(str.length/4*3, littleEndian),
             i = 0;
         lxiv.decode(stringSource(str), function(b) {
             bb.view[i++] = b;
@@ -19865,28 +22272,24 @@ function requestFlush() {
      * @expose
      */
     ByteBufferPrototype.toBinary = function(begin, end) {
-        begin = typeof begin === 'undefined' ? this.offset : begin;
-        end = typeof end === 'undefined' ? this.limit : end;
-        if (!this.noAssert) {
-            if (typeof begin !== 'number' || begin % 1 !== 0)
-                throw TypeError("Illegal begin: Not an integer");
-            begin >>>= 0;
-            if (typeof end !== 'number' || end % 1 !== 0)
-                throw TypeError("Illegal end: Not an integer");
-            end >>>= 0;
-            if (begin < 0 || begin > end || end > this.buffer.byteLength)
-                throw RangeError("Illegal range: 0 <= "+begin+" <= "+end+" <= "+this.buffer.byteLength);
-        }
+        if (typeof begin === 'undefined')
+            begin = this.offset;
+        if (typeof end === 'undefined')
+            end = this.limit;
+        begin |= 0; end |= 0;
+        if (begin < 0 || end > this.capacity() || begin > end)
+            throw RangeError("begin, end");
         if (begin === end)
             return "";
-        var cc = [], pt = [];
+        var chars = [],
+            parts = [];
         while (begin < end) {
-            cc.push(this.view[begin++]);
-            if (cc.length >= 1024)
-                pt.push(String.fromCharCode.apply(String, cc)),
-                cc = [];
+            chars.push(this.view[begin++]);
+            if (chars.length >= 1024)
+                parts.push(String.fromCharCode.apply(String, chars)),
+                chars = [];
         }
-        return pt.join('') + String.fromCharCode.apply(String, cc);
+        return parts.join('') + String.fromCharCode.apply(String, chars);
     };
 
     /**
@@ -19894,22 +22297,20 @@ function requestFlush() {
      * @param {string} str String to decode
      * @param {boolean=} littleEndian Whether to use little or big endian byte order. Defaults to
      *  {@link ByteBuffer.DEFAULT_ENDIAN}.
-     * @param {boolean=} noAssert Whether to skip assertions of offsets and values. Defaults to
-     *  {@link ByteBuffer.DEFAULT_NOASSERT}.
      * @returns {!ByteBuffer} ByteBuffer
      * @expose
      */
-    ByteBuffer.fromBinary = function(str, littleEndian, noAssert) {
-        if (!noAssert) {
-            if (typeof str !== 'string')
-                throw TypeError("Illegal str: Not a string");
-        }
-        var i = 0, k = str.length, charCode,
-            bb = new ByteBuffer(k, littleEndian, noAssert);
+    ByteBuffer.fromBinary = function(str, littleEndian) {
+        if (typeof str !== 'string')
+            throw TypeError("str");
+        var i = 0,
+            k = str.length,
+            charCode,
+            bb = new ByteBuffer(k, littleEndian);
         while (i<k) {
             charCode = str.charCodeAt(i);
-            if (!noAssert && charCode > 255)
-                throw RangeError("Illegal charCode at "+i+": 0 <= "+charCode+" <= 255");
+            if (charCode > 0xff)
+                throw RangeError("illegal char code: "+charCode);
             bb.view[i++] = charCode;
         }
         bb.limit = k;
@@ -19947,9 +22348,8 @@ function requestFlush() {
                 b = this.view[i];
                 if (b < 0x10) hex += "0"+b.toString(16).toUpperCase();
                 else hex += b.toString(16).toUpperCase();
-                if (columns) {
+                if (columns)
                     asc += b > 32 && b < 127 ? String.fromCharCode(b) : '.';
-                }
             }
             ++i;
             if (columns) {
@@ -19969,8 +22369,9 @@ function requestFlush() {
                 hex += i === this.markedOffset ? "'" : (columns || (i !== 0 && i !== k) ? " " : "");
         }
         if (columns && hex !== " ") {
-            while (hex.length < 3*16+3) hex += " ";
-            out += hex+asc+"\n";
+            while (hex.length < 3*16+3)
+                hex += " ";
+            out += hex + asc + "\n";
         }
         return columns ? out : hex;
     };
@@ -19991,14 +22392,15 @@ function requestFlush() {
             bb = new ByteBuffer(((k+1)/3)|0, littleEndian, noAssert);
         var i = 0, j = 0, ch, b,
             rs = false, // Require symbol next
-            ho = false, hm = false, hl = false, // Already has offset, markedOffset, limit?
+            ho = false, hm = false, hl = false, // Already has offset (ho), markedOffset (hm), limit (hl)?
             fail = false;
         while (i<k) {
             switch (ch = str.charAt(i++)) {
                 case '!':
                     if (!noAssert) {
                         if (ho || hm || hl) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         ho = hm = hl = true;
                     }
@@ -20008,7 +22410,8 @@ function requestFlush() {
                 case '|':
                     if (!noAssert) {
                         if (ho || hl) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         ho = hl = true;
                     }
@@ -20018,7 +22421,8 @@ function requestFlush() {
                 case '[':
                     if (!noAssert) {
                         if (ho || hm) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         ho = hm = true;
                     }
@@ -20028,7 +22432,8 @@ function requestFlush() {
                 case '<':
                     if (!noAssert) {
                         if (ho) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         ho = true;
                     }
@@ -20038,7 +22443,8 @@ function requestFlush() {
                 case ']':
                     if (!noAssert) {
                         if (hl || hm) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         hl = hm = true;
                     }
@@ -20048,7 +22454,8 @@ function requestFlush() {
                 case '>':
                     if (!noAssert) {
                         if (hl) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         hl = true;
                     }
@@ -20058,7 +22465,8 @@ function requestFlush() {
                 case "'":
                     if (!noAssert) {
                         if (hm) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                         hm = true;
                     }
@@ -20071,7 +22479,8 @@ function requestFlush() {
                 default:
                     if (!noAssert) {
                         if (rs) {
-                            fail = true; break;
+                            fail = true;
+                            break;
                         }
                     }
                     b = parseInt(ch+str.charAt(i++), 16);
@@ -20416,7 +22825,7 @@ function requestFlush() {
     return ByteBuffer;
 });
 
-},{"long":41}],41:[function(require,module,exports){
+},{"long":38}],38:[function(require,module,exports){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
  Copyright 2009 The Closure Library Authors. All Rights Reserved.
@@ -20439,7 +22848,16 @@ function requestFlush() {
  * Released under the Apache License, Version 2.0
  * see: https://github.com/dcodeIO/Long.js for details
  */
-(function(global) {
+(function(global, factory) {
+
+    /* AMD */ if (typeof define === 'function' && define["amd"])
+        define([], factory);
+    /* CommonJS */ else if (typeof require === 'function' && typeof module === "object" && module && module["exports"])
+        module["exports"] = factory();
+    /* Global */ else
+        (global["dcodeIO"] = global["dcodeIO"] || {})["Long"] = factory();
+
+})(this, function() {
     "use strict";
 
     /**
@@ -20452,7 +22870,7 @@ function requestFlush() {
      * @param {boolean=} unsigned Whether unsigned or not, defaults to `false` for signed
      * @constructor
      */
-    var Long = function(low, high, unsigned) {
+    function Long(low, high, unsigned) {
 
         /**
          * The low 32 bits as a signed value.
@@ -20474,7 +22892,7 @@ function requestFlush() {
          * @expose
          */
         this.unsigned = !!unsigned;
-    };
+    }
 
     // The internal representation of a long is the two given signed, 32-bit values.
     // We use 32-bit pieces because these are the size of integers on which
@@ -20494,13 +22912,28 @@ function requestFlush() {
     // methods on which they depend.
 
     /**
+     * An indicator used to reliably determine if an object is a Long or not.
+     * @type {boolean}
+     * @const
+     * @expose
+     * @private
+     */
+    Long.__isLong__;
+
+    Object.defineProperty(Long.prototype, "__isLong__", {
+        value: true,
+        enumerable: false,
+        configurable: false
+    });
+
+    /**
      * Tests if the specified object is a Long.
      * @param {*} obj Object
      * @returns {boolean}
      * @expose
      */
-    Long.isLong = function(obj) {
-        return (obj && obj instanceof Long) === true;
+    Long.isLong = function isLong(obj) {
+        return (obj && obj["__isLong__"]) === true;
     };
 
     /**
@@ -20524,7 +22957,7 @@ function requestFlush() {
      * @returns {!Long} The corresponding Long value
      * @expose
      */
-    Long.fromInt = function(value, unsigned) {
+    Long.fromInt = function fromInt(value, unsigned) {
         var obj, cachedObj;
         if (!unsigned) {
             value = value | 0;
@@ -20558,7 +22991,7 @@ function requestFlush() {
      * @returns {!Long} The corresponding Long value
      * @expose
      */
-    Long.fromNumber = function(value, unsigned) {
+    Long.fromNumber = function fromNumber(value, unsigned) {
         unsigned = !!unsigned;
         if (isNaN(value) || !isFinite(value))
             return Long.ZERO;
@@ -20582,7 +23015,7 @@ function requestFlush() {
      * @returns {!Long} The corresponding Long value
      * @expose
      */
-    Long.fromBits = function(lowBits, highBits, unsigned) {
+    Long.fromBits = function fromBits(lowBits, highBits, unsigned) {
         return new Long(lowBits, highBits, unsigned);
     };
 
@@ -20594,7 +23027,7 @@ function requestFlush() {
      * @returns {!Long} The corresponding Long value
      * @expose
      */
-    Long.fromString = function(str, unsigned, radix) {
+    Long.fromString = function fromString(str, unsigned, radix) {
         if (str.length === 0)
             throw Error('number format error: empty string');
         if (str === "NaN" || str === "Infinity" || str === "+Infinity" || str === "-Infinity")
@@ -20638,14 +23071,14 @@ function requestFlush() {
      * @returns {!Long}
      * @expose
      */
-    Long.fromValue = function(val) {
+    Long.fromValue = function fromValue(val) {
+        if (val /* is compatible */ instanceof Long)
+            return val;
         if (typeof val === 'number')
             return Long.fromNumber(val);
         if (typeof val === 'string')
             return Long.fromString(val);
-        if (Long.isLong(val))
-            return val;
-        // Throws for not an object (undefined, null):
+        // Throws for non-objects, converts non-instanceof Long:
         return new Long(val.low, val.high, val.unsigned);
     };
 
@@ -20755,7 +23188,7 @@ function requestFlush() {
      * @returns {number}
      * @expose
      */
-    Long.prototype.toInt = function() {
+    Long.prototype.toInt = function toInt() {
         return this.unsigned ? this.low >>> 0 : this.low;
     };
 
@@ -20764,7 +23197,7 @@ function requestFlush() {
      * @returns {number}
      * @expose
      */
-    Long.prototype.toNumber = function() {
+    Long.prototype.toNumber = function toNumber() {
         if (this.unsigned) {
             return ((this.high >>> 0) * TWO_PWR_32_DBL) + (this.low >>> 0);
         }
@@ -20779,7 +23212,7 @@ function requestFlush() {
      * @throws {RangeError} If `radix` is out of range
      * @expose
      */
-    Long.prototype.toString = function(radix) {
+    Long.prototype.toString = function toString(radix) {
         radix = radix || 10;
         if (radix < 2 || 36 < radix)
             throw RangeError('radix out of range: ' + radix);
@@ -20791,7 +23224,7 @@ function requestFlush() {
                 // We need to change the Long value before it can be negated, so we remove
                 // the bottom-most digit in this base and then recurse to do the rest.
                 var radixLong = Long.fromNumber(radix);
-                var div = this.div(radixLong);
+                var div = this.divide(radixLong);
                 rem = div.multiply(radixLong).subtract(this);
                 return div.toString(radix) + rem.toInt().toString(radix);
             } else
@@ -20804,7 +23237,7 @@ function requestFlush() {
         rem = this;
         var result = '';
         while (true) {
-            var remDiv = rem.div(radixToPower),
+            var remDiv = rem.divide(radixToPower),
                 intval = rem.subtract(remDiv.multiply(radixToPower)).toInt() >>> 0,
                 digits = intval.toString(radix);
             rem = remDiv;
@@ -20823,7 +23256,7 @@ function requestFlush() {
      * @returns {number} Signed high bits
      * @expose
      */
-    Long.prototype.getHighBits = function() {
+    Long.prototype.getHighBits = function getHighBits() {
         return this.high;
     };
 
@@ -20832,7 +23265,7 @@ function requestFlush() {
      * @returns {number} Unsigned high bits
      * @expose
      */
-    Long.prototype.getHighBitsUnsigned = function() {
+    Long.prototype.getHighBitsUnsigned = function getHighBitsUnsigned() {
         return this.high >>> 0;
     };
 
@@ -20841,7 +23274,7 @@ function requestFlush() {
      * @returns {number} Signed low bits
      * @expose
      */
-    Long.prototype.getLowBits = function() {
+    Long.prototype.getLowBits = function getLowBits() {
         return this.low;
     };
 
@@ -20850,7 +23283,7 @@ function requestFlush() {
      * @returns {number} Unsigned low bits
      * @expose
      */
-    Long.prototype.getLowBitsUnsigned = function() {
+    Long.prototype.getLowBitsUnsigned = function getLowBitsUnsigned() {
         return this.low >>> 0;
     };
 
@@ -20859,7 +23292,7 @@ function requestFlush() {
      * @returns {number}
      * @expose
      */
-    Long.prototype.getNumBitsAbs = function() {
+    Long.prototype.getNumBitsAbs = function getNumBitsAbs() {
         if (this.isNegative()) // Unsigned Longs are never negative
             return this.equals(Long.MIN_VALUE) ? 64 : this.negate().getNumBitsAbs();
         var val = this.high != 0 ? this.high : this.low;
@@ -20874,7 +23307,7 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.isZero = function() {
+    Long.prototype.isZero = function isZero() {
         return this.high === 0 && this.low === 0;
     };
 
@@ -20883,7 +23316,7 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.isNegative = function() {
+    Long.prototype.isNegative = function isNegative() {
         return !this.unsigned && this.high < 0;
     };
 
@@ -20892,7 +23325,7 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.isPositive = function() {
+    Long.prototype.isPositive = function isPositive() {
         return this.unsigned || this.high >= 0;
     };
 
@@ -20901,7 +23334,7 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.isOdd = function() {
+    Long.prototype.isOdd = function isOdd() {
         return (this.low & 1) === 1;
     };
 
@@ -20910,7 +23343,7 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.isEven = function() {
+    Long.prototype.isEven = function isEven() {
         return (this.low & 1) === 0;
     };
 
@@ -20920,7 +23353,7 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.equals = function(other) {
+    Long.prototype.equals = function equals(other) {
         if (!Long.isLong(other))
             other = Long.fromValue(other);
         if (this.unsigned !== other.unsigned && (this.high >>> 31) === 1 && (other.high >>> 31) === 1)
@@ -20929,16 +23362,32 @@ function requestFlush() {
     };
 
     /**
+     * Tests if this Long's value equals the specified's. This is an alias of {@link Long#equals}.
+     * @function
+     * @param {!Long|number|string} other Other value
+     * @returns {boolean}
+     * @expose
+     */
+    Long.eq = Long.prototype.equals;
+
+    /**
      * Tests if this Long's value differs from the specified's.
      * @param {!Long|number|string} other Other value
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.notEquals = function(other) {
-        if (!Long.isLong(other))
-            other = Long.fromValue(other);
-        return !this.equals(other);
+    Long.prototype.notEquals = function notEquals(other) {
+        return !this.equals(/* validates */ other);
     };
+
+    /**
+     * Tests if this Long's value differs from the specified's. This is an alias of {@link Long#notEquals}.
+     * @function
+     * @param {!Long|number|string} other Other value
+     * @returns {boolean}
+     * @expose
+     */
+    Long.neq = Long.prototype.notEquals;
 
     /**
      * Tests if this Long's value is less than the specified's.
@@ -20946,11 +23395,18 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.lessThan = function(other) {
-        if (!Long.isLong(other))
-            other = Long.fromValue(other);
-        return this.compare(other) < 0;
+    Long.prototype.lessThan = function lessThan(other) {
+        return this.compare(/* validates */ other) < 0;
     };
+
+    /**
+     * Tests if this Long's value is less than the specified's. This is an alias of {@link Long#lessThan}.
+     * @function
+     * @param {!Long|number|string} other Other value
+     * @returns {boolean}
+     * @expose
+     */
+    Long.prototype.lt = Long.prototype.lessThan;
 
     /**
      * Tests if this Long's value is less than or equal the specified's.
@@ -20958,11 +23414,18 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.lessThanOrEqual = function(other) {
-        if (!Long.isLong(other))
-            other = Long.fromValue(other);
-        return this.compare(other) <= 0;
+    Long.prototype.lessThanOrEqual = function lessThanOrEqual(other) {
+        return this.compare(/* validates */ other) <= 0;
     };
+
+    /**
+     * Tests if this Long's value is less than or equal the specified's. This is an alias of {@link Long#lessThanOrEqual}.
+     * @function
+     * @param {!Long|number|string} other Other value
+     * @returns {boolean}
+     * @expose
+     */
+    Long.prototype.lte = Long.prototype.lessThanOrEqual;
 
     /**
      * Tests if this Long's value is greater than the specified's.
@@ -20970,11 +23433,18 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.greaterThan = function(other) {
-        if (!Long.isLong(other))
-            other = Long.fromValue(other);
-        return this.compare(other) > 0;
+    Long.prototype.greaterThan = function greaterThan(other) {
+        return this.compare(/* validates */ other) > 0;
     };
+
+    /**
+     * Tests if this Long's value is greater than the specified's. This is an alias of {@link Long#greaterThan}.
+     * @function
+     * @param {!Long|number|string} other Other value
+     * @returns {boolean}
+     * @expose
+     */
+    Long.prototype.gt = Long.prototype.greaterThan;
 
     /**
      * Tests if this Long's value is greater than or equal the specified's.
@@ -20982,11 +23452,18 @@ function requestFlush() {
      * @returns {boolean}
      * @expose
      */
-    Long.prototype.greaterThanOrEqual = function(other) {
-        if (!Long.isLong(other))
-            other = Long.fromValue(other);
-        return this.compare(other) >= 0;
+    Long.prototype.greaterThanOrEqual = function greaterThanOrEqual(other) {
+        return this.compare(/* validates */ other) >= 0;
     };
+
+    /**
+     * Tests if this Long's value is greater than or equal the specified's. This is an alias of {@link Long#greaterThanOrEqual}.
+     * @function
+     * @param {!Long|number|string} other Other value
+     * @returns {boolean}
+     * @expose
+     */
+    Long.prototype.gte = Long.prototype.greaterThanOrEqual;
 
     /**
      * Compares this Long's value with the specified's.
@@ -20995,7 +23472,9 @@ function requestFlush() {
      *  if the given one is greater
      * @expose
      */
-    Long.prototype.compare = function(other) {
+    Long.prototype.compare = function compare(other) {
+        if (!Long.isLong(other))
+            other = Long.fromValue(other);
         if (this.equals(other))
             return 0;
         var thisNeg = this.isNegative(),
@@ -21016,11 +23495,19 @@ function requestFlush() {
      * @returns {!Long} Negated Long
      * @expose
      */
-    Long.prototype.negate = function() {
+    Long.prototype.negate = function negate() {
         if (!this.unsigned && this.equals(Long.MIN_VALUE))
             return Long.MIN_VALUE;
         return this.not().add(Long.ONE);
     };
+
+    /**
+     * Negates this Long's value. This is an alias of {@link Long#negate}.
+     * @function
+     * @returns {!Long} Negated Long
+     * @expose
+     */
+    Long.prototype.neg = Long.prototype.negate;
 
     /**
      * Returns the sum of this and the specified Long.
@@ -21028,7 +23515,7 @@ function requestFlush() {
      * @returns {!Long} Sum
      * @expose
      */
-    Long.prototype.add = function(addend) {
+    Long.prototype.add = function add(addend) {
         if (!Long.isLong(addend))
             addend = Long.fromValue(addend);
 
@@ -21065,11 +23552,20 @@ function requestFlush() {
      * @returns {!Long} Difference
      * @expose
      */
-    Long.prototype.subtract = function(subtrahend) {
+    Long.prototype.subtract = function subtract(subtrahend) {
         if (!Long.isLong(subtrahend))
             subtrahend = Long.fromValue(subtrahend);
         return this.add(subtrahend.negate());
     };
+
+    /**
+     * Returns the difference of this and the specified Long. This is an alias of {@link Long#subtract}.
+     * @function
+     * @param {!Long|number|string} subtrahend Subtrahend
+     * @returns {!Long} Difference
+     * @expose
+     */
+    Long.prototype.sub = Long.prototype.subtract;
 
     /**
      * Returns the product of this and the specified Long.
@@ -21077,7 +23573,7 @@ function requestFlush() {
      * @returns {!Long} Product
      * @expose
      */
-    Long.prototype.multiply = function(multiplier) {
+    Long.prototype.multiply = function multiply(multiplier) {
         if (this.isZero())
             return Long.ZERO;
         if (!Long.isLong(multiplier))
@@ -21139,12 +23635,21 @@ function requestFlush() {
     };
 
     /**
+     * Returns the product of this and the specified Long. This is an alias of {@link Long#multiply}.
+     * @function
+     * @param {!Long|number|string} multiplier Multiplier
+     * @returns {!Long} Product
+     * @expose
+     */
+    Long.prototype.mul = Long.prototype.multiply;
+
+    /**
      * Returns this Long divided by the specified.
      * @param {!Long|number|string} divisor Divisor
      * @returns {!Long} Quotient
      * @expose
      */
-    Long.prototype.div = function(divisor) {
+    Long.prototype.divide = function divide(divisor) {
         if (!Long.isLong(divisor))
             divisor = Long.fromValue(divisor);
         if (divisor.isZero())
@@ -21160,12 +23665,12 @@ function requestFlush() {
             else {
                 // At this point, we have |other| >= 2, so |this/other| < |MIN_VALUE|.
                 var halfThis = this.shiftRight(1);
-                approx = halfThis.div(divisor).shiftLeft(1);
+                approx = halfThis.divide(divisor).shiftLeft(1);
                 if (approx.equals(Long.ZERO)) {
                     return divisor.isNegative() ? Long.ONE : Long.NEG_ONE;
                 } else {
                     rem = this.subtract(divisor.multiply(approx));
-                    res = approx.add(rem.div(divisor));
+                    res = approx.add(rem.divide(divisor));
                     return res;
                 }
             }
@@ -21173,10 +23678,10 @@ function requestFlush() {
             return this.unsigned ? Long.UZERO : Long.ZERO;
         if (this.isNegative()) {
             if (divisor.isNegative())
-                return this.negate().div(divisor.negate());
-            return this.negate().div(divisor).negate();
+                return this.negate().divide(divisor.negate());
+            return this.negate().divide(divisor).negate();
         } else if (divisor.isNegative())
-            return this.div(divisor.negate()).negate();
+            return this.divide(divisor.negate()).negate();
 
         // Repeat the following until the remainder is less than other:  find a
         // floating-point that approximates remainder / other *from below*, add this
@@ -21217,23 +23722,41 @@ function requestFlush() {
     };
 
     /**
+     * Returns this Long divided by the specified. This is an alias of {@link Long#divide}.
+     * @function
+     * @param {!Long|number|string} divisor Divisor
+     * @returns {!Long} Quotient
+     * @expose
+     */
+    Long.prototype.div = Long.prototype.divide;
+
+    /**
      * Returns this Long modulo the specified.
      * @param {!Long|number|string} divisor Divisor
      * @returns {!Long} Remainder
      * @expose
      */
-    Long.prototype.modulo = function(divisor) {
+    Long.prototype.modulo = function modulo(divisor) {
         if (!Long.isLong(divisor))
             divisor = Long.fromValue(divisor);
-        return this.subtract(this.div(divisor).multiply(divisor));
+        return this.subtract(this.divide(divisor).multiply(divisor));
     };
+
+    /**
+     * Returns this Long modulo the specified. This is an alias of {@link Long#modulo}.
+     * @function
+     * @param {!Long|number|string} divisor Divisor
+     * @returns {!Long} Remainder
+     * @expose
+     */
+    Long.prototype.mod = Long.prototype.modulo;
 
     /**
      * Returns the bitwise NOT of this Long.
      * @returns {!Long}
      * @expose
      */
-    Long.prototype.not = function() {
+    Long.prototype.not = function not() {
         return Long.fromBits(~this.low, ~this.high, this.unsigned);
     };
 
@@ -21243,7 +23766,7 @@ function requestFlush() {
      * @returns {!Long}
      * @expose
      */
-    Long.prototype.and = function(other) {
+    Long.prototype.and = function and(other) {
         if (!Long.isLong(other))
             other = Long.fromValue(other);
         return Long.fromBits(this.low & other.low, this.high & other.high, this.unsigned);
@@ -21255,7 +23778,7 @@ function requestFlush() {
      * @returns {!Long}
      * @expose
      */
-    Long.prototype.or = function(other) {
+    Long.prototype.or = function or(other) {
         if (!Long.isLong(other))
             other = Long.fromValue(other);
         return Long.fromBits(this.low | other.low, this.high | other.high, this.unsigned);
@@ -21267,7 +23790,7 @@ function requestFlush() {
      * @returns {!Long}
      * @expose
      */
-    Long.prototype.xor = function(other) {
+    Long.prototype.xor = function xor(other) {
         if (!Long.isLong(other))
             other = Long.fromValue(other);
         return Long.fromBits(this.low ^ other.low, this.high ^ other.high, this.unsigned);
@@ -21279,7 +23802,7 @@ function requestFlush() {
      * @returns {!Long} Shifted Long
      * @expose
      */
-    Long.prototype.shiftLeft = function(numBits) {
+    Long.prototype.shiftLeft = function shiftLeft(numBits) {
         if (Long.isLong(numBits))
             numBits = numBits.toInt();
         if ((numBits &= 63) === 0)
@@ -21291,12 +23814,21 @@ function requestFlush() {
     };
 
     /**
+     * Returns this Long with bits shifted to the left by the given amount. This is an alias of {@link Long#shiftLeft}.
+     * @function
+     * @param {number|!Long} numBits Number of bits
+     * @returns {!Long} Shifted Long
+     * @expose
+     */
+    Long.prototype.shl = Long.prototype.shiftLeft;
+
+    /**
      * Returns this Long with bits arithmetically shifted to the right by the given amount.
      * @param {number|!Long} numBits Number of bits
      * @returns {!Long} Shifted Long
      * @expose
      */
-    Long.prototype.shiftRight = function(numBits) {
+    Long.prototype.shiftRight = function shiftRight(numBits) {
         if (Long.isLong(numBits))
             numBits = numBits.toInt();
         if ((numBits &= 63) === 0)
@@ -21308,12 +23840,21 @@ function requestFlush() {
     };
 
     /**
+     * Returns this Long with bits arithmetically shifted to the right by the given amount. This is an alias of {@link Long#shiftRight}.
+     * @function
+     * @param {number|!Long} numBits Number of bits
+     * @returns {!Long} Shifted Long
+     * @expose
+     */
+    Long.prototype.shr = Long.prototype.shiftRight;
+
+    /**
      * Returns this Long with bits logically shifted to the right by the given amount.
      * @param {number|!Long} numBits Number of bits
      * @returns {!Long} Shifted Long
      * @expose
      */
-    Long.prototype.shiftRightUnsigned = function(numBits) {
+    Long.prototype.shiftRightUnsigned = function shiftRightUnsigned(numBits) {
         if (Long.isLong(numBits))
             numBits = numBits.toInt();
         numBits &= 63;
@@ -21332,11 +23873,20 @@ function requestFlush() {
     };
 
     /**
+     * Returns this Long with bits logically shifted to the right by the given amount. This is an alias of {@link Long#shiftRightUnsigned}.
+     * @function
+     * @param {number|!Long} numBits Number of bits
+     * @returns {!Long} Shifted Long
+     * @expose
+     */
+    Long.prototype.shru = Long.prototype.shiftRightUnsigned;
+
+    /**
      * Converts this Long to signed.
      * @returns {!Long} Signed long
      * @expose
      */
-    Long.prototype.toSigned = function() {
+    Long.prototype.toSigned = function toSigned() {
         if (!this.unsigned)
             return this;
         return new Long(this.low, this.high, false);
@@ -21347,123 +23897,14 @@ function requestFlush() {
      * @returns {!Long} Unsigned long
      * @expose
      */
-    Long.prototype.toUnsigned = function() {
+    Long.prototype.toUnsigned = function toUnsigned() {
         if (this.unsigned)
             return this;
         return new Long(this.low, this.high, true);
     };
 
-    /* CommonJS */ if (typeof require === 'function' && typeof module === 'object' && module && typeof exports === 'object' && exports)
-        module["exports"] = Long;
-    /* AMD */ else if (typeof define === 'function' && define["amd"])
-        define(function() { return Long; });
-    /* Global */ else
-        (global["dcodeIO"] = global["dcodeIO"] || {})["Long"] = Long;
-
-})(this);
-
-},{}],42:[function(require,module,exports){
-/**
- * yfloat格式数据的解析模块
- * Created by jiagang on 2015/10/15.
- */
-
-var TWO_PWR_16_DBL = 1 << 16;
-var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
-
-/**
- * 得到value中高32位数值
- * @param {number} value
- * @returns {number}
- */
-function getHighBits(value) {
-  return (value / TWO_PWR_32_DBL) | 0;
-}
-
-/**
- * 得到value中低32位数值
- * @param {number} value
- * @returns {number}
- */
-function getLowBits(value) {
-  return (value % TWO_PWR_32_DBL) | 0;
-}
-
-/**
- * 高位和低位合并为一个数字
- * @param {number} low
- * @param {number} high
- * @returns {number}
- */
-function toNumber(low, high) {
-  return ((high >>> 0) * TWO_PWR_32_DBL) + (low >>> 0);
-}
-
-/**
- * 解析yfloat类型数字，返回数值和精度的数组
- * @param {number|Long} value
- * @returns {Array}
- */
-function unmakeValue(value) {
-  var high, low;
-
-  // 数字类型
-  if (typeof value === 'number' && value > 0) {
-    high = getHighBits(value);
-    low = getLowBits(value);
-  }
-
-  // Long型
-  else if (value && typeof value['getHighBits'] === 'function' && typeof value['getLowBits'] === 'function') {
-    high = value.getHighBits();
-    low = value.getLowBits();
-  }
-
-  // 其它类型不支持
-  else {
-    console.warn('unmakeValue: invalid value');
-    return [NaN, 0];
-  }
-
-  var b = (low >> 16) & 0xFF,
-    l = b & 0x0F,
-    h = (b >> 4) & 0x0F,
-    bx = toNumber((high << 24) + ((low >>> 24) << 16) + (low & 0xFFFF), high >> 8),
-    dq = [2, 1, null, 3, 4, 5, 6, 7, 8, 9, 0][l],
-    temp = dq != null ? bx / (Math.pow(10, dq) || 1) : NaN;
-
-  if (h != 0) {
-    temp = -temp;
-  }
-  return [temp, dq];
-}
-
-/**
- * 解析yfloat类型数字，返回数字类型
- * @param {number|Long} value
- * @returns {number}
- */
-function unmakeValueToNumber(value) {
-  return unmakeValue(value)[0];
-}
-
-/**
- * 解析yfloat类型数字，返回根据精度格式化后的字符串
- * @param {number|Long} value
- * @returns {string}
- */
-function unmakeValueToString (value) {
-  var result = unmakeValue(value),
-    resultValue = result[0],
-    dq = result[1];
-  return dq !== null ? resultValue.toFixed(dq) : resultValue.toString();
-}
-
-module.exports = {
-  unmakeValue: unmakeValue,
-  unmakeValueToNumber: unmakeValueToNumber,
-  unmakeValueToString: unmakeValueToString
-};
+    return Long;
+});
 
 },{}]},{},[1])(1)
 });
