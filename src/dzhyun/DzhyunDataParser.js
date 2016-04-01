@@ -6,37 +6,38 @@ import pbTable from './pbTable';
 import yfloat from 'html5-yfloat';
 
 var adapterMap = {
-  //'dyna': MSGAdapter
-  'news': new MSGDirectAdapter(),
-
-  //// 暂时处理权限token不做yfloat解析
-  //'token': new (class extends MSGAdapter {
-  //  parseYFloat(data) {
-  //    return data;
-  //  }
-  //})
+  _default: new MSGAdapter,
+  _direct: new MSGDirectAdapter(),
+  'news': new MSGDirectAdapter()
 };
 
 export default class DzhyunDataParser extends DataParser {
   constructor(service) {
     super();
     this.service = service;
+    this.direct = false;
+  }
+
+  parseUAResponse(data) {
+    return parser.parse(data, 'UAResponse');
+  }
+
+  parseMsg(msgData) {
+    return this._adapter(parser.parse(msgData, 'MSG'));
   }
 
   parse(data) {
-    var uaResponse = parser.parse(data, 'UAResponse');
+    var uaResponse = this.parseUAResponse(data);
     data = uaResponse.Data;
     if (uaResponse.Err !== 0) {
       return Promise.reject({
         qid: uaResponse.Qid,
-        error: data ? (typeof data === 'string') ? data : data.toUTF8 ? data.toUTF8() : data.toString() : 'unknown error'
+        error: data ? (typeof data === 'string') ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
       });
     } else {
       return Promise.resolve({
         qid: uaResponse.Qid,
-
-        // 待解析数据
-        data: this._adapter(parser.parse(data, 'MSG'))
+        data: this.parseMsg(data)
       });
     }
   }
@@ -47,7 +48,7 @@ export default class DzhyunDataParser extends DataParser {
       return data;
     }
     var keys = Object.keys(adapterMap);
-    var adapter = new MSGAdapter();
+    var adapter = this.direct ? adapterMap._direct : adapterMap._default;
     keys.some((key) => {
       if (this.service.indexOf(key) >= 0) {
         adapter = adapterMap[key];

@@ -125,8 +125,13 @@ pid: {string|number=} 字符串表示idProperty(obj)，数字表示qid，为空�
 重置store，清除缓存，重新设置datastore设置参数
 
 
-### new DzhyunDataParser()
+### new DzhyunDataParser(serviceUrl)
 另提供全局DzhyunDataParser类型用于解析大智慧云平台数据
+
+serviceUrl: {string=} 需要解析数据的服务url，可以为空则按默认解析
+
+### DzhyunDataParser.prototype.direct
+{boolean} 用于标识解析跳过数据格式化过程直接返回，默认false，像分时（/quote/min）等服务需要除了Obj:Data以外的其它数据时请设置为true
 
 ### DzhyunDataParser.prototype.parse(data)
 将云平台数据转换为js对象类型，包含了下面提供的MSGAdapter,pbTable和yloat的转换

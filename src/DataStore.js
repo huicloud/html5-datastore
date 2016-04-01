@@ -65,6 +65,53 @@ export default class DataStore {
     });
   }
 
+  static _connectionHandler = {
+    dataParser: new DzhyunDataParser(),
+    open() {
+      DataStore._datastores.forEach((datastore) => {
+        if (datastore.conn && this === datastore.conn._handler) {
+          datastore._open();
+        }
+      });
+    },
+    request() {
+      DataStore._datastores.forEach((datastore) => {
+        if (datastore.conn && this === datastore.conn._handler) {
+          datastore._request();
+        }
+      });
+    },
+    response(data) {
+
+      // 先将data解析为UAResponse，再根据其中qid找到具体对象处理
+      let uaResponse = this.dataParser.parseUAResponse(data);
+      let {Qid} = uaResponse;
+      if (Qid) {
+        DataStore._datastores.forEach((datastore) => {
+          if (datastore.requestQueue.hasOwnProperty(Qid)) {
+            datastore._response(uaResponse);
+          }
+        });
+      } else {
+        console.warn('Qid does not exist.');
+      }
+    },
+    close() {
+      DataStore._datastores.forEach((datastore) => {
+        if (datastore.conn && this === datastore.conn._handler) {
+          datastore._close();
+        }
+      });
+    },
+    error() {
+      DataStore._datastores.forEach((datastore) => {
+        if (datastore.conn && this === datastore.conn._handler) {
+          datastore._error();
+        }
+      });
+    }
+  };
+
   constructor(options) {
 
     options = options || {};
@@ -73,8 +120,9 @@ export default class DataStore {
      * {'auto'|boolean} cache缓存规则，默认auto表示根据请求订阅与否决定是否缓存，订阅的请求数据会被缓存，非订阅则不缓存
      * true，则一定都缓存，每次query一定先从缓存查找
      * false，则一定不缓存，每次query一定请求数据
+     * XXX 缓存机制基本上没有使用，默认值改为false
      */
-    this.cacheEnable = (typeof options.cacheEnable === 'undefined') ? 'auto' : options.cacheEnable;
+    this.cacheEnable = (typeof options.cacheEnable === 'undefined') ? false : options.cacheEnable;
 
     /** {String} 连接的服务器地址 */
     this.address = options.address || this.constructor.address;
@@ -152,9 +200,10 @@ export default class DataStore {
         conn = map[address];
       }
       if (!conn) {
+        var handler = Object.assign({}, DataStore._connectionHandler);
         var options = {deferred: true};
         conn = this.connectionType ?
-          connection[this.connectionType](address, options) : connection(address, options);
+          connection[this.connectionType](address, options, handler) : connection(address, options, handler);
 
         if (this.alone === false) {
           map[address] = conn;
@@ -164,12 +213,6 @@ export default class DataStore {
 
       // 实际连接方式
       this.connectionType = conn._protocol;
-
-      this.conn.on('open', this._open.bind(this));
-      this.conn.on('request', this._request.bind(this));
-      this.conn.on('response', this._response.bind(this));
-      this.conn.on('close', this._close.bind(this));
-      this.conn.on('error', this._error.bind(this));
     }
   }
 
@@ -202,14 +245,16 @@ export default class DataStore {
     });
   }
 
-  _response(data) {
-
-    this.dataParser.parse(data).then((response) => {
-      var {qid, data} = response;
-      var request = this.requestQueue[qid];
-      if (!request) {
-        return;
+  _response({Qid, Err, Data}) {
+    let request = this.requestQueue[Qid];
+    if (!request) {
+    } else if (Err !== 0) {
+      request.error(Data ? (typeof Data === 'string') ? Data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error');
+      if (request.subscribe !== true) {
+        delete this.requestQueue[Qid];
       }
+    } else {
+      let data = this.dataParser.parseMsg(Data);
 
       if (this.cacheEnable) {
         this._store(data);
@@ -222,7 +267,7 @@ export default class DataStore {
       request.response(resultData);
 
       if (request.subscribe !== true) {
-        delete this.requestQueue[qid];
+        delete this.requestQueue[Qid];
       } else if (this.connectionType === 'http') {
 
         var nextRequest = () => {
@@ -240,16 +285,7 @@ export default class DataStore {
         };
         nextRequest();
       }
-    }).catch((response) => {
-      var {qid, error} = response;
-      var request = this.requestQueue[qid];
-      if (request) {
-        request.error(error);
-        if (request.subscribe !== true) {
-          delete this.requestQueue[qid];
-        }
-      }
-    });
+    }
   }
 
   _close() {
