@@ -249,7 +249,7 @@ export default class DataStore {
     let request = this.requestQueue[Qid];
     if (!request) {
     } else if (Err !== 0) {
-      request.error(Data ? (typeof Data === 'string') ? Data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error');
+      request.error(Data ? (typeof Data === 'string') ? Data : Data.toUTF8 ? Data.toUTF8() : JSON.stringify(Data) : 'unknown error');
       if (request.subscribe !== true) {
         delete this.requestQueue[Qid];
       }

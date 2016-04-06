@@ -359,20 +359,20 @@ var DataStore = (function () {
 
       var request = this.requestQueue[Qid];
       if (!request) {} else if (Err !== 0) {
-        request.error(Data ? typeof Data === 'string' ? Data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error');
+        request.error(Data ? typeof Data === 'string' ? Data : Data.toUTF8 ? Data.toUTF8() : JSON.stringify(Data) : 'unknown error');
         if (request.subscribe !== true) {
           delete this.requestQueue[Qid];
         }
       } else {
-        var _data = this.dataParser.parseMsg(Data);
+        var data = this.dataParser.parseMsg(Data);
 
         if (this.cacheEnable) {
-          this._store(_data);
+          this._store(data);
         }
 
-        var resultData = _data;
+        var resultData = data;
         if (request.filter) {
-          resultData = this._filter(_data, request.filter);
+          resultData = this._filter(data, request.filter);
         }
         request.response(resultData);
 
@@ -4382,6 +4382,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "RongZiRongQuanBiaoJi",
                     "id": 1010
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ZiJinJingE",
+                    "id": 1011
                 }
             ]
         },
