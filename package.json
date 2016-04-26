@@ -1,6 +1,6 @@
 {
   "name": "html5-datastore",
-  "version": "0.2.16",
+  "version": "0.2.20",
   "description": "dzh云平台数据查询和存储管理模块",
   "main": "index.js",
   "scripts": {},
