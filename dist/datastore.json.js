@@ -301,7 +301,7 @@ var DataStore = (function () {
           conn = map[address];
         }
         if (!conn) {
-          var handler = Object.assign({}, DataStore._connectionHandler);
+          var handler = $.extend({}, DataStore._connectionHandler);
           var options = { deferred: true };
           conn = this.connectionType ? connection[this.connectionType](address, options, handler) : connection(address, options, handler);
 
@@ -642,20 +642,21 @@ var DataStore = (function () {
             params = params + '&token=' + token;
           }
         }
-
-        request.start = function () {
-          _this8.conn.request(_this8.serviceUrl + '?' + params, options);
-        };
-        request.start();
       })['catch'](function (data) {
+        console.warn('Request token fail');
+      }).then(function () {
 
-        // 请求token失败，尝试不带token请求服务
+        // 无论token处理成功或者失败，都尝试请求服务
+        // 设置start为了http轮询处理
         request.start = function () {
-          _this8.conn.request(_this8.serviceUrl + '?' + params, options);
+
+          // 避免请求取消后再次查询，需检查request是否存在
+          if (_this8.requestQueue[request.qid] === request) {
+            _this8.conn.request(_this8.serviceUrl + '?' + params, options);
+          }
         };
         request.start();
       });
-
       return request;
 
       //// 否则通过连接请求数据
@@ -700,8 +701,8 @@ var DataStore = (function () {
   }, {
     key: '_cancelRequest',
     value: function _cancelRequest(qid) {
-      if (this.connectionType === 'ws') {
-        this.conn && this.conn.request('/cancel?' + $.param({
+      if (this.connectionType === 'ws' && this.conn && this.conn.getStatus() === WebSocket.OPEN) {
+        this.conn.request('/cancel?' + $.param({
           qid: qid
         }));
       }
@@ -727,7 +728,6 @@ var DataStore = (function () {
           var request = requestQueue[qid];
           if (!arg || request.key === arg) {
             _this9._cancelRequest(qid);
-            delete request.start;
             delete requestQueue[qid];
           }
         });
@@ -824,8 +824,10 @@ var DzhyunDataParser = (function (_DataParser) {
 
     _get(Object.getPrototypeOf(DzhyunDataParser.prototype), 'constructor', this).call(this);
     this.service = service;
-    this.direct = false;
+    //this.direct = false;
   }
+
+  // 默认值设置在原型上，可以通过修改原型统一设置
 
   _createClass(DzhyunDataParser, [{
     key: 'parseUAResponse',
@@ -880,6 +882,7 @@ var DzhyunDataParser = (function (_DataParser) {
 })(_DataParser3['default']);
 
 exports['default'] = DzhyunDataParser;
+DzhyunDataParser.prototype.direct = false;
 
 DzhyunDataParser.parser = _parser2['default'];
 DzhyunDataParser.MSGAdapter = _adapterMSGAdapter2['default'];
@@ -947,7 +950,10 @@ var DzhyunTokenManager = (function () {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
-        _html5Connection2['default'].https(_this.address, {}, {
+
+        // FIXME https方式nodejs认证有问题，暂时先使用http方式
+        //connection.https(this.address, {}, {
+        _html5Connection2['default'].http(_this.address, {}, {
           response: resolve,
           error: reject
         }).request(service + '?' + util.param(params));
@@ -976,6 +982,7 @@ var DzhyunTokenManager = (function () {
 
     /**
      * 刷新访问token
+     * @deprecated 已废弃，请使用access方法重新请求新的token
      * @param {Object} params <http://dms.gw.com.cn/pages/viewpage.action?pageId=135299522>
      * @returns {Promise.<T>}
      */
@@ -1012,7 +1019,7 @@ var DzhyunTokenManager = (function () {
     value: function _refreshToken(data) {
       var _this3 = this;
 
-      var lastTime = data.create_time || data.refresh_time;
+      //var lastTime = data.create_time || data.refresh_time;
       var duration = parseInt(data.duration);
 
       var refreshSecond = this.refreshSecond;
@@ -1021,13 +1028,19 @@ var DzhyunTokenManager = (function () {
         this._refreshTimeout && clearTimeout(this._refreshTimeout);
         this._refreshTimeout = setTimeout(function () {
           _this3._refreshTimeout = null;
-          _this3.refresh(util.extend({ 'access_token': _this3._token }, _this3.params)).then(function (data) {
+          _this3.access(_this3.params).then(function (data) {
             _this3._token = data.token;
+
+            // 注意，token重设置以后，之前的promise必须移除;
+            _this3._promise = null;
 
             // 下一次刷新
             _this3._refreshToken(data);
           })['catch'](function () {
-            // 刷新失败
+
+            // 刷新失败, 删除token和promise，再下次getToken时会再次重新请求token
+            _this3._token = null;
+            _this3._promise = null;
           });
         }, refreshSecond * 1000);
       }

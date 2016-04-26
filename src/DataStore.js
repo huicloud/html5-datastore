@@ -200,7 +200,7 @@ export default class DataStore {
         conn = map[address];
       }
       if (!conn) {
-        var handler = Object.assign({}, DataStore._connectionHandler);
+        var handler = $.extend({}, DataStore._connectionHandler);
         var options = {deferred: true};
         conn = this.connectionType ?
           connection[this.connectionType](address, options, handler) : connection(address, options, handler);
@@ -521,20 +521,21 @@ export default class DataStore {
           params = params + '&token=' + token;
         }
       }
+    }).catch(data => {
+      console.warn('Request token fail');
+    }).then(() => {
 
+      // 无论token处理成功或者失败，都尝试请求服务
+      // 设置start为了http轮询处理
       request.start = () => {
-        this.conn.request(this.serviceUrl + '?' + params, options);
-      };
-      request.start();
-    }).catch((data) => {
 
-      // 请求token失败，尝试不带token请求服务
-      request.start = () => {
-        this.conn.request(this.serviceUrl + '?' + params, options);
+        // 避免请求取消后再次查询，需检查request是否存在
+        if (this.requestQueue[request.qid] === request) {
+          this.conn.request(this.serviceUrl + '?' + params, options);
+        }
       };
       request.start();
     });
-
     return request;
 
     //// 否则通过连接请求数据
@@ -576,8 +577,8 @@ export default class DataStore {
   }
 
   _cancelRequest(qid) {
-    if (this.connectionType === 'ws') {
-      this.conn && this.conn.request('/cancel?' + $.param({
+    if (this.connectionType === 'ws' && this.conn && this.conn.getStatus() === WebSocket.OPEN) {
+       this.conn.request('/cancel?' + $.param({
         qid: qid
       }));
     }
@@ -599,7 +600,6 @@ export default class DataStore {
         var request = requestQueue[qid];
         if (!arg || request.key === arg) {
           this._cancelRequest(qid);
-          delete request.start;
           delete requestQueue[qid];
         }
       });

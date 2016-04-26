@@ -15,7 +15,7 @@ export default class DzhyunDataParser extends DataParser {
   constructor(service) {
     super();
     this.service = service;
-    this.direct = false;
+    //this.direct = false;
   }
 
   parseUAResponse(data) {
@@ -58,6 +58,9 @@ export default class DzhyunDataParser extends DataParser {
     return adapter.adapt(data);
   }
 }
+
+// 默认值设置在原型上，可以通过修改原型统一设置
+DzhyunDataParser.prototype.direct = false;
 
 DzhyunDataParser.parser = parser;
 DzhyunDataParser.MSGAdapter = MSGAdapter;

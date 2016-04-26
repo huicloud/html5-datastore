@@ -20,7 +20,10 @@ export default class DzhyunTokenManager {
 
   _request(service, params) {
     return new Promise((resolve, reject) => {
-      connection.https(this.address, {}, {
+
+      // FIXME https方式nodejs认证有问题，暂时先使用http方式
+      //connection.https(this.address, {}, {
+      connection.http(this.address, {}, {
         response: resolve,
         error: reject
       }).request(service + '?' + util.param(params));
@@ -47,6 +50,7 @@ export default class DzhyunTokenManager {
 
   /**
    * 刷新访问token
+   * @deprecated 已废弃，请使用access方法重新请求新的token
    * @param {Object} params <http://dms.gw.com.cn/pages/viewpage.action?pageId=135299522>
    * @returns {Promise.<T>}
    */
@@ -59,13 +63,13 @@ export default class DzhyunTokenManager {
    */
   getToken() {
     return this._promise || (this._promise = Promise.resolve(this._token || this.access(this.params).then((data) => {
-          this._token = data.token;
-          this._promise = null;
+      this._token = data.token;
+      this._promise = null;
 
-          // 自动刷新token
-          this._refreshToken(data);
-          return this._token;
-      })));
+      // 自动刷新token
+      this._refreshToken(data);
+      return this._token;
+    })));
   }
 
   /**
@@ -73,7 +77,7 @@ export default class DzhyunTokenManager {
    * @private
    */
   _refreshToken(data) {
-    var lastTime = data.create_time || data.refresh_time;
+    //var lastTime = data.create_time || data.refresh_time;
     var duration = parseInt(data.duration);
 
     var refreshSecond = this.refreshSecond;
@@ -82,13 +86,19 @@ export default class DzhyunTokenManager {
       this._refreshTimeout && clearTimeout(this._refreshTimeout);
       this._refreshTimeout = setTimeout(() => {
         this._refreshTimeout = null;
-        this.refresh(util.extend({'access_token': this._token}, this.params)).then((data) => {
+        this.access(this.params).then((data) => {
           this._token = data.token;
+
+          // 注意，token重设置以后，之前的promise必须移除;
+          this._promise = null;
 
           // 下一次刷新
           this._refreshToken(data);
         }).catch(() => {
-          // 刷新失败
+
+          // 刷新失败, 删除token和promise，再下次getToken时会再次重新请求token
+          this._token = null;
+          this._promise = null;
         });
       }, refreshSecond * 1000);
     }

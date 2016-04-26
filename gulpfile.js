@@ -45,7 +45,7 @@ gulp.task('babel', function () {
     .pipe(gulp.dest('lib'));
 });
 
-gulp.task('browserify', ['babel'/*, 'pbjs'*/], function () {
+gulp.task('browserify', ['babel', 'pbjs'], function () {
   bundle('./index.js', ['connection', 'protobufjs', 'yfloat'], ['promise'])
     .pipe(rename('datastore.js'))
     .pipe(gulp.dest('./dist/'))

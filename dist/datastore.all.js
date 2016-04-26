@@ -301,7 +301,7 @@ var DataStore = (function () {
           conn = map[address];
         }
         if (!conn) {
-          var handler = Object.assign({}, DataStore._connectionHandler);
+          var handler = $.extend({}, DataStore._connectionHandler);
           var options = { deferred: true };
           conn = this.connectionType ? connection[this.connectionType](address, options, handler) : connection(address, options, handler);
 
@@ -642,20 +642,21 @@ var DataStore = (function () {
             params = params + '&token=' + token;
           }
         }
-
-        request.start = function () {
-          _this8.conn.request(_this8.serviceUrl + '?' + params, options);
-        };
-        request.start();
       })['catch'](function (data) {
+        console.warn('Request token fail');
+      }).then(function () {
 
-        // 请求token失败，尝试不带token请求服务
+        // 无论token处理成功或者失败，都尝试请求服务
+        // 设置start为了http轮询处理
         request.start = function () {
-          _this8.conn.request(_this8.serviceUrl + '?' + params, options);
+
+          // 避免请求取消后再次查询，需检查request是否存在
+          if (_this8.requestQueue[request.qid] === request) {
+            _this8.conn.request(_this8.serviceUrl + '?' + params, options);
+          }
         };
         request.start();
       });
-
       return request;
 
       //// 否则通过连接请求数据
@@ -700,8 +701,8 @@ var DataStore = (function () {
   }, {
     key: '_cancelRequest',
     value: function _cancelRequest(qid) {
-      if (this.connectionType === 'ws') {
-        this.conn && this.conn.request('/cancel?' + $.param({
+      if (this.connectionType === 'ws' && this.conn && this.conn.getStatus() === WebSocket.OPEN) {
+        this.conn.request('/cancel?' + $.param({
           qid: qid
         }));
       }
@@ -727,7 +728,6 @@ var DataStore = (function () {
           var request = requestQueue[qid];
           if (!arg || request.key === arg) {
             _this9._cancelRequest(qid);
-            delete request.start;
             delete requestQueue[qid];
           }
         });
@@ -824,8 +824,10 @@ var DzhyunDataParser = (function (_DataParser) {
 
     _get(Object.getPrototypeOf(DzhyunDataParser.prototype), 'constructor', this).call(this);
     this.service = service;
-    this.direct = false;
+    //this.direct = false;
   }
+
+  // 默认值设置在原型上，可以通过修改原型统一设置
 
   _createClass(DzhyunDataParser, [{
     key: 'parseUAResponse',
@@ -880,6 +882,7 @@ var DzhyunDataParser = (function (_DataParser) {
 })(_DataParser3['default']);
 
 exports['default'] = DzhyunDataParser;
+DzhyunDataParser.prototype.direct = false;
 
 DzhyunDataParser.parser = _parser2['default'];
 DzhyunDataParser.MSGAdapter = _adapterMSGAdapter2['default'];
@@ -947,7 +950,10 @@ var DzhyunTokenManager = (function () {
       var _this = this;
 
       return new Promise(function (resolve, reject) {
-        _html5Connection2['default'].https(_this.address, {}, {
+
+        // FIXME https方式nodejs认证有问题，暂时先使用http方式
+        //connection.https(this.address, {}, {
+        _html5Connection2['default'].http(_this.address, {}, {
           response: resolve,
           error: reject
         }).request(service + '?' + util.param(params));
@@ -976,6 +982,7 @@ var DzhyunTokenManager = (function () {
 
     /**
      * 刷新访问token
+     * @deprecated 已废弃，请使用access方法重新请求新的token
      * @param {Object} params <http://dms.gw.com.cn/pages/viewpage.action?pageId=135299522>
      * @returns {Promise.<T>}
      */
@@ -1012,7 +1019,7 @@ var DzhyunTokenManager = (function () {
     value: function _refreshToken(data) {
       var _this3 = this;
 
-      var lastTime = data.create_time || data.refresh_time;
+      //var lastTime = data.create_time || data.refresh_time;
       var duration = parseInt(data.duration);
 
       var refreshSecond = this.refreshSecond;
@@ -1021,13 +1028,19 @@ var DzhyunTokenManager = (function () {
         this._refreshTimeout && clearTimeout(this._refreshTimeout);
         this._refreshTimeout = setTimeout(function () {
           _this3._refreshTimeout = null;
-          _this3.refresh(util.extend({ 'access_token': _this3._token }, _this3.params)).then(function (data) {
+          _this3.access(_this3.params).then(function (data) {
             _this3._token = data.token;
+
+            // 注意，token重设置以后，之前的promise必须移除;
+            _this3._promise = null;
 
             // 下一次刷新
             _this3._refreshToken(data);
           })['catch'](function () {
-            // 刷新失败
+
+            // 刷新失败, 删除token和promise，再下次getToken时会再次重新请求token
+            _this3._token = null;
+            _this3._promise = null;
           });
         }, refreshSecond * 1000);
       }
@@ -3080,6 +3093,36 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "ShiFouTingPai",
                     "id": 138
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanLiuRuZongE",
+                    "id": 140
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanLiuChuZongE",
+                    "id": 141
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanLiuRuZongE5",
+                    "id": 142
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanLiuChuZongE5",
+                    "id": 143
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDXLianXuPiaoHongTianShu",
+                    "id": 144
                 },
                 {
                     "rule": "optional",
@@ -14656,6 +14699,29 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "FavoriteNewsData",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "title",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "clickurl",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "storetime",
+                    "id": 3
+                }
+            ]
+        },
+        {
             "name": "UserNews",
             "fields": [
                 {
@@ -14667,6 +14733,23 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "rule": "repeated",
                     "type": "NewsData",
+                    "name": "news",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FavoriteNews",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "HeaderData",
+                    "name": "header",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FavoriteNewsData",
                     "name": "news",
                     "id": 2
                 }
@@ -15172,29 +15255,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "AccountSig",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Sig",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "SdkAppId",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "AccountType",
-                    "id": 3
-                }
-            ]
-        },
-        {
             "name": "LiveRoom",
             "fields": [
                 {
@@ -15533,6 +15593,24 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "string",
                     "name": "OwnerTypeName",
                     "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "StopUser",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "StopReason",
+                    "id": 25
+                },
+                {
+                    "rule": "repeated",
+                    "type": "string",
+                    "name": "Guest",
+                    "id": 26
                 }
             ]
         },
@@ -15568,6 +15646,236 @@ module.exports = require("./protobuf").newBuilder({})['import']({
         {
             "name": "RoomOperationSuccess",
             "fields": []
+        },
+        {
+            "name": "TipList",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "uint32",
+                    "name": "Period",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "uint32",
+                    "name": "WaitTime",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 3
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Version",
+                    "id": 4
+                },
+                {
+                    "rule": "repeated",
+                    "type": "OwnerAccountList",
+                    "name": "OwnerList",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "OwnerAccountList",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "OwnerName",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "OwnerAccountImg",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "ClickUrl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "OwnerType",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "TypeName",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Color",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "uint32",
+                    "name": "OwnerPeriod",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "AccountSig",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Sig",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "uint32",
+                    "name": "SdkAppId",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "AccountType",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "ILVBLogin",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Sig",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "uint32",
+                    "name": "SdkAppid",
+                    "id": 2
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "AccountType",
+                    "id": 3
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "AsToken",
+                    "id": 4
+                },
+                {
+                    "rule": "required",
+                    "type": "uint32",
+                    "name": "AsTokenExpire",
+                    "id": 5
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "OssSigHost",
+                    "id": 6
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "SearchRoom",
+                    "id": 7
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "CreateRoom",
+                    "id": 8
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "UpdateRoom",
+                    "id": 9
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "StopRoom",
+                    "id": 10
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "PresentInfo",
+                    "id": 11
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "OssEndPoint",
+                    "id": 12
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "ImgEndPoint",
+                    "id": 13
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "OssPort",
+                    "id": 14
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "BucketName",
+                    "id": 15
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "VedioInfoAddr",
+                    "id": 16
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "UserMsgAddr",
+                    "id": 17
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "RoomImg",
+                    "id": 18
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "RoomTopic",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "RoomInfo",
+                    "name": "LiveRoom",
+                    "id": 20
+                }
+            ]
         },
         {
             "name": "OssSig",
@@ -15645,6 +15953,86 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "required",
                     "type": "int64",
                     "name": "Time",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "RichSearchResult",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "GuanJianZi",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "JieGuo",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Kuozhan",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "RevDiamondRank",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "TotalRev",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "UserRank",
+                    "name": "User",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "UserRank",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "UserAccount",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "int32",
+                    "name": "Rank",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "uint64",
+                    "name": "Consume",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "RegalRank",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "UserRank",
+                    "name": "Self",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "UserRank",
+                    "name": "User",
                     "id": 2
                 }
             ]
@@ -16593,6 +16981,42 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "FluxTimer",
                     "name": "RepDataFluxTimer",
                     "id": 172
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ILVBLogin",
+                    "name": "RepDataILVBLogin",
+                    "id": 173
+                },
+                {
+                    "rule": "repeated",
+                    "type": "TipList",
+                    "name": "RepDataTipList",
+                    "id": 174
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FavoriteNews",
+                    "name": "RepDataFavoriteNews",
+                    "id": 175
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RevDiamondRank",
+                    "name": "RepDataRevDiamondRank",
+                    "id": 176
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RegalRank",
+                    "name": "RepDataRegalRank",
+                    "id": 177
+                },
+                {
+                    "rule": "repeated",
+                    "type": "RichSearchResult",
+                    "name": "RepDataRichSearchResult",
+                    "id": 178
                 }
             ]
         },
@@ -17388,6 +17812,30 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDFluxTimer",
                     "id": 172
+                },
+                {
+                    "name": "IDILVBLogin",
+                    "id": 173
+                },
+                {
+                    "name": "IDTipList",
+                    "id": 174
+                },
+                {
+                    "name": "IDFavoriteNews",
+                    "id": 175
+                },
+                {
+                    "name": "IDRevDiamondRank",
+                    "id": 176
+                },
+                {
+                    "name": "IDRegalRank",
+                    "id": 177
+                },
+                {
+                    "name": "IDRichSearchResult",
+                    "id": 178
                 }
             ]
         }
