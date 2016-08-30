@@ -45,6 +45,8 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -243,7 +245,7 @@ var DataStore = (function () {
      */
     this.fields = options.fields;
 
-    this.dataParser = options.dataParser || new _dzhyunDzhyunDataParser2['default'](this.serviceUrl);
+    this.dataParser = options.dataParser || new _dzhyunDzhyunDataParser2['default'](this.serviceUrl || '');
 
     /**
      * 其它参数
@@ -553,9 +555,19 @@ var DataStore = (function () {
         }
       }
 
+      var serviceUrl = this.serviceUrl;
+
       // 如果查询对象是字符串则反序列化为对象
       if (typeof queryObject === 'string') {
-        queryObject = $.unParam(queryObject);
+        if (queryObject[0] === '/') {
+          var _queryObject$split = queryObject.split('?');
+
+          var _queryObject$split2 = _slicedToArray(_queryObject$split, 2);
+
+          serviceUrl = _queryObject$split2[0];
+          queryObject = _queryObject$split2[1];
+        }
+        queryObject = $.unParam(queryObject || '');
       }
 
       var key = queryObject[this.idProperty],
@@ -652,7 +664,7 @@ var DataStore = (function () {
 
           // 避免请求取消后再次查询，需检查request是否存在
           if (_this8.requestQueue[request.qid] === request) {
-            _this8.conn.request(_this8.serviceUrl + '?' + params, options);
+            _this8.conn.request(serviceUrl + '?' + params, options);
           }
         };
         request.start();
@@ -842,26 +854,30 @@ var DzhyunDataParser = (function (_DataParser) {
   }, {
     key: 'parse',
     value: function parse(data) {
-      var uaResponse = this.parseUAResponse(data);
-      data = uaResponse.Data;
-      if (uaResponse.Err !== 0) {
-        return Promise.reject({
-          qid: uaResponse.Qid,
-          error: data ? typeof data === 'string' ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
-        });
-      } else {
-        return Promise.resolve({
-          qid: uaResponse.Qid,
-          data: this.parseMsg(data)
-        });
-      }
+      var _this = this;
+
+      return new Promise(function (resolve, reject) {
+        var uaResponse = _this.parseUAResponse(data);
+        data = uaResponse.Data;
+        if (uaResponse.Err !== 0) {
+          reject({
+            qid: uaResponse.Qid,
+            error: data ? typeof data === 'string' ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
+          });
+        } else {
+          resolve({
+            qid: uaResponse.Qid,
+            data: _this.parseMsg(data)
+          });
+        }
+      });
     }
 
     // 根据service进行数据转换
   }, {
     key: '_adapter',
     value: function _adapter(data) {
-      var _this = this;
+      var _this2 = this;
 
       if (!data) {
         return data;
@@ -869,7 +885,7 @@ var DzhyunDataParser = (function (_DataParser) {
       var keys = Object.keys(adapterMap);
       var adapter = this.direct ? adapterMap._direct : adapterMap._default;
       keys.some(function (key) {
-        if (_this.service.indexOf(key) >= 0) {
+        if (_this2.service.indexOf(key) >= 0) {
           adapter = adapterMap[key];
           return true;
         }
@@ -1131,7 +1147,7 @@ var _protobuf2 = _interopRequireDefault(_protobuf);
 
 var Long = _protobuf2['default'].Long;
 
-var excludeFieldName = ['Id', 'Obj'];
+var excludeFieldName = ['Id', 'Obj', 'ObjCount'];
 
 var MSGAdapter = (function (_BaseDataAdapter) {
   _inherits(MSGAdapter, _BaseDataAdapter);
@@ -1221,14 +1237,17 @@ var MSGAdapter = (function (_BaseDataAdapter) {
       } else {
 
         // 否则查找其它有数据的字段
-        var keys = Object.keys(input);
+        // 排序将'RepData'开头的数据字段放前面，先判断（尽量避免以后再添加字段时不会影响现有逻辑）
+        var keys = Object.keys(input).sort(function (key1, key2) {
+          return key1.indexOf('RepData') === 0 ? -1 : key2.indexOf('RepData') === 0 ? 1 : 0;
+        });
         keys.some(function (key) {
           var data = input[key];
 
           // 不是排除的字段并且不为null
           if (excludeFieldName.indexOf(key) < 0 && data !== null) {
 
-            // 不是数组或者数组长度大于1
+            // 不是数组或者数组长度大于0
             if (!(data instanceof Array) || data.length > 0) {
               output = data;
               return true;
@@ -1546,497 +1565,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "UserProp",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Id",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Lable",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Value",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "UserPropsMessage",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Name",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "UserProp",
-                    "name": "Lables",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "ZhiBiaoShuChu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ZBShuJu",
-                    "name": "ShuJu",
-                    "id": 2
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ZBShuXing",
-                    "name": "ShuXing",
-                    "id": 3
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ZBHuiTu",
-                    "name": "HuiTu",
-                    "id": 4
-                }
-            ],
-            "messages": [
-                {
-                    "name": "ZBShuJu",
-                    "fields": [
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "ShiJian",
-                            "id": 1
-                        },
-                        {
-                            "rule": "repeated",
-                            "type": "int64",
-                            "name": "JieGuo",
-                            "id": 2
-                        }
-                    ]
-                },
-                {
-                    "name": "ZBShuXing",
-                    "fields": [
-                        {
-                            "rule": "required",
-                            "type": "string",
-                            "name": "MingCheng",
-                            "id": 1
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "YanSe",
-                            "id": 2
-                        },
-                        {
-                            "rule": "required",
-                            "type": "SXLeiXing",
-                            "name": "LeiXing",
-                            "id": 3
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "KuanDu",
-                            "id": 4
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "JingDu",
-                            "id": 5
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "DuiQi",
-                            "id": 6
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "ShuXing",
-                            "id": 7
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "YiDong",
-                            "id": 8
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "CengCi",
-                            "id": 9
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "BianLiangWeiZhi",
-                            "id": 10
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "KuoZhanShuXing",
-                            "id": 11
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "YouXiaoWeiZhi",
-                            "id": 12
-                        }
-                    ],
-                    "enums": [
-                        {
-                            "name": "SXLeiXing",
-                            "values": [
-                                {
-                                    "name": "TYPE_TEMP_EXPRESION",
-                                    "id": 0
-                                },
-                                {
-                                    "name": "TYPE_CURV_LINE",
-                                    "id": 1
-                                },
-                                {
-                                    "name": "TYPE_STICK_LINE",
-                                    "id": 2
-                                },
-                                {
-                                    "name": "TYPE_COLORSTICK_LINE",
-                                    "id": 3
-                                },
-                                {
-                                    "name": "TYPE_VOLSTICK_LINE",
-                                    "id": 4
-                                },
-                                {
-                                    "name": "TYPE_LINESTICK_LINE",
-                                    "id": 5
-                                },
-                                {
-                                    "name": "TYPE_CROSS_DOT",
-                                    "id": 6
-                                },
-                                {
-                                    "name": "TYPE_CIRCLE_DOT",
-                                    "id": 7
-                                },
-                                {
-                                    "name": "TYPE_POINT_DOT",
-                                    "id": 8
-                                },
-                                {
-                                    "name": "TYPE_STICK3D_LINE",
-                                    "id": 9
-                                },
-                                {
-                                    "name": "TYPE_COLOR3D_LINE",
-                                    "id": 10
-                                },
-                                {
-                                    "name": "TYPE_DOT_DOT",
-                                    "id": 11
-                                },
-                                {
-                                    "name": "TYPE_DASH_DOT",
-                                    "id": 12
-                                },
-                                {
-                                    "name": "TYPE_PERCENT_BAR",
-                                    "id": 13
-                                },
-                                {
-                                    "name": "TYPE_ENTER_LONG",
-                                    "id": 100
-                                },
-                                {
-                                    "name": "TYPE_EXIT_LONG",
-                                    "id": 101
-                                },
-                                {
-                                    "name": "TYPE_ENTER_SHORT",
-                                    "id": 102
-                                },
-                                {
-                                    "name": "TYPE_EXIT_SHORT",
-                                    "id": 103
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "ZBHuiTu",
-                    "fields": [
-                        {
-                            "rule": "required",
-                            "type": "HTLeiXing",
-                            "name": "LeiXing",
-                            "id": 1
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "KuanDu",
-                            "id": 2
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "ShuXing",
-                            "id": 3
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "ShangCiJiSuan",
-                            "id": 4
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "YanSe",
-                            "id": 5
-                        },
-                        {
-                            "rule": "required",
-                            "type": "ZBShuXing.SXLeiXing",
-                            "name": "ShuChuLeiXing",
-                            "id": 6
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "ShuChuShuXing",
-                            "id": 7
-                        },
-                        {
-                            "rule": "required",
-                            "type": "int64",
-                            "name": "ShuChuKuoZhanShuXing",
-                            "id": 8
-                        },
-                        {
-                            "rule": "repeated",
-                            "type": "string",
-                            "name": "WenBen",
-                            "id": 9
-                        },
-                        {
-                            "rule": "repeated",
-                            "type": "HTShuJu",
-                            "name": "ShuJu",
-                            "id": 10
-                        }
-                    ],
-                    "messages": [
-                        {
-                            "name": "HTShuJu",
-                            "fields": [
-                                {
-                                    "rule": "required",
-                                    "type": "int64",
-                                    "name": "WeiZhi",
-                                    "id": 1
-                                },
-                                {
-                                    "rule": "required",
-                                    "type": "int64",
-                                    "name": "JiaGe",
-                                    "id": 2
-                                },
-                                {
-                                    "rule": "required",
-                                    "type": "int64",
-                                    "name": "CanShu",
-                                    "id": 3
-                                }
-                            ]
-                        }
-                    ],
-                    "enums": [
-                        {
-                            "name": "HTLeiXing",
-                            "values": [
-                                {
-                                    "name": "TYPE_NOLINE",
-                                    "id": 0
-                                },
-                                {
-                                    "name": "TYPE_POLYLINE",
-                                    "id": 1
-                                },
-                                {
-                                    "name": "TYPE_LINE",
-                                    "id": 2
-                                },
-                                {
-                                    "name": "TYPE_STICKLINE",
-                                    "id": 3
-                                },
-                                {
-                                    "name": "TYPE_TEXT",
-                                    "id": 4
-                                },
-                                {
-                                    "name": "TYPE_ICON",
-                                    "id": 5
-                                },
-                                {
-                                    "name": "TYPE_TIP_TEXT",
-                                    "id": 6
-                                },
-                                {
-                                    "name": "TYPE_BACK_GRD",
-                                    "id": 7
-                                },
-                                {
-                                    "name": "TYPE_BACK_GRDLAST",
-                                    "id": 8
-                                },
-                                {
-                                    "name": "TYPE_DRAWBMP",
-                                    "id": 9
-                                },
-                                {
-                                    "name": "TYPE_VERTLINE",
-                                    "id": 10
-                                },
-                                {
-                                    "name": "TYPE_TEXTABS",
-                                    "id": 11
-                                },
-                                {
-                                    "name": "TYPE_TEXTREL",
-                                    "id": 12
-                                },
-                                {
-                                    "name": "TYPE_RECTABS",
-                                    "id": 13
-                                },
-                                {
-                                    "name": "TYPE_RECTREL",
-                                    "id": 14
-                                },
-                                {
-                                    "name": "TYPE_FLAGTEXT",
-                                    "id": 15
-                                },
-                                {
-                                    "name": "TYPE_MOVETEXT",
-                                    "id": 16
-                                },
-                                {
-                                    "name": "TYPE_HORILINE",
-                                    "id": 17
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "ZhiBiaoShuXingShuChu",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "ZhiBiaoShuChu.ZBShuXing",
-                    "name": "ShuChu",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "ZhiBiaoHuiTuShuChu",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "ZhiBiaoShuChu.ZBHuiTu",
-                    "name": "ShuChu",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "DSToken",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "result",
-                    "id": 1,
-                    "options": {
-                        "default": 0
-                    }
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "token",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "version",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "create_time",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "refresh_time",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "duration",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "appid",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "device",
-                    "id": 8
-                }
-            ]
-        },
-        {
             "name": "LingZhangGuShuJu",
             "fields": [
                 {
@@ -2302,6 +1830,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "string",
                     "name": "ChengFenGu",
                     "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "LeiBie",
+                    "id": 4
                 }
             ]
         },
@@ -3901,6 +3435,48 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "rule": "optional",
                     "type": "int64",
+                    "name": "DDXJinRi",
+                    "id": 330
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDX60Ri",
+                    "id": 331
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDX5Ri",
+                    "id": 332
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDYJinRi",
+                    "id": 333
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDY60Ri",
+                    "id": 334
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDY5Ri",
+                    "id": 335
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DDZJinRi",
+                    "id": 336
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
                     "name": "LeiXing",
                     "id": 400
                 },
@@ -4431,6 +4007,551 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "ZiJinJingE",
                     "id": 1011
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JingNeiZongShiZhi",
+                    "id": 1012
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "GongXianDianShu",
+                    "id": 1013
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "HangYe",
+                    "id": 1014
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu1",
+                    "id": 1015
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu2",
+                    "id": 1016
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu3",
+                    "id": 1017
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu4",
+                    "id": 1018
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu5",
+                    "id": 1019
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu6",
+                    "id": 1020
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu7",
+                    "id": 1021
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu8",
+                    "id": 1022
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu9",
+                    "id": 1023
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu10",
+                    "id": 1024
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu1",
+                    "id": 1025
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu2",
+                    "id": 1026
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu3",
+                    "id": 1027
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu4",
+                    "id": 1028
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu5",
+                    "id": 1029
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu6",
+                    "id": 1030
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu7",
+                    "id": 1031
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu8",
+                    "id": 1032
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu9",
+                    "id": 1033
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu10",
+                    "id": 1034
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShiFouGuanZhu",
+                    "id": 1100
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "XuHao",
+                    "id": 1101
+                }
+            ]
+        },
+        {
+            "name": "ZhiBiaoShuChu",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZBShuJu",
+                    "name": "ShuJu",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZBShuXing",
+                    "name": "ShuXing",
+                    "id": 3
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZBHuiTu",
+                    "name": "HuiTu",
+                    "id": 4
+                }
+            ],
+            "messages": [
+                {
+                    "name": "ZBShuJu",
+                    "fields": [
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "ShiJian",
+                            "id": 1
+                        },
+                        {
+                            "rule": "repeated",
+                            "type": "int64",
+                            "name": "JieGuo",
+                            "id": 2
+                        }
+                    ]
+                },
+                {
+                    "name": "ZBShuXing",
+                    "fields": [
+                        {
+                            "rule": "required",
+                            "type": "string",
+                            "name": "MingCheng",
+                            "id": 1
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "YanSe",
+                            "id": 2
+                        },
+                        {
+                            "rule": "required",
+                            "type": "SXLeiXing",
+                            "name": "LeiXing",
+                            "id": 3
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "KuanDu",
+                            "id": 4
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "JingDu",
+                            "id": 5
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "DuiQi",
+                            "id": 6
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "ShuXing",
+                            "id": 7
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "YiDong",
+                            "id": 8
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "CengCi",
+                            "id": 9
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "BianLiangWeiZhi",
+                            "id": 10
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "KuoZhanShuXing",
+                            "id": 11
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "YouXiaoWeiZhi",
+                            "id": 12
+                        }
+                    ],
+                    "enums": [
+                        {
+                            "name": "SXLeiXing",
+                            "values": [
+                                {
+                                    "name": "TYPE_TEMP_EXPRESION",
+                                    "id": 0
+                                },
+                                {
+                                    "name": "TYPE_CURV_LINE",
+                                    "id": 1
+                                },
+                                {
+                                    "name": "TYPE_STICK_LINE",
+                                    "id": 2
+                                },
+                                {
+                                    "name": "TYPE_COLORSTICK_LINE",
+                                    "id": 3
+                                },
+                                {
+                                    "name": "TYPE_VOLSTICK_LINE",
+                                    "id": 4
+                                },
+                                {
+                                    "name": "TYPE_LINESTICK_LINE",
+                                    "id": 5
+                                },
+                                {
+                                    "name": "TYPE_CROSS_DOT",
+                                    "id": 6
+                                },
+                                {
+                                    "name": "TYPE_CIRCLE_DOT",
+                                    "id": 7
+                                },
+                                {
+                                    "name": "TYPE_POINT_DOT",
+                                    "id": 8
+                                },
+                                {
+                                    "name": "TYPE_STICK3D_LINE",
+                                    "id": 9
+                                },
+                                {
+                                    "name": "TYPE_COLOR3D_LINE",
+                                    "id": 10
+                                },
+                                {
+                                    "name": "TYPE_DOT_DOT",
+                                    "id": 11
+                                },
+                                {
+                                    "name": "TYPE_DASH_DOT",
+                                    "id": 12
+                                },
+                                {
+                                    "name": "TYPE_PERCENT_BAR",
+                                    "id": 13
+                                },
+                                {
+                                    "name": "TYPE_ENTER_LONG",
+                                    "id": 100
+                                },
+                                {
+                                    "name": "TYPE_EXIT_LONG",
+                                    "id": 101
+                                },
+                                {
+                                    "name": "TYPE_ENTER_SHORT",
+                                    "id": 102
+                                },
+                                {
+                                    "name": "TYPE_EXIT_SHORT",
+                                    "id": 103
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "ZBHuiTu",
+                    "fields": [
+                        {
+                            "rule": "required",
+                            "type": "HTLeiXing",
+                            "name": "LeiXing",
+                            "id": 1
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "KuanDu",
+                            "id": 2
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "ShuXing",
+                            "id": 3
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "ShangCiJiSuan",
+                            "id": 4
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "YanSe",
+                            "id": 5
+                        },
+                        {
+                            "rule": "required",
+                            "type": "ZBShuXing.SXLeiXing",
+                            "name": "ShuChuLeiXing",
+                            "id": 6
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "ShuChuShuXing",
+                            "id": 7
+                        },
+                        {
+                            "rule": "required",
+                            "type": "int64",
+                            "name": "ShuChuKuoZhanShuXing",
+                            "id": 8
+                        },
+                        {
+                            "rule": "repeated",
+                            "type": "string",
+                            "name": "WenBen",
+                            "id": 9
+                        },
+                        {
+                            "rule": "repeated",
+                            "type": "HTShuJu",
+                            "name": "ShuJu",
+                            "id": 10
+                        }
+                    ],
+                    "messages": [
+                        {
+                            "name": "HTShuJu",
+                            "fields": [
+                                {
+                                    "rule": "required",
+                                    "type": "int64",
+                                    "name": "WeiZhi",
+                                    "id": 1
+                                },
+                                {
+                                    "rule": "required",
+                                    "type": "int64",
+                                    "name": "JiaGe",
+                                    "id": 2
+                                },
+                                {
+                                    "rule": "required",
+                                    "type": "int64",
+                                    "name": "CanShu",
+                                    "id": 3
+                                }
+                            ]
+                        }
+                    ],
+                    "enums": [
+                        {
+                            "name": "HTLeiXing",
+                            "values": [
+                                {
+                                    "name": "TYPE_NOLINE",
+                                    "id": 0
+                                },
+                                {
+                                    "name": "TYPE_POLYLINE",
+                                    "id": 1
+                                },
+                                {
+                                    "name": "TYPE_LINE",
+                                    "id": 2
+                                },
+                                {
+                                    "name": "TYPE_STICKLINE",
+                                    "id": 3
+                                },
+                                {
+                                    "name": "TYPE_TEXT",
+                                    "id": 4
+                                },
+                                {
+                                    "name": "TYPE_ICON",
+                                    "id": 5
+                                },
+                                {
+                                    "name": "TYPE_TIP_TEXT",
+                                    "id": 6
+                                },
+                                {
+                                    "name": "TYPE_BACK_GRD",
+                                    "id": 7
+                                },
+                                {
+                                    "name": "TYPE_BACK_GRDLAST",
+                                    "id": 8
+                                },
+                                {
+                                    "name": "TYPE_DRAWBMP",
+                                    "id": 9
+                                },
+                                {
+                                    "name": "TYPE_VERTLINE",
+                                    "id": 10
+                                },
+                                {
+                                    "name": "TYPE_TEXTABS",
+                                    "id": 11
+                                },
+                                {
+                                    "name": "TYPE_TEXTREL",
+                                    "id": 12
+                                },
+                                {
+                                    "name": "TYPE_RECTABS",
+                                    "id": 13
+                                },
+                                {
+                                    "name": "TYPE_RECTREL",
+                                    "id": 14
+                                },
+                                {
+                                    "name": "TYPE_FLAGTEXT",
+                                    "id": 15
+                                },
+                                {
+                                    "name": "TYPE_MOVETEXT",
+                                    "id": 16
+                                },
+                                {
+                                    "name": "TYPE_HORILINE",
+                                    "id": 17
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ZhiBiaoShuXingShuChu",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "ZhiBiaoShuChu.ZBShuXing",
+                    "name": "ShuChu",
+                    "id": 1
+                }
+            ]
+        },
+        {
+            "name": "ZhiBiaoHuiTuShuChu",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "ZhiBiaoShuChu.ZBHuiTu",
+                    "name": "ShuChu",
+                    "id": 1
                 }
             ]
         },
@@ -4692,187 +4813,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "AlarmEvent",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "CuoWuMa",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ShiJianBianHao",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ShiJian",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "RenWuBianHao",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ZiDuan",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ChuFaFangShi",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ShuZhi",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ChuFaXinXi",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "YiYueBiaoJi",
-                    "id": 10
-                }
-            ],
-            "enums": [
-                {
-                    "name": "AlarmEventStatus",
-                    "values": [
-                        {
-                            "name": "STATUS_UnRead",
-                            "id": 0
-                        },
-                        {
-                            "name": "STATUS_Read",
-                            "id": 1
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "AlarmTask",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "CuoWuMa",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "RenWuBianHao",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ShiJian",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ZiDuan",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ChuFaFangShi",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ShuZhi",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ZhuangTai",
-                    "id": 8
-                }
-            ],
-            "enums": [
-                {
-                    "name": "AlarmTriggerType",
-                    "values": [
-                        {
-                            "name": "TYPE_CompareGT",
-                            "id": 0
-                        },
-                        {
-                            "name": "TYPE_CompareGTE",
-                            "id": 1
-                        },
-                        {
-                            "name": "TYPE_CompareLT",
-                            "id": 2
-                        },
-                        {
-                            "name": "TYPE_CompareLTE",
-                            "id": 3
-                        },
-                        {
-                            "name": "TYPE_CompareCross",
-                            "id": 4
-                        },
-                        {
-                            "name": "TYPE_CompareUpCross",
-                            "id": 5
-                        },
-                        {
-                            "name": "TYPE_CompareDownCross",
-                            "id": 6
-                        }
-                    ]
-                },
-                {
-                    "name": "AlarmTaskStatus",
-                    "values": [
-                        {
-                            "name": "STATUS_Stop",
-                            "id": 0
-                        },
-                        {
-                            "name": "STATUS_Running",
-                            "id": 1
-                        }
-                    ]
-                }
-            ]
-        },
-        {
             "name": "BlockObjOutput",
             "fields": [
                 {
@@ -4944,6 +4884,24 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "MaiMaiFangXiang",
                     "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DanCiChengJiaoLiang",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DanCiChengJiaoE",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DanCiChengJiaoDanBiShu",
+                    "id": 11
                 }
             ]
         },
@@ -5459,6 +5417,126 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "JieSuanZhangFu",
                     "id": 85
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu1",
+                    "id": 86
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu2",
+                    "id": 87
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu3",
+                    "id": 88
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu4",
+                    "id": 89
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu5",
+                    "id": 90
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu6",
+                    "id": 91
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu7",
+                    "id": 92
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu8",
+                    "id": 93
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu9",
+                    "id": 94
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiRu10",
+                    "id": 95
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu1",
+                    "id": 96
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu2",
+                    "id": 97
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu3",
+                    "id": 98
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu4",
+                    "id": 99
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu5",
+                    "id": 100
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu6",
+                    "id": 101
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu7",
+                    "id": 102
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu8",
+                    "id": 103
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu9",
+                    "id": 104
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PanKouBianHuaMaiChu10",
+                    "id": 105
                 }
             ]
         },
@@ -5836,7 +5914,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             "name": "WeiTuoDuiLie",
             "fields": [
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
                     "name": "Obj",
                     "id": 1
@@ -5871,7 +5949,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                             "id": 1
                         },
                         {
-                            "rule": "required",
+                            "rule": "optional",
                             "type": "int64",
                             "name": "BiShu",
                             "id": 2
@@ -5881,6 +5959,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                             "type": "int64",
                             "name": "Liang",
                             "id": 3
+                        },
+                        {
+                            "rule": "optional",
+                            "type": "int64",
+                            "name": "ZongLiang",
+                            "id": 4
                         }
                     ]
                 }
@@ -5972,6 +6056,98 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "DuanXianTuHuo",
                     "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ChengJiaoLiang",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ChengJiaoE",
+                    "id": 16
+                }
+            ]
+        },
+        {
+            "name": "DynaMMP",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "DynaMaiMaiPrice",
+                    "name": "Rows",
+                    "id": 1
+                }
+            ]
+        },
+        {
+            "name": "DynaMaiMaiPrice",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JiaGe",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Liang",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ChaZhi",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "DynaMaiMaiZongLiang",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "WeiTuoMaiRuZongLiang",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "WeiTuoMaiChuZongLiang",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "DynaFenshiStatus",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "IndexStatuc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "GeGuDongTai",
+                    "name": "DataStatus",
+                    "id": 3
                 }
             ]
         },
@@ -6095,6 +6271,197 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "optional",
                     "type": "int64",
                     "name": "JunJia",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "LingXianZhiBiao",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DuoKongXian",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "WeiTuoMaiRuZongLiang",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "WeiTuoMaiChuZongLiang",
+                    "id": 9
+                }
+            ]
+        },
+        {
+            "name": "FenShiLishi",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "FenShi",
+                    "name": "Rows",
+                    "id": 1
+                }
+            ]
+        },
+        {
+            "name": "DynaAlib",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ID",
+                    "id": 2
+                },
+                {
+                    "rule": "repeated",
+                    "type": "string",
+                    "name": "Objs",
+                    "id": 3
+                },
+                {
+                    "rule": "repeated",
+                    "type": "DynaAlibObj",
+                    "name": "DAObjs",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "DynaAlibObj",
+            "fields": [
+                {
+                    "rule": "repeated",
+                    "type": "string",
+                    "name": "Objs",
+                    "id": 1
+                }
+            ]
+        },
+        {
+            "name": "BackUpState",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Market",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "BackUpTime",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "BackUpCloseStatus",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "CloseTime",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "CloseStatus",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "LingxianDuokongZhibiao",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "LingXianZhiBiao",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DuoKongXian",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "LingxianDuokongZhibiaoStatus",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "JiaoYiRiQi",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "IndexStatuc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "LingxianDuokongZhibiao",
+                    "name": "DataStatus",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "ZhubiDangri",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "Id",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ZuiXinJia",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ChengJiaoLiang",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ZhubiId",
                     "id": 5
                 }
             ]
@@ -6487,6 +6854,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "ZuoRiJieSuanJia",
                     "id": 9
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FenShiLishi",
+                    "name": "LiShiFenShi",
+                    "id": 10
                 }
             ],
             "messages": [
@@ -6713,6 +7086,161 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "QuoteDynaMinSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "GeGuDongTai",
+                    "name": "Data",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "QingPan",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "QuoteReportSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZhubiDangri",
+                    "name": "Data",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "QingPan",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "QuoteQueueSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "WeiTuoDuiLie",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "QuoteHistoryMinSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FenShiLishi",
+                    "name": "Data",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ZuoShou",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "QuoteFundFlow",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanLiuRuJinE",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanLiuChuJinE",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "DaDanJingLiuRuJinE",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "QuoteFundFlowSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteFundFlow",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "QuoteQueueMinSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "WeiTuoDuiLie",
+                    "name": "Data",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "QingPan",
+                    "id": 3
+                }
+            ]
+        },
+        {
             "name": "JPBShuJu",
             "fields": [
                 {
@@ -6772,257 +7300,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "JPBShuChu",
                     "name": "JieGuo",
                     "id": 2
-                }
-            ]
-        },
-        {
-            "name": "ADPutResponse",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ErrCode",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "ADInfo",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Slot",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Data",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Version",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "ADGetResponse",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "ADInfo",
-                    "name": "Slots",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "PropVersion",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "MessageChannelSubtype",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "name",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "queue_size",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "per_size",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "description",
-                    "id": 4
-                }
-            ]
-        },
-        {
-            "name": "FenJiJiJin",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Type",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ZhengTiYiJia",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "MYiJia",
-                    "id": 51
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "MShiShiJingZhi",
-                    "id": 52
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "MShangZheXuZhang",
-                    "id": 53
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "MXiaZheXuDie",
-                    "id": 54
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "YinHanShouYi",
-                    "id": 101
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "JiaGeGangGan",
-                    "id": 151
-                }
-            ]
-        },
-        {
-            "name": "FenJiJiJinJingTai",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "FenJiJingTaiShuJu",
-                    "name": "ShuJu",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "FenJiJingTaiShuJu",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "MObj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MJingZhi",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MShangZheFaZhi",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "AObj",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "AZuiXinJingZhi",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "AChangNeiFenE",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "AFenEZhanBi",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "AYueDingShouYi",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "AYueDingShouYi2",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "BObj",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "BZuiXinJingZhi",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "BChangNeiFenE",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "BGenZongObj",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "BChuShiGangGan",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "BFenEZhanBi",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "BXiaZheFaZhi",
-                    "id": 16
                 }
             ]
         },
@@ -7366,653 +7643,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "SelfStock",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "stock_code",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "add_time",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "op",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "FullSelfStock",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "SelfStock",
-                    "name": "codes",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "position",
-                    "id": 2,
-                    "options": {
-                        "default": 0
-                    }
-                }
-            ]
-        },
-        {
-            "name": "SelfStockGetOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "uid",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "SelfStock",
-                    "name": "codes",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "type",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "SelfStockPutOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "uid",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "status",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "Privilege",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "name",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "value",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "Privileges",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "Privilege",
-                    "name": "items",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "AppInfo",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Name",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Owner",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Desc",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Email",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ExpireTime",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "CreateTime",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Limit",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Duration",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "AppId",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "SecretKey",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "ServiceAuth",
-                    "name": "Auth",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "CrmAppId",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "ShortAppId",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Department",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ProposerTel",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Contact",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "CustomerEmail",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "CustomerTel",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Address",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "ServiceType",
-                    "id": 20
-                }
-            ]
-        },
-        {
-            "name": "ProfileValue",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "BitPos",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "Privilege",
-                    "name": "Priv",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "ServiceAuth",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "bytes",
-                    "name": "AuthBitMask",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ProfileValue",
-                    "name": "BitProfileValue",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "AccOpResponse",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Result",
-                    "id": 1,
-                    "options": {
-                        "default": "0"
-                    }
-                },
-                {
-                    "rule": "optional",
-                    "type": "AppInfo",
-                    "name": "Info",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "TokenData",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Token",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Appid",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "CreatedTime",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "ExpireTime",
-                    "id": 4
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "RefreshTime",
-                    "id": 5
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Duration",
-                    "id": 6
-                },
-                {
-                    "rule": "required",
-                    "type": "ServiceAuth",
-                    "name": "Auth",
-                    "id": 7
-                }
-            ]
-        },
-        {
-            "name": "AppKey",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "AppId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Secret",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "AppValue",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Secret",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "AppInfo",
-                    "name": "Info",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "AppInfoServiceAuth",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "AppInfo",
-                    "name": "Info",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "ServiceAuth",
-                    "name": "Auth",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "AppServiceAuth",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "AppId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "AppInfoServiceAuth",
-                    "name": "Data",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "ServiceAuthList",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "AppServiceAuth",
-                    "name": "AppAuthLists",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "TokenAuth",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "Limit",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "Expireln",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "ExpireTime",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "YunMsg",
-            "fields": [
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "RecordTime",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "from",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "to",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "type",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "msg",
-                    "id": 5
-                }
-            ]
-        },
-        {
-            "name": "MsgGetOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "to",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "YunMsg",
-                    "name": "msgs",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "MsgPutOutput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "from",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "to",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "status",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "YunMsgType",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "literalVal",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "numericVal",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "objType",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "UserGroup",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Id",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Name",
-                    "id": 2
-                },
-                {
-                    "rule": "repeated",
-                    "type": "string",
-                    "name": "user_prop",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "create_time",
-                    "id": 4
-                }
-            ]
-        },
-        {
-            "name": "UserGroupResponse",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Id",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Err_code",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Err_msg",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "PrivConst",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "name",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "urlKey",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "attribute",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "description",
-                    "id": 4
-                }
-            ]
-        },
-        {
-            "name": "ServiceAuthConsts",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "pos",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "name",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "description",
-                    "id": 3
-                },
-                {
-                    "rule": "repeated",
-                    "type": "PrivConst",
-                    "name": "items",
-                    "id": 4
-                }
-            ]
-        },
-        {
             "name": "YiZhiXinYeJiYuCe",
             "fields": [
                 {
@@ -8281,6 +7911,24 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "ZiJinJingE",
                     "id": 10
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ZiJinLiuXiangShuJu",
+                    "name": "ZiJinLiuXiang",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JunJia",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JiaQuanJunJia",
+                    "id": 13
                 }
             ],
             "messages": [
@@ -8352,52 +8000,23 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                             "id": 2
                         }
                     ]
-                }
-            ]
-        },
-        {
-            "name": "AttrsMap",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "key",
-                    "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "value",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "UserGetPropResponse",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "userid",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "accounttype",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "timestamp",
-                    "id": 3
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AttrsMap",
-                    "name": "attrs",
-                    "id": 4
+                    "name": "ZiJinLiuXiangShuJu",
+                    "fields": [
+                        {
+                            "rule": "optional",
+                            "type": "int64",
+                            "name": "ShiJian",
+                            "id": 1
+                        },
+                        {
+                            "rule": "optional",
+                            "type": "int64",
+                            "name": "ZiJinJingE",
+                            "id": 2
+                        }
+                    ]
                 }
             ]
         },
@@ -8598,109 +8217,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "Stock",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "Price",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Time",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "StkPool",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Text",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "Stock",
-                    "name": "Stk",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "StkPoolOuput",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "CeWenShiJian",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "StkPool",
-                    "name": "Pooldata",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "EventNews",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "id",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "date",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "title",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "context",
-                    "id": 4
-                },
-                {
-                    "rule": "repeated",
-                    "type": "string",
-                    "name": "objList",
-                    "id": 5
-                }
-            ]
-        },
-        {
-            "name": "EventNewsList",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "EventNews",
-                    "name": "dataList",
-                    "id": 1
-                }
-            ]
-        },
-        {
             "name": "F10CpbdZxzbOutput",
             "fields": [
                 {
@@ -8890,6 +8406,2590 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "rule": "repeated",
                     "type": "CpbdCjhbData",
                     "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCpbdFbsjjzjzData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dwjz",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dwljjz",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdFbsjjzjz",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCpbdFbsjjzjzData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdFbsjjzjzOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCpbdFbsjjzjz",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCpbdJjfebdqkData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qczfe",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqzsg",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqzsh",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmzfe",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqjsg",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjfebdqk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCpbdJjfebdqkData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjfebdqkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCpbdJjfebdqk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCpbdJjgbjbData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqjsy",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmjzc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmfejz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gpsz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqsz",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gpbl",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqbl",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "hjsz",
+                    "id": 8
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjgbjb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCpbdJjgbjbData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjgbjbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCpbdJjgbjb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCpbdJjjzbxData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jzzzl",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bjjzsyl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cz",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjjzbx",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCpbdJjjzbxData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjjzbxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCpbdJjjzbx",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdJjxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "date",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjtzmb",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxsytz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ywbjjz",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundCpbdZfeOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "gxrq",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjjc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjlx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ggrq",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zfe",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ltfe",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "FundCwsjJyyjData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "srhj",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gpcjsr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqcjsr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqlxsr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cklxsr",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gxsr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fyhj",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jjglf",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jjtgf",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jjjsy",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "F10FundCwsjJyyj",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCwsjJyyjData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCwsjJyyjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCwsjJyyj",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCwsjZcfzData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dw",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yhck",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qsbfj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jybzj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gptzsz",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqtzsz",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yslx",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yssgk",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zczj",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yfjyqsk",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yfjjglf",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yfjjtgf",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yfshk",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fzzj",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ssjj",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cyrqyhj",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fzjqyhj",
+                    "id": 17
+                }
+            ]
+        },
+        {
+            "name": "F10FundCwsjZcfz",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCwsjZcfzData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCwsjZcfzOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCwsjZcfz",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCwsjZycwzbData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqjsy",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "kgfpsy",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mfkgfpsy",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmzcjz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmfejz",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jqpjjzsyl",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mfjzzzl",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mfljjzzzl",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mfjsy",
+                    "id": 9
+                }
+            ]
+        },
+        {
+            "name": "F10FundCwsjZycwzb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCwsjZycwzbData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCwsjZycwzbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCwsjZycwzb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundCyrHshjgData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cyrhs",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "hjfe",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jgcyfe",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jgcybl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "grcyfe",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "grcybl",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10FundCyrHshjg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundCyrHshjgData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundCyrHshjgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCyrHshjg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundFefhFbsjjcyrjgData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zfe",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ltfe",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fqrcylt",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gzcy",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "wltfe",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fqrcywlt",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdyy",
+                    "id": 7
+                }
+            ]
+        },
+        {
+            "name": "F10FundFefhFbsjjcyrjg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "bdrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundFefhFbsjjcyrjgData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundFefhFbsjjcyrjgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFefhFbsjjcyrjg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundFefhFhData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dwfh",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cffe",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qydjr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cxr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hlffr",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundFefhFh",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "ggrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundFefhFhData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundFefhFhOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFefhFh",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundFefhKfsjjjdfebdData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qcze",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqsg",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cfzj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqsh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qmze",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundFefhKfsjjjdfebd",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "bbrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundFefhKfsjjjdfebdData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundFefhKfsjjjdfebdOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFefhKfsjjjdfebd",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundGpmxBqzdmcgpData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ljmcjz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzbl",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10FundGpmxBqzdmcgp",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundGpmxBqzdmcgpData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundGpmxBqzdmcgpOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundGpmxBqzdmcgp",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundGpmxBqzdmrgpData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ljmrjz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzbl",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10FundGpmxBqzdmrgp",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundGpmxBqzdmrgpData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundGpmxBqzdmrgpOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundGpmxBqzdmrgp",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundGpmxQbcgData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gpsl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzbl",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundGpmxQbcg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundGpmxQbcgData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundGpmxQbcgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundGpmxQbcg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundHgzwData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "nr",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zq",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FundHgzw",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundHgzwData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundHgzwOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHgzw",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundHytzData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hydm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hymc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzbl",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10FundHytz",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundHytzData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundHytzOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHytz",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundHytzQdiiData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hydm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hymc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzbl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bz",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundHytzQdii",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundHytzQdiiData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundHytzQdiiOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHytzQdii",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundJbxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dsymbol",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjqc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjmc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jjlx",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "tzlx",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jylb",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrq",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "clrq",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "glgsqc",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzmb",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzfw",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxsytz",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tgrmc",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yjbjjz",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "isauto",
+                    "id": 17
+                }
+            ]
+        },
+        {
+            "name": "F10FundFbsjjgkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjqc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjjc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjlx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzlx",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjmz",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrq",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjclr",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjzzr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjcxq",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjtgr",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "glgs",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "clrq",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgdz",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcdz",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fddbr",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lxdh",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cz",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gswz",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dzyx",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lssws",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kjssws",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjyjbjjz",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxsytz",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzmb",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzfw",
+                    "id": 27
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzcl",
+                    "id": 28
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzln",
+                    "id": 29
+                }
+            ]
+        },
+        {
+            "name": "F10FundKfsjjgkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjqc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjjc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjlx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzlx",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjmz",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bz",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrq",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjclr",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjcxq",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjtgr",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "glgs",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "clrq",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgdz",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcdz",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fddbr",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lxdh",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cz",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gswz",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dzyx",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "lssws",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kjssws",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jjyjbjjz",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxsytz",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzmb",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzfw",
+                    "id": 27
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzcl",
+                    "id": 28
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzln",
+                    "id": 29
+                }
+            ]
+        },
+        {
+            "name": "FundJlggJjgsggryData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xl",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zw",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lb",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundJlggJjgsggry",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "xm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundJlggJjgsggryData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundJlggJjgsggryOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJlggJjgsggry",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundJlggJjjlData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xb",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xl",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zw",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "rzkssj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jl",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundJlggJjjl",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "xm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundJlggJjjlData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundJlggJjjlOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJlggJjjl",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundJyyjData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qsmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "yj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gpcjje",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "gpcjbl",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqcjje",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqbl",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqhgje",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqhgbl",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qzcjje",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qzbl",
+                    "id": 12
+                }
+            ]
+        },
+        {
+            "name": "F10FundJyyj",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundJyyjData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundJyyjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJyyj",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundZccgQsmgpmxData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzb",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tbzjc",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10FundZccgQsmgpmx",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundZccgQsmgpmxData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundZccgQsmgpmxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZccgQsmgpmx",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundZccgQdiiData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gpjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zjzb",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundZccgQdii",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundZccgQdiiData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundZccgQdiiOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZccgQdii",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundZqtzTzzhData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqlx",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bl",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FundZqtzTzzh",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "bgrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundZqtzTzzhData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundZqtzTzzhOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZqtzTzzh",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundZqtzTzzhQdiiData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xydj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bz",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundZqtzTzzhQdii",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundZqtzTzzhQdiiData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundZqtzTzzhQdiiOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZqtzTzzhQdii",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundZqtzZcmxData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zytz",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10FundZqtzZcmx",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundZqtzZcmxData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundZqtzZcmxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZqtzZcmx",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundZycyrData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cyrmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cyfe",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "szbl",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cyzjqk",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10FundZycyr",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundZycyrData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundZycyrOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZycyr",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "FundHbjjxeData",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "scdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jynm",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jshsx",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jsgsx",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zshsx",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zsgsx",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dzhjshsx",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dzhjsgsx",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dzhzshsx",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "dzhzsgsx",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cptx",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "F10FundHbjjxe",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "xerq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "FundHbjjxeData",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FundHbjjxeOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHbjjxe",
+                    "name": "Data",
                     "id": 2
                 }
             ]
@@ -12005,281 +14105,2027 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "FluxValue",
+            "name": "F10BondDfzfzfxOutput",
             "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Appid",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "UsedFlux",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "MaxFlux",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "JunXianPaiBu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "JunXianPaiBuLeiXing",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "TopicInvestData",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "TopicInvestId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
                     "type": "string",
-                    "name": "TopicInvestName",
-                    "id": 2
-                },
-                {
-                    "rule": "repeated",
-                    "type": "string",
-                    "name": "ComponentObj",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "EventTopicData",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "TopicInvestId",
+                    "name": "zqzhdm",
                     "id": 1
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "TopicInvestName",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "EventObjData",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Name",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "FutureEvent",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int64",
-                    "name": "EventID",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Title",
+                    "name": "zqmc",
                     "id": 2
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "ExpectTime",
+                    "name": "fxrmc",
                     "id": 3
                 },
                 {
-                    "rule": "repeated",
-                    "type": "EventTopicData",
-                    "name": "TopicData",
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxqsr",
                     "id": 4
                 },
                 {
-                    "rule": "repeated",
-                    "type": "EventObjData",
-                    "name": "ObjData",
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxzzr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqze",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 8
+                }
+            ]
+        },
+        {
+            "name": "F10BondDfzfzqxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqqc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jxqsr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dqr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cxqx",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pmll",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xppz",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jxfs",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lllx",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxcs",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrsm",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "chfs",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sfms",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ktqdf",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bzqzsl",
+                    "id": 16
+                }
+            ]
+        },
+        {
+            "name": "F10BondFlszzfxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrq",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hzwh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxfs",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxdx",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxsl",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjjg",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cxfs",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zxpgjg",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xydj",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dbr",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dbrlx",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "xygdpsje",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "wssgrq",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "wszqlggr",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "wszql",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzfx",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sstjr",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kzzdjjg",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mjzjze",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fyhj",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mjzjje",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tzjyr",
+                    "id": 25
+                }
+            ]
+        },
+        {
+            "name": "F10BondFlszztkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ybhstk",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mjzjtxsm",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10BondFlszzxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqmc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqmz",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqqx",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jxqsr",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dqr",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ll",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxpl",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrsm",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssqsr",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "scssgm",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bzqzsl",
+                    "id": 13
+                }
+            ]
+        },
+        {
+            "name": "F10BondGzxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "gzqc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqlx",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "nd",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zfe",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mz",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pmll",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "qx",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jxfs",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lllx",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qxrq",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dqrq",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xppz",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxcs",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxr2",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "chfs",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sfms",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sl",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ktqdf",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zyssgdm",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hgdm7",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hgdm28",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hgdm91",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dfqsrq",
+                    "id": 27
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bzqzsl",
+                    "id": 28
+                }
+            ]
+        },
+        {
+            "name": "F10BondHgxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "hgzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hgjc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hgpz",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10BondKzzfxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "faxr",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hzwh",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxfs",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxdx",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxsl",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjjg",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cxfs",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zxpgjg",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xydj",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "psje",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "wssgr",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "wszqggr",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "wszql",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zzfx",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sstjr",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "kzzdjjg",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mjzjze",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fyhj",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "mjzjje",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgqsr",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgzzr",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgdm",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zgjc",
+                    "id": 26
+                }
+            ]
+        },
+        {
+            "name": "F10BondKzztkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tztk",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xztk",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dqshtk",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ybhstk",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "mjzjtX",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "BondKzztzzgj",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqmc",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sjlx",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bdqzgj",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bdhzgj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xzgjsxrq",
                     "id": 5
                 }
             ]
         },
         {
-            "name": "StockFutureEvent",
+            "name": "F10BondKzztzzgj",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Obj",
+                    "name": "ggrq",
                     "id": 1
                 },
                 {
                     "rule": "repeated",
-                    "type": "FutureEvent",
+                    "type": "BondKzztzzgj",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10BondKzztzzgjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondKzztzzgj",
                     "name": "Data",
                     "id": 2
                 }
             ]
         },
         {
-            "name": "Score",
+            "name": "F10BondKzzxxOutput",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Obj",
+                    "name": "zqzhdm",
                     "id": 1
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ZiJinLiuXiangShiRiPingFen",
+                    "type": "string",
+                    "name": "zqjc",
                     "id": 2
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ZiJinLiuXiangDangRiPingFen",
+                    "type": "string",
+                    "name": "zqmc",
                     "id": 3
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "ShiFouShuYuRenYiZhuTi",
+                    "name": "zqmz",
                     "id": 4
                 },
                 {
                     "rule": "optional",
-                    "type": "string",
-                    "name": "ZhuTiBianHao",
+                    "type": "int64",
+                    "name": "zqqx",
                     "id": 5
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "ZhuTiMingChen",
+                    "name": "jxqsr",
                     "id": 6
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ZhuTiReDuPingFen",
+                    "type": "string",
+                    "name": "dqr",
                     "id": 7
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ShiFouRongZiRongQuanGu",
+                    "type": "string",
+                    "name": "llsm",
                     "id": 8
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "RongZiYuEZengZhangLvPingFen",
+                    "name": "fxpl",
                     "id": 9
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "RongZiYuEZhanBiPingFen",
+                    "type": "string",
+                    "name": "fxrsm",
                     "id": 10
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "ShiFouShangBangGuPiao",
+                    "name": "cszgj",
                     "id": 11
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "LongHuBangPingFen",
+                    "name": "zxzgj",
                     "id": 12
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "LongHuBangJiGouPingFen",
+                    "type": "string",
+                    "name": "cszgsm",
                     "id": 13
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "LongHuBangZhuLiPingFen",
+                    "type": "string",
+                    "name": "ssqsr",
                     "id": 14
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "JiBenMianZhuYingShouRuTongBiPingFen",
+                    "name": "scssgm",
                     "id": 15
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "JiBenMianXiaoShouMaoLiLvPingFen",
+                    "name": "bzqzsl",
                     "id": 16
+                }
+            ]
+        },
+        {
+            "name": "BondQycyr",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "cyrmc",
+                    "id": 1
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "cyrmc2",
+                    "id": 2
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "JiBenMianZiChanFuZhaiLvPingFen",
+                    "name": "cyje",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cyl",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cybl",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sid",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10BondQycyr",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "BondQycyr",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10BondQycyrOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondQycyr",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10BondQyzfxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrmc",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ywmc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxqsr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "zqze",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxjg",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sstjr",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fzcxs",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "tgr",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zcdz",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bgdz",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "frdb",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "yzbm",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hlwdz",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cz",
                     "id": 17
                 },
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "JiBenMianJingTaiShiYingLvPingFen",
+                    "name": "zczb",
                     "id": 18
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "JiBenMianZiChanShouYiLvPingFen",
+                    "type": "string",
+                    "name": "kjsws",
                     "id": 19
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "GuPiaoBanKuaiPingJi",
+                    "type": "string",
+                    "name": "lssws",
                     "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrdm",
+                    "id": 21
                 }
             ]
         },
         {
-            "name": "LongHuBang",
+            "name": "F10BondQyzxxOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jxqsr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dqr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "cxqx",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "pmll",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xppz",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jxfs",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "lllx",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "fxcs",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxr",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "chfs",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sfms",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sl",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ktqdf",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "pjjg",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xydj",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dbr",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "dfqsr",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bzqzsl",
+                    "id": 21
+                }
+            ]
+        },
+        {
+            "name": "BondZqgg",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ggbt",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qw",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zlly",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sid",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10BondZqgg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "ggrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "BondZqgg",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10BondZqggOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondZqgg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "BondZqxjl",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "fxrq",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "xjlllx",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "je",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zqdjr",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "cqcxr",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sid",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10BondZqxjl",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "ggrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "BondZqxjl",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10BondZqxjlOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondZqxjl",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "BondZqzg",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ljzgje",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ljzgs",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqzgje",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bqzgs",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "sybj",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "F10BondZqzg",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "jzrq",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "BondZqzg",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10BondZqzgOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zqzhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondZqzg",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexDqjj",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexDqjjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexDqjj",
+                    "name": "data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexJqjj",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexJqjjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexJqjj",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexLlhh",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexLlhhOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexLlhh",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexQqwhjbzlOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "whdm",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "whmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sjly",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jysj",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbdm",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbmc",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbgjmc",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "jchbssz",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbsszmc",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbssdq",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbjj",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbdm",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbmc",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbgjmc",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "bjhbssz",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbsszmc",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbssdq",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbjj",
+                    "id": 18
+                }
+            ]
+        },
+        {
+            "name": "F10ForexShiborlv",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexShiborlvOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexShiborlv",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexWbdjq",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexWbdjqOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexWbdjq",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexWhbzMb",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "whbzlx",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "clfs",
+                    "id": 3
+                },
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zdmc",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bz",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "F10ForexWhbzMbOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "stype",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexWhbzMb",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexXycj",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexXycjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexXycj",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10ForexYqjj",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdzwmc",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdz",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "stype",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10ForexYqjjOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "zhdm",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexYqjj",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesBzhyOutput",
             "fields": [
                 {
                     "rule": "required",
@@ -12289,49 +16135,710 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ShangBangCiShu",
+                    "type": "string",
+                    "name": "jydm",
                     "id": 2
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "JiGouJingMaiRuE",
+                    "type": "string",
+                    "name": "jypz",
                     "id": 3
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ShangBangCiShuPaiMing",
+                    "type": "string",
+                    "name": "ssjys",
                     "id": 4
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "JiGouJingMaiRuZhanBiPaiMing",
+                    "type": "string",
+                    "name": "jydw",
                     "id": 5
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ZhuLiJingMaiRuZhanBiPaiMing",
+                    "type": "string",
+                    "name": "bjdw",
                     "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zxjwbd",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdbdxz",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zdbzj",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "hyjzj",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jysxf",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hyjgyf",
+                    "id": 12
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zhjyr",
+                    "id": 13
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "zhjgr",
+                    "id": 14
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgpj",
+                    "id": 15
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgdd",
+                    "id": 16
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jysjysj",
+                    "id": 17
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bdjysj",
+                    "id": 18
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgfs",
+                    "id": 19
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jyfs",
+                    "id": 20
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jybcj",
+                    "id": 21
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgyq",
+                    "id": 22
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "wtjgsxf",
+                    "id": 23
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "qtfy",
+                    "id": 24
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbssdq",
+                    "id": 25
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbssgj",
+                    "id": 26
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jchbsd",
+                    "id": 27
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbssdq",
+                    "id": 28
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbssgj",
+                    "id": 29
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjhbsd",
+                    "id": 30
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "pzdm",
+                    "id": 31
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "pzmc",
+                    "id": 32
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgdw",
+                    "id": 33
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgjy",
+                    "id": 34
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "jgq",
+                    "id": 35
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "bjfs",
+                    "id": 36
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "hybd",
+                    "id": 37
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "ssrq",
+                    "id": 38
                 }
             ]
         },
         {
-            "name": "LongHuBangTongJi",
+            "name": "F10FuturesCpgk",
             "fields": [
                 {
-                    "rule": "optional",
+                    "rule": "required",
                     "type": "int64",
-                    "name": "ShangBangGeShu",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesCpgkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
                     "id": 1
                 },
                 {
                     "rule": "repeated",
+                    "type": "F10FuturesCpgk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesFkbf",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
                     "type": "string",
-                    "name": "ShangBangLieBiao",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesFkbfOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesFkbf",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesJsxz",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesJsxzOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesJsxz",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesJygz",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesJygzOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesJygz",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesWphy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesWphyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesWphy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesYxys",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10FuturesYxysOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesYxys",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10SpotBzhy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "sourcetable",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "F10SpotBzhyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotBzhy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10SpotFjsm",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10SpotFjsmOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotFjsm",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10SpotJygz",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10SpotJygzOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotJygz",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10SpotPzgk",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10SpotPzgkOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotPzgk",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10SpotWphy",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10SpotWphyOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotWphy",
+                    "name": "Data",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "F10SpotYxys",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "int64",
+                    "name": "rn",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "title",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "content",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "F10SpotYxysOutput",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotYxys",
+                    "name": "Data",
                     "id": 2
                 }
             ]
@@ -12362,6 +16869,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "WaitStockNum",
                     "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ApplyStockNum",
+                    "id": 5
                 }
             ]
         },
@@ -12917,864 +17430,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "TopicPage",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "SuoShuZhuTi",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiGuanZhu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouJingMaiRuJinE",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "YouZiJingMaiRuJiaShu",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouMaiRuJinE",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouMaiChuJinE",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "JiGouMaiRuJiaShu",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "JiGouMaiChuJiaShu",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "YouZiMaiRuJinE",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "YouZiMaiChuJinE",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "YouZiMaiRuJiaShu",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "YouZiMaiChuJiaShu",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GuPiaoMingCheng",
-                    "id": 13
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiGuanZhuFanHui",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ShuJuZongGeShu",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiGuanZhu",
-                    "name": "TongJiGuanZhu",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiReMenGeGu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GuPiaoMingCheng",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "ShangBangChiShu",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ChengJiaoJinE",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuJinE",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuJinE",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "JiGouCanYuChiShu",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouMaiRuJinE",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouMaiChuJinE",
-                    "id": 12
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiReMenGeGuFanHui",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ShuJuZongGeShu",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiReMenGeGu",
-                    "name": "TongJiReMenGeGu",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiReMenGeGuLiShi",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "YiDongChiShu",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "QuanShangMaiRuJinE",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "QuanShangMaiChuJinE",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouMaiRuJinE",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "JiGouMaiChuJinE",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "YouZiMaiRuJinE",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "YouZiMaiChuJinE",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "JiGouShangBangChiShu",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "TongJiTianShuLeiXing",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "JiGouMaiRuJiaShu",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "JiGouMaiChuJiaShu",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "YouZiMaiRuJiaShu",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "YouZiMaiChuJiaShu",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "YiDongLeiXing",
-                    "id": 16
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiReMenYingYeBu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "XiWeiDaiMa",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "XiWeiMingCheng",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiRuChiShu",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiRuChengGongChiShu",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiChuChiShu",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiChuChengGongChiShu",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuJinE",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuJinE",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuShouYiLv",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuShouYiLv",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "ShangBangChiShu",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "TongJiChiShu",
-                    "id": 13
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiReMenYingYeBuFanHui",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ShuJuZongGeShu",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiReMenYingYeBu",
-                    "name": "TongJiReMenYingYeBu",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBLiShiShuJu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GuPiaoMingCheng",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "XiWeiMingCheng",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "DangRiZhangFu",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ChiRiZhangFu",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ChengJiaoJinE",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuJinE",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuJinE",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "YiDongLeiXing",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ShouPanJia",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "HuanShouLv",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "YiDongZhi",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "XiWeiDaiMa",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "TongJiTianShuLeiXing",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "XiWeiPaiMing",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "ShangBangChiShu",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiMaiFangXiang",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "XiWeiLeiXing",
-                    "id": 19
-                }
-            ]
-        },
-        {
-            "name": "LHBLiShiShuJuFanHui",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ShuJuZongGeShu",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLiShiShuJu",
-                    "name": "LiShiShuJu",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiLiShiShuJu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GuPiaoMingCheng",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "XiWeiMingCheng",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "TongJiTianShu",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "ShangBangChiShu",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuJinE",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiRuChiShu",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuJinE",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "int32",
-                    "name": "MaiChuChiShu",
-                    "id": 10
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ChengJiaoJinE",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "XiWeiDaiMa",
-                    "id": 12
-                }
-            ]
-        },
-        {
-            "name": "LHBTongJiLiShiShuJuFanHui",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ShuJuZongGeShu",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiLiShiShuJu",
-                    "name": "TongJiLiShiShuJu",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBLongHuBangLiShi",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GuPiaoMingCheng",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuJinE",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuJinE",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ChengJiaoJinE",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ShouPanJia",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "DangRiZhangFu",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "HuanShouLv",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "YiDongLeiXing",
-                    "id": 10
-                }
-            ]
-        },
-        {
-            "name": "LHBLongHuBangLiShiFanHui",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "ShuJuZongGeShu",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLongHuBangLiShi",
-                    "name": "LongHuBangLiShi",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "LHBLongHuBangGuanZhu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GuPiaoMingCheng",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "GengXinShiJian",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiRuJinE",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "MaiChuJinE",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ChengJiaoJinE",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ShouPanJia",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "DangRiZhangFu",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "HuanShouLv",
-                    "id": 9
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "YiDongLeiXing",
-                    "id": 10
-                }
-            ]
-        },
-        {
-            "name": "PcYiZhiXinYeJiYuCe",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "YanBaoRiQi",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "JinNianEEPS",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "MingNianEEPS",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "JinNianEPE",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "MingNianEPE",
-                    "id": 5
-                }
-            ]
-        },
-        {
-            "name": "PcYeJiYuCeShuJu",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "PcYiZhiXinYeJiYuCe",
-                    "name": "YiZhiXinYeJiYuCe",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "PcYiZhiXinYeJiYuCeLiShi",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "YanBaoRiQi",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "JieZhiRiQi",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "EEPS",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "EPE",
-                    "id": 5
-                }
-            ]
-        },
-        {
             "name": "NewsDataItem",
             "fields": [
                 {
@@ -14018,465 +17673,78 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "ZhiBiaoPingJia",
+            "name": "ReportDataItem",
             "fields": [
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Obj",
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Id",
                     "id": 1
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "JunXianPaiBuLeiXing",
+                    "type": "string",
+                    "name": "Date",
                     "id": 2
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "YaLiWei",
+                    "type": "string",
+                    "name": "Title",
                     "id": 3
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "ZhiChengWei",
+                    "type": "string",
+                    "name": "Organization",
                     "id": 4
                 },
                 {
                     "rule": "optional",
-                    "type": "int64",
-                    "name": "KaiPanTaiShiLeiXing",
-                    "id": 5
-                }
-            ]
-        },
-        {
-            "name": "BasicFinanceData",
-            "fields": [
-                {
-                    "rule": "required",
                     "type": "string",
-                    "name": "obj",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "repdate",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "floatdate",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "earnps",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "assetps",
+                    "name": "Context",
                     "id": 5
                 },
                 {
                     "rule": "optional",
-                    "type": "double",
-                    "name": "rona",
+                    "type": "string",
+                    "name": "type",
                     "id": 6
                 },
                 {
                     "rule": "optional",
-                    "type": "double",
-                    "name": "cashps",
+                    "type": "string",
+                    "name": "RateClass",
                     "id": 7
                 },
                 {
                     "rule": "optional",
-                    "type": "double",
-                    "name": "accufundps",
+                    "type": "string",
+                    "name": "RateDirection",
                     "id": 8
                 },
                 {
                     "rule": "optional",
-                    "type": "double",
-                    "name": "unapproprofitps",
+                    "type": "string",
+                    "name": "Author",
                     "id": 9
                 },
                 {
                     "rule": "optional",
-                    "type": "double",
-                    "name": "rateonequity",
+                    "type": "int64",
+                    "name": "HightPrice",
                     "id": 10
                 },
                 {
                     "rule": "optional",
-                    "type": "double",
-                    "name": "profitinc",
+                    "type": "int64",
+                    "name": "LowPrice",
                     "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "incomeinc",
-                    "id": 12
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "grossprofit",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "adjassetps",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "asset",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "floatasset",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "fixedasset",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "intasset",
-                    "id": 18
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "floatdebet",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "longdebet",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "alldebet",
-                    "id": 21
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "hoderequity",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "capitalfund",
-                    "id": 23
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "cashfloat",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "investfloat",
-                    "id": 25
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "raisefloat",
-                    "id": 26
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "cashinc",
-                    "id": 27
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "mainincome",
-                    "id": 28
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "mainprofit",
-                    "id": 29
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "tradeprofit",
-                    "id": 30
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "investprofit",
-                    "id": 31
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "otherbalance",
-                    "id": 32
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "allprofit",
-                    "id": 33
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "netprofit",
-                    "id": 34
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "unapproprofit",
-                    "id": 35
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "totalshare",
-                    "id": 36
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "norestrictshare",
-                    "id": 37
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "ashare",
-                    "id": 38
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "bshare",
-                    "id": 39
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "foreignshare",
-                    "id": 40
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "otherfloatshare",
-                    "id": 41
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "restrictshare",
-                    "id": 42
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "nationshare",
-                    "id": 43
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "natcorpshare",
-                    "id": 44
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "domestcorpshare",
-                    "id": 45
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "domestindshare",
-                    "id": 46
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "otherlaunchshare",
-                    "id": 47
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "raisecorpshare",
-                    "id": 48
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "foreigncorpshare",
-                    "id": 49
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "foreingIndshare",
-                    "id": 50
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "preforothershare",
-                    "id": 51
                 }
             ]
         },
         {
-            "name": "DividData",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "obj",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "chuQuanRiQi",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "guQuanDenJiRi",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "songGuShu",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "zhuanZengGuShu",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "paiXiShu",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "peiGuShu",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "peiGuJia",
-                    "id": 8
-                },
-                {
-                    "rule": "optional",
-                    "type": "double",
-                    "name": "paiXiShuShuiHou",
-                    "id": 9
-                }
-            ]
-        },
-        {
-            "name": "FinanceStat",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Date",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Zcfzl",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "ZcfzlAvg",
-                    "id": 3
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Jzcsyl",
-                    "id": 4
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "JzcsylAvg",
-                    "id": 5
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Yysr",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "Yytb",
-                    "id": 7
-                },
-                {
-                    "rule": "optional",
-                    "type": "int64",
-                    "name": "YytbAvg",
-                    "id": 8
-                }
-            ]
-        },
-        {
-            "name": "StockFinanceStat",
+            "name": "StockReport",
             "fields": [
                 {
                     "rule": "required",
@@ -14486,271 +17754,102 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "FinanceStat",
+                    "type": "ReportDataItem",
                     "name": "Data",
                     "id": 2
                 }
             ]
         },
         {
-            "name": "HeaderData",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "NewsData",
-                    "name": "bigImgNews",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "pagesize",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "last",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "pre",
-                    "id": 4
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "next",
-                    "id": 5
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "totalsize",
-                    "id": 6
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "first",
-                    "id": 7
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "totalpage",
-                    "id": 8
-                }
-            ]
-        },
-        {
-            "name": "NewsDataList",
-            "fields": [
-                {
-                    "rule": "repeated",
-                    "type": "NewsData",
-                    "name": "NewsList",
-                    "id": 1
-                }
-            ]
-        },
-        {
-            "name": "NewsData",
+            "name": "SelfReport",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "id",
+                    "name": "Obj",
                     "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "summary",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "title",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "otime",
-                    "id": 4
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "source",
-                    "id": 5
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "img",
-                    "id": 6
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "type",
-                    "id": 7
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "url",
-                    "id": 8
-                },
-                {
-                    "rule": "required",
-                    "type": "uint64",
-                    "name": "countid",
-                    "id": 9
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "views",
-                    "id": 10
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "resType",
-                    "id": 11
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "isTop",
-                    "id": 12
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "uComments",
-                    "id": 13
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "eComments",
-                    "id": 14
-                },
-                {
-                    "rule": "repeated",
-                    "type": "RelevantStock",
-                    "name": "stockName",
-                    "id": 15
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "topName",
-                    "id": 16
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "topUrl",
-                    "id": 17
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "topType",
-                    "id": 18
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "topColor",
-                    "id": 19
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "fColor",
-                    "id": 20
-                }
-            ]
-        },
-        {
-            "name": "RelevantStock",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "stockcode",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "stockname",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "FavoriteNewsData",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "title",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "clickurl",
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "Id",
                     "id": 2
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "storetime",
+                    "name": "Date",
                     "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Title",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Organization",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Context",
+                    "id": 6
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "type",
+                    "id": 7
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "RateClass",
+                    "id": 8
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "RateDirection",
+                    "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "Author",
+                    "id": 10
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "HightPrice",
+                    "id": 11
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "LowPrice",
+                    "id": 12
                 }
             ]
         },
         {
-            "name": "UserNews",
+            "name": "InnerReportDataItem",
             "fields": [
                 {
                     "rule": "required",
-                    "type": "HeaderData",
-                    "name": "header",
+                    "type": "int64",
+                    "name": "Version",
                     "id": 1
                 },
                 {
-                    "rule": "repeated",
-                    "type": "NewsData",
-                    "name": "news",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "FavoriteNews",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "HeaderData",
-                    "name": "header",
-                    "id": 1
-                },
-                {
-                    "rule": "repeated",
-                    "type": "FavoriteNewsData",
-                    "name": "news",
+                    "rule": "optional",
+                    "type": "ReportDataItem",
+                    "name": "Data",
                     "id": 2
                 }
             ]
@@ -14975,6 +18074,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "HoldItem",
                     "name": "HoldList",
                     "id": 9
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "CapitalId",
+                    "id": 10
                 }
             ]
         },
@@ -15063,6 +18168,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "OrderItem",
                     "name": "OrderList",
                     "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "CapitalId",
+                    "id": 4
                 }
             ]
         },
@@ -15145,6 +18256,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "DealItem",
                     "name": "DealList",
                     "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "CapitalId",
+                    "id": 4
                 }
             ]
         },
@@ -15255,784 +18372,341 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
-            "name": "LiveRoom",
+            "name": "DanShangPinShuXing",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "RoomId",
+                    "name": "obj",
                     "id": 1
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "TLSVideoId",
+                    "name": "shangShiShiJian",
                     "id": 2
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "TLSIMId",
+                    "name": "zhongWenJianCheng",
                     "id": 3
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "RoomName",
+                    "name": "yingWenQuanCheng",
                     "id": 4
                 },
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "OwnerAccount",
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "xiaoShuDianWeiShu",
                     "id": 5
                 },
                 {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomStatus",
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "jiaoYiShiJianLeiXin",
                     "id": 6
                 },
                 {
                     "rule": "optional",
-                    "type": "uint64",
-                    "name": "PV",
-                    "id": 7,
-                    "options": {
-                        "default": 0
-                    }
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "PV5min",
-                    "id": 8,
-                    "options": {
-                        "default": 0
-                    }
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "FollowNum",
-                    "id": 9,
-                    "options": {
-                        "default": 0
-                    }
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "MemberNum",
-                    "id": 10,
-                    "options": {
-                        "default": 0
-                    }
-                },
-                {
-                    "rule": "required",
-                    "type": "uint64",
-                    "name": "CreateTime",
-                    "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "StopTime",
-                    "id": 12
-                },
-                {
-                    "rule": "required",
                     "type": "string",
-                    "name": "RoomType",
-                    "id": 13
-                },
-                {
-                    "rule": "repeated",
-                    "type": "string",
-                    "name": "Guest",
-                    "id": 14
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "RoomImg",
-                    "id": 15
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "StopUser",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "StopReason",
-                    "id": 17
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomTopic",
-                    "id": 18
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "OwnerName",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerAccountImg",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerInfoUrl",
-                    "id": 21
-                },
-                {
-                    "rule": "required",
-                    "type": "uint64",
-                    "name": "MaxMemberCount",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "UpNum",
-                    "id": 23,
-                    "options": {
-                        "default": 0
-                    }
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerAccountType",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "RoomShareUrl",
-                    "id": 25
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerTypeName",
-                    "id": 26
-                }
-            ]
-        },
-        {
-            "name": "LiveCreateRoom",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "TLSVideoId",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "TLSIMId",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "RoomInfo",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "TLSVideoId",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "TLSIMId",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomName",
-                    "id": 4
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "OwnerAccount",
-                    "id": 5
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomStatus",
-                    "id": 6
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "PV",
+                    "name": "jiaoYiBiZhong",
                     "id": 7
                 },
                 {
                     "rule": "optional",
-                    "type": "uint64",
-                    "name": "PV5min",
+                    "type": "string",
+                    "name": "tuiShiShiJian",
                     "id": 8
                 },
                 {
                     "rule": "optional",
-                    "type": "uint64",
-                    "name": "FollowNum",
+                    "type": "int32",
+                    "name": "shangShiZhuangTai",
                     "id": 9
                 },
                 {
                     "rule": "optional",
-                    "type": "uint64",
-                    "name": "MemberNum",
+                    "type": "string",
+                    "name": "zhengQuanLeiBie",
                     "id": 10
                 },
                 {
-                    "rule": "required",
-                    "type": "uint64",
-                    "name": "CreateTime",
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "tingPai",
                     "id": 11
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "StopTime",
-                    "id": 12
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomType",
-                    "id": 13
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "RoomImg",
-                    "id": 14
-                },
+                }
+            ]
+        },
+        {
+            "name": "MarketTradeDate",
+            "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "RoomTopic",
-                    "id": 15
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "OwnerName",
-                    "id": 16
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerAccountImg",
-                    "id": 17
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerInfoUrl",
-                    "id": 18
-                },
-                {
-                    "rule": "required",
-                    "type": "uint64",
-                    "name": "MaxMemberCount",
-                    "id": 19
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint64",
-                    "name": "UpNum",
-                    "id": 20
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerAccountType",
-                    "id": 21
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "RoomShareUrl",
-                    "id": 22
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "OwnerTypeName",
-                    "id": 23
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "StopUser",
-                    "id": 24
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "StopReason",
-                    "id": 25
+                    "name": "Market",
+                    "id": 1
                 },
                 {
                     "rule": "repeated",
                     "type": "string",
-                    "name": "Guest",
-                    "id": 26
+                    "name": "TradeDate",
+                    "id": 2
                 }
             ]
         },
         {
-            "name": "SearchRoomResult",
+            "name": "FutureInfo",
             "fields": [
                 {
                     "rule": "required",
-                    "type": "string",
-                    "name": "RoomId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "TLSVideoId",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "TLSIMId",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "RoomName",
-                    "id": 4
-                }
-            ]
-        },
-        {
-            "name": "RoomOperationSuccess",
-            "fields": []
-        },
-        {
-            "name": "TipList",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "Period",
-                    "id": 1
-                },
-                {
-                    "rule": "optional",
-                    "type": "uint32",
-                    "name": "WaitTime",
-                    "id": 2
-                },
-                {
-                    "rule": "optional",
                     "type": "string",
                     "name": "Obj",
-                    "id": 3
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Version",
-                    "id": 4
-                },
-                {
-                    "rule": "repeated",
-                    "type": "OwnerAccountList",
-                    "name": "OwnerList",
-                    "id": 5
-                }
-            ]
-        },
-        {
-            "name": "OwnerAccountList",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "OwnerName",
                     "id": 1
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "OwnerAccountImg",
+                    "name": "Name",
                     "id": 2
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "ClickUrl",
+                    "name": "BeginDate",
                     "id": 3
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "OwnerType",
+                    "name": "EndDate",
                     "id": 4
                 },
                 {
                     "rule": "optional",
                     "type": "string",
-                    "name": "TypeName",
+                    "name": "DeliveryDay",
                     "id": 5
                 },
                 {
                     "rule": "optional",
-                    "type": "string",
-                    "name": "Color",
+                    "type": "double",
+                    "name": "TradeUnit",
                     "id": 6
                 },
                 {
                     "rule": "optional",
-                    "type": "uint32",
-                    "name": "OwnerPeriod",
+                    "type": "double",
+                    "name": "MarginRate",
                     "id": 7
                 }
             ]
         },
         {
-            "name": "AccountSig",
+            "name": "NewStockInfo",
             "fields": [
                 {
                     "rule": "required",
                     "type": "string",
-                    "name": "Sig",
+                    "name": "StockCode",
                     "id": 1
                 },
                 {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "SdkAppId",
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "StockName",
                     "id": 2
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "AccountType",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "ILVBLogin",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Sig",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "SdkAppid",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "AccountType",
+                    "name": "StockSummary",
                     "id": 3
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "AsToken",
+                    "name": "BuyCode",
                     "id": 4
                 },
                 {
-                    "rule": "required",
-                    "type": "uint32",
-                    "name": "AsTokenExpire",
+                    "rule": "optional",
+                    "type": "string",
+                    "name": "IssueTotal",
                     "id": 5
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "OssSigHost",
+                    "name": "OnlineTotal",
                     "id": 6
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "SearchRoom",
+                    "name": "BuyLimit",
                     "id": 7
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "CreateRoom",
+                    "name": "IssuePrice",
                     "id": 8
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "UpdateRoom",
+                    "name": "FirstClose",
                     "id": 9
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "StopRoom",
+                    "name": "BuyDate",
                     "id": 10
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "PresentInfo",
+                    "name": "PubDate",
                     "id": 11
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "OssEndPoint",
+                    "name": "PayDate",
                     "id": 12
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "ImgEndPoint",
+                    "name": "TradeDate",
                     "id": 13
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "OssPort",
+                    "name": "IssuePE",
                     "id": 14
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "BucketName",
+                    "name": "IndustryPE",
                     "id": 15
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "VedioInfoAddr",
+                    "name": "SuccessRate",
                     "id": 16
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "UserMsgAddr",
+                    "name": "OfferTotal",
                     "id": 17
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "RoomImg",
+                    "name": "OfferTimes",
                     "id": 18
                 },
                 {
-                    "rule": "required",
+                    "rule": "optional",
                     "type": "string",
-                    "name": "RoomTopic",
+                    "name": "SeriesNum",
                     "id": 19
                 },
                 {
                     "rule": "optional",
-                    "type": "RoomInfo",
-                    "name": "LiveRoom",
+                    "type": "string",
+                    "name": "IncreaseTotal",
                     "id": 20
                 }
             ]
         },
         {
-            "name": "OssSig",
+            "name": "YueKXianShuJu",
             "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "OSSAccessKeyId",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Expires",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Signature",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "GetNameList",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "WhiteList",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "BlackList",
-                    "id": 2
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "DataBaseError",
-                    "id": 3
-                }
-            ]
-        },
-        {
-            "name": "FluxTimer",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Flux",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "Time",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "FluxSaveWithTime",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "uint64",
-                    "name": "Flux",
-                    "id": 1
-                },
                 {
                     "rule": "required",
                     "type": "int64",
-                    "name": "Time",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "RichSearchResult",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "GuanJianZi",
+                    "name": "Nian",
                     "id": 1
                 },
                 {
                     "rule": "optional",
-                    "type": "string",
-                    "name": "JieGuo",
+                    "type": "int64",
+                    "name": "ZhangFu",
                     "id": 2
-                },
-                {
-                    "rule": "optional",
-                    "type": "string",
-                    "name": "Kuozhan",
-                    "id": 3
                 }
             ]
         },
         {
-            "name": "RevDiamondRank",
+            "name": "YueZouShiShuJu",
             "fields": [
                 {
                     "rule": "required",
-                    "type": "string",
-                    "name": "TotalRev",
+                    "type": "int64",
+                    "name": "Yue",
                     "id": 1
                 },
                 {
                     "rule": "repeated",
-                    "type": "UserRank",
-                    "name": "User",
-                    "id": 2
-                }
-            ]
-        },
-        {
-            "name": "UserRank",
-            "fields": [
-                {
-                    "rule": "required",
-                    "type": "string",
-                    "name": "UserAccount",
-                    "id": 1
-                },
-                {
-                    "rule": "required",
-                    "type": "int32",
-                    "name": "Rank",
+                    "type": "YueKXianShuJu",
+                    "name": "YueKXian",
                     "id": 2
                 },
                 {
                     "rule": "optional",
-                    "type": "uint64",
-                    "name": "Consume",
+                    "type": "int64",
+                    "name": "ShangZhangGaiLv",
                     "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "PingJunZhangFu",
+                    "id": 4
                 }
             ]
         },
         {
-            "name": "RegalRank",
+            "name": "HistoryTrends",
             "fields": [
                 {
                     "rule": "required",
-                    "type": "UserRank",
-                    "name": "Self",
+                    "type": "string",
+                    "name": "Obj",
                     "id": 1
                 },
                 {
                     "rule": "repeated",
-                    "type": "UserRank",
-                    "name": "User",
+                    "type": "YueZouShiShuJu",
+                    "name": "YueZouShi",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "MonthTrends",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "LiShiHangQing",
+                    "name": "HangQing",
                     "id": 2
                 }
             ]
@@ -16060,9 +18734,9 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "optional",
-                    "type": "string",
-                    "name": "JsonTbl",
-                    "id": 4
+                    "type": "int32",
+                    "name": "ObjCount",
+                    "id": 5
                 },
                 {
                     "rule": "repeated",
@@ -16096,12 +18770,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "ZhiBiaoShuChu",
-                    "name": "RepDataZhiBiaoShuChu",
-                    "id": 25
-                },
-                {
-                    "rule": "repeated",
                     "type": "ZhiBiao",
                     "name": "RepDataZhiBiao",
                     "id": 26
@@ -16126,24 +18794,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "FenJiJiJin",
-                    "name": "RepDataFenJiJiJin",
-                    "id": 30
-                },
-                {
-                    "rule": "repeated",
-                    "type": "MsgGetOutput",
-                    "name": "RepDataMsgGetOutput",
-                    "id": 31
-                },
-                {
-                    "rule": "repeated",
-                    "type": "MsgPutOutput",
-                    "name": "RepDataMsgPutOutput",
-                    "id": 32
-                },
-                {
-                    "rule": "repeated",
                     "type": "BlockObjOutput",
                     "name": "RepDataBlockObjOutput",
                     "id": 33
@@ -16156,123 +18806,9 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "SelfStockGetOutput",
-                    "name": "RepDataSelfStockGetOutput",
-                    "id": 35
-                },
-                {
-                    "rule": "repeated",
-                    "type": "SelfStockPutOutput",
-                    "name": "RepDataSelfStockPutOutput",
-                    "id": 36
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AppKey",
-                    "name": "RepDataAppKey",
-                    "id": 37
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AppInfo",
-                    "name": "RepDataAppInfo",
-                    "id": 38
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AppValue",
-                    "name": "RepDataAppValue",
-                    "id": 39
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ServiceAuth",
-                    "name": "RepDataServiceAuth",
-                    "id": 40
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AppServiceAuth",
-                    "name": "RepDataAppServiceAuth",
-                    "id": 41
-                },
-                {
-                    "rule": "repeated",
-                    "type": "TokenAuth",
-                    "name": "RepDataTokenAuth",
-                    "id": 42
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AccOpResponse",
-                    "name": "RepDataAccOpResponse",
-                    "id": 43
-                },
-                {
-                    "rule": "repeated",
                     "type": "Token",
                     "name": "RepDataToken",
                     "id": 44
-                },
-                {
-                    "rule": "repeated",
-                    "type": "Privilege",
-                    "name": "RepDataPrivilege",
-                    "id": 45
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AlarmEvent",
-                    "name": "RepDataAlarmEvent",
-                    "id": 46
-                },
-                {
-                    "rule": "repeated",
-                    "type": "AlarmTask",
-                    "name": "RepDataAlarmTask",
-                    "id": 47
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ADPutResponse",
-                    "name": "RepDataADPutResponse",
-                    "id": 48
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ADGetResponse",
-                    "name": "RepDataADGetResponse",
-                    "id": 49
-                },
-                {
-                    "rule": "repeated",
-                    "type": "UserGroup",
-                    "name": "RepDataUserGroup",
-                    "id": 50
-                },
-                {
-                    "rule": "repeated",
-                    "type": "UserGroupResponse",
-                    "name": "RepDataUserGroupResponse",
-                    "id": 51
-                },
-                {
-                    "rule": "repeated",
-                    "type": "UserPropsMessage",
-                    "name": "RepDataUserPropsMessage",
-                    "id": 52
-                },
-                {
-                    "rule": "repeated",
-                    "type": "TopicInvest",
-                    "name": "RepDataTopicInvest",
-                    "id": 53
-                },
-                {
-                    "rule": "repeated",
-                    "type": "TopicInvestHistory",
-                    "name": "RepDataTopicInvestHistory",
-                    "id": 54
                 },
                 {
                     "rule": "repeated",
@@ -16348,12 +18884,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "TopicInvestInfo",
-                    "name": "RepDataTopicInvestInfo",
-                    "id": 67
-                },
-                {
-                    "rule": "repeated",
                     "type": "YiZhiXinYeJiYuCeOutPut",
                     "name": "RepDataYiZhiXinYeJiYuCeOutPut",
                     "id": 68
@@ -16378,27 +18908,9 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "DSToken",
-                    "name": "RepDataDSToken",
-                    "id": 72
-                },
-                {
-                    "rule": "repeated",
                     "type": "TongJiApp",
                     "name": "RepDataTongJiApp",
                     "id": 73
-                },
-                {
-                    "rule": "repeated",
-                    "type": "MessageChannelSubtype",
-                    "name": "RepDataMessageChannelSubtype",
-                    "id": 74
-                },
-                {
-                    "rule": "repeated",
-                    "type": "UserGetPropResponse",
-                    "name": "RepDataUserGetPropResponse",
-                    "id": 75
                 },
                 {
                     "rule": "repeated",
@@ -16411,18 +18923,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "DXSpirit",
                     "name": "RepDataDXSpirit",
                     "id": 77
-                },
-                {
-                    "rule": "repeated",
-                    "type": "StkPoolOuput",
-                    "name": "RepDataStkPoolOuput",
-                    "id": 78
-                },
-                {
-                    "rule": "repeated",
-                    "type": "EventNews",
-                    "name": "RepDataEventNews",
-                    "id": 79
                 },
                 {
                     "rule": "repeated",
@@ -16618,57 +19118,15 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "ServiceAuthConsts",
-                    "name": "RepDataServiceAuthConsts",
-                    "id": 112
-                },
-                {
-                    "rule": "repeated",
                     "type": "DXSpiritStat",
                     "name": "RepDataDXSpiritStat",
                     "id": 113
                 },
                 {
                     "rule": "repeated",
-                    "type": "FluxValue",
-                    "name": "RepDataFluxValue",
-                    "id": 114
-                },
-                {
-                    "rule": "repeated",
                     "type": "PaiMing",
                     "name": "RepDataPaiMing",
                     "id": 115
-                },
-                {
-                    "rule": "repeated",
-                    "type": "JunXianPaiBu",
-                    "name": "RepDataJunXianPaiBu",
-                    "id": 116
-                },
-                {
-                    "rule": "repeated",
-                    "type": "StockFutureEvent",
-                    "name": "RepDataStockFutureEvent",
-                    "id": 117
-                },
-                {
-                    "rule": "repeated",
-                    "type": "Score",
-                    "name": "RepDataScore",
-                    "id": 118
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LongHuBang",
-                    "name": "RepDataLongHuBang",
-                    "id": 119
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LongHuBangTongJi",
-                    "name": "RepDataLongHuBangTongJi",
-                    "id": 120
                 },
                 {
                     "rule": "repeated",
@@ -16726,48 +19184,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "TopicPage",
-                    "name": "RepDataTopicPage",
-                    "id": 130
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiReMenGeGu",
-                    "name": "RepDataLHBTongJiReMenGeGu",
-                    "id": 131
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiReMenYingYeBu",
-                    "name": "RepDataLHBTongJiReMenYingYeBu",
-                    "id": 132
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLiShiShuJu",
-                    "name": "RepDataLHBLiShiShuJu",
-                    "id": 133
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiLiShiShuJu",
-                    "name": "RepDataLHBTongJiLiShiShuJu",
-                    "id": 134
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLongHuBangLiShi",
-                    "name": "RepDataLHBLongHuBangLiShi",
-                    "id": 135
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLongHuBangGuanZhu",
-                    "name": "RepDataLHBLongHuBangGuanZhu",
-                    "id": 136
-                },
-                {
-                    "rule": "repeated",
                     "type": "BrokerList",
                     "name": "RepDataBrokerList",
                     "id": 137
@@ -16777,54 +19193,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "FinanceQuickReport",
                     "name": "RepDataFinanceQuickReport",
                     "id": 138
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiGuanZhu",
-                    "name": "RepDataLHBTongJiGuanZhu",
-                    "id": 139
-                },
-                {
-                    "rule": "repeated",
-                    "type": "PcYeJiYuCeShuJu",
-                    "name": "RepDataPcYeJiYuCeShuJu",
-                    "id": 140
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiGuanZhuFanHui",
-                    "name": "RepDataLHBTongJiGuanZhuFanHui",
-                    "id": 141
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiReMenGeGuFanHui",
-                    "name": "RepDataLHBTongJiReMenGeGuFanHui",
-                    "id": 142
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiReMenYingYeBuFanHui",
-                    "name": "RepDataLHBTongJiReMenYingYeBuFanHui",
-                    "id": 143
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLiShiShuJuFanHui",
-                    "name": "RepDataLHBLiShiShuJuFanHui",
-                    "id": 144
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBTongJiLiShiShuJuFanHui",
-                    "name": "RepDataLHBTongJiLiShiShuJuFanHui",
-                    "id": 145
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LHBLongHuBangLiShiFanHui",
-                    "name": "RepDataLHBLongHuBangLiShiFanHui",
-                    "id": 146
                 },
                 {
                     "rule": "repeated",
@@ -16849,24 +19217,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "StockAnnouncemt",
                     "name": "RepDataStockAnnouncemt",
                     "id": 150
-                },
-                {
-                    "rule": "repeated",
-                    "type": "ZhiBiaoPingJia",
-                    "name": "RepDataZhiBiaoPingJia",
-                    "id": 151
-                },
-                {
-                    "rule": "repeated",
-                    "type": "StockFinanceStat",
-                    "name": "RepDataStockFinanceStat",
-                    "id": 152
-                },
-                {
-                    "rule": "repeated",
-                    "type": "UserNews",
-                    "name": "RepDataUserNews",
-                    "id": 153
                 },
                 {
                     "rule": "repeated",
@@ -16930,93 +19280,495 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
-                    "type": "AccountSig",
-                    "name": "RepDataAccountSig",
-                    "id": 164
-                },
-                {
-                    "rule": "repeated",
-                    "type": "LiveCreateRoom",
-                    "name": "RepDataLiveCreateRoom",
-                    "id": 165
-                },
-                {
-                    "rule": "repeated",
-                    "type": "RoomInfo",
-                    "name": "RepDataRoomInfo",
-                    "id": 166
-                },
-                {
-                    "rule": "repeated",
-                    "type": "SearchRoomResult",
-                    "name": "RepDataSearchRoomResult",
-                    "id": 167
-                },
-                {
-                    "rule": "repeated",
-                    "type": "RoomOperationSuccess",
-                    "name": "RepDataRoomOperationSuccess",
-                    "id": 168
-                },
-                {
-                    "rule": "repeated",
-                    "type": "OssSig",
-                    "name": "RepDataOssSig",
-                    "id": 169
-                },
-                {
-                    "rule": "repeated",
                     "type": "QuoteDividSingle",
                     "name": "RepDataQuoteDividSingle",
                     "id": 170
                 },
                 {
                     "rule": "repeated",
-                    "type": "GetNameList",
-                    "name": "RepDataGetNameList",
-                    "id": 171
+                    "type": "F10FundCpbdFbsjjzjzOutput",
+                    "name": "RepDataF10FundCpbdFbsjjzjzOutput",
+                    "id": 179
                 },
                 {
                     "rule": "repeated",
-                    "type": "FluxTimer",
-                    "name": "RepDataFluxTimer",
-                    "id": 172
+                    "type": "F10FundCpbdJjfebdqkOutput",
+                    "name": "RepDataF10FundCpbdJjfebdqkOutput",
+                    "id": 180
                 },
                 {
                     "rule": "repeated",
-                    "type": "ILVBLogin",
-                    "name": "RepDataILVBLogin",
-                    "id": 173
+                    "type": "F10FundCpbdJjgbjbOutput",
+                    "name": "RepDataF10FundCpbdJjgbjbOutput",
+                    "id": 181
                 },
                 {
                     "rule": "repeated",
-                    "type": "TipList",
-                    "name": "RepDataTipList",
-                    "id": 174
+                    "type": "F10FundCpbdJjjzbxOutput",
+                    "name": "RepDataF10FundCpbdJjjzbxOutput",
+                    "id": 182
                 },
                 {
                     "rule": "repeated",
-                    "type": "FavoriteNews",
-                    "name": "RepDataFavoriteNews",
-                    "id": 175
+                    "type": "F10FundCpbdJjxxOutput",
+                    "name": "RepDataF10FundCpbdJjxxOutput",
+                    "id": 183
                 },
                 {
                     "rule": "repeated",
-                    "type": "RevDiamondRank",
-                    "name": "RepDataRevDiamondRank",
-                    "id": 176
+                    "type": "F10FundCpbdZfeOutput",
+                    "name": "RepDataF10FundCpbdZfeOutput",
+                    "id": 184
                 },
                 {
                     "rule": "repeated",
-                    "type": "RegalRank",
-                    "name": "RepDataRegalRank",
-                    "id": 177
+                    "type": "F10FundCwsjJyyjOutput",
+                    "name": "RepDataF10FundCwsjJyyjOutput",
+                    "id": 185
                 },
                 {
                     "rule": "repeated",
-                    "type": "RichSearchResult",
-                    "name": "RepDataRichSearchResult",
-                    "id": 178
+                    "type": "F10FundCwsjZcfzOutput",
+                    "name": "RepDataF10FundCwsjZcfzOutput",
+                    "id": 186
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCwsjZycwzbOutput",
+                    "name": "RepDataF10FundCwsjZycwzbOutput",
+                    "id": 187
+                },
+                {
+                    "rule": "repeated",
+                    "type": "NewStockInfo",
+                    "name": "RepDataNewStockInfo",
+                    "id": 188
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundCyrHshjgOutput",
+                    "name": "RepDataF10FundCyrHshjgOutput",
+                    "id": 190
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFefhFbsjjcyrjgOutput",
+                    "name": "RepDataF10FundFefhFbsjjcyrjgOutput",
+                    "id": 191
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFefhFhOutput",
+                    "name": "RepDataF10FundFefhFhOutput",
+                    "id": 192
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFefhKfsjjjdfebdOutput",
+                    "name": "RepDataF10FundFefhKfsjjjdfebdOutput",
+                    "id": 193
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundGpmxBqzdmcgpOutput",
+                    "name": "RepDataF10FundGpmxBqzdmcgpOutput",
+                    "id": 194
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundGpmxBqzdmrgpOutput",
+                    "name": "RepDataF10FundGpmxBqzdmrgpOutput",
+                    "id": 195
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundGpmxQbcgOutput",
+                    "name": "RepDataF10FundGpmxQbcgOutput",
+                    "id": 196
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHgzwOutput",
+                    "name": "RepDataF10FundHgzwOutput",
+                    "id": 197
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHytzOutput",
+                    "name": "RepDataF10FundHytzOutput",
+                    "id": 198
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHytzQdiiOutput",
+                    "name": "RepDataF10FundHytzQdiiOutput",
+                    "id": 199
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJbxxOutput",
+                    "name": "RepDataF10FundJbxxOutput",
+                    "id": 200
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundFbsjjgkOutput",
+                    "name": "RepDataF10FundFbsjjgkOutput",
+                    "id": 201
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundKfsjjgkOutput",
+                    "name": "RepDataF10FundKfsjjgkOutput",
+                    "id": 202
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJlggJjgsggryOutput",
+                    "name": "RepDataF10FundJlggJjgsggryOutput",
+                    "id": 203
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJlggJjjlOutput",
+                    "name": "RepDataF10FundJlggJjjlOutput",
+                    "id": 204
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundJyyjOutput",
+                    "name": "RepDataF10FundJyyjOutput",
+                    "id": 205
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZccgQsmgpmxOutput",
+                    "name": "RepDataF10FundZccgQsmgpmxOutput",
+                    "id": 206
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZccgQdiiOutput",
+                    "name": "RepDataF10FundZccgQdiiOutput",
+                    "id": 207
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZqtzTzzhOutput",
+                    "name": "RepDataF10FundZqtzTzzhOutput",
+                    "id": 208
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZqtzTzzhQdiiOutput",
+                    "name": "RepDataF10FundZqtzTzzhQdiiOutput",
+                    "id": 209
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZqtzZcmxOutput",
+                    "name": "RepDataF10FundZqtzZcmxOutput",
+                    "id": 210
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundZycyrOutput",
+                    "name": "RepDataF10FundZycyrOutput",
+                    "id": 211
+                },
+                {
+                    "rule": "repeated",
+                    "type": "HistoryTrends",
+                    "name": "RepDataHistoryTrends",
+                    "id": 215
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteDynaMinSingle",
+                    "name": "RepDataQuoteDynaMinSingle",
+                    "id": 218
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteHistoryMinSingle",
+                    "name": "RepDataQuoteHistoryMinSingle",
+                    "id": 221
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FundHbjjxeOutput",
+                    "name": "RepDataF10FundHbjjxeOutput",
+                    "id": 222
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondDfzfzfxOutput",
+                    "name": "RepDataF10BondDfzfzfxOutput",
+                    "id": 223
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondDfzfzqxxOutput",
+                    "name": "RepDataF10BondDfzfzqxxOutput",
+                    "id": 224
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondFlszzfxOutput",
+                    "name": "RepDataF10BondFlszzfxOutput",
+                    "id": 225
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondFlszztkOutput",
+                    "name": "RepDataF10BondFlszztkOutput",
+                    "id": 226
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondFlszzxxOutput",
+                    "name": "RepDataF10BondFlszzxxOutput",
+                    "id": 227
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondGzxxOutput",
+                    "name": "RepDataF10BondGzxxOutput",
+                    "id": 228
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondHgxxOutput",
+                    "name": "RepDataF10BondHgxxOutput",
+                    "id": 229
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondKzzfxOutput",
+                    "name": "RepDataF10BondKzzfxOutput",
+                    "id": 230
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondKzztkOutput",
+                    "name": "RepDataF10BondKzztkOutput",
+                    "id": 231
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondKzztzzgjOutput",
+                    "name": "RepDataF10BondKzztzzgjOutput",
+                    "id": 232
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondKzzxxOutput",
+                    "name": "RepDataF10BondKzzxxOutput",
+                    "id": 233
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondQycyrOutput",
+                    "name": "RepDataF10BondQycyrOutput",
+                    "id": 234
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondQyzfxOutput",
+                    "name": "RepDataF10BondQyzfxOutput",
+                    "id": 235
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondQyzxxOutput",
+                    "name": "RepDataF10BondQyzxxOutput",
+                    "id": 236
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondZqggOutput",
+                    "name": "RepDataF10BondZqggOutput",
+                    "id": 237
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondZqxjlOutput",
+                    "name": "RepDataF10BondZqxjlOutput",
+                    "id": 238
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10BondZqzgOutput",
+                    "name": "RepDataF10BondZqzgOutput",
+                    "id": 239
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexDqjjOutput",
+                    "name": "RepDataF10ForexDqjjOutput",
+                    "id": 240
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexJqjjOutput",
+                    "name": "RepDataF10ForexJqjjOutput",
+                    "id": 241
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexLlhhOutput",
+                    "name": "RepDataF10ForexLlhhOutput",
+                    "id": 242
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexQqwhjbzlOutput",
+                    "name": "RepDataF10ForexQqwhjbzlOutput",
+                    "id": 243
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexShiborlvOutput",
+                    "name": "RepDataF10ForexShiborlvOutput",
+                    "id": 244
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexWbdjqOutput",
+                    "name": "RepDataF10ForexWbdjqOutput",
+                    "id": 245
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexWhbzMbOutput",
+                    "name": "RepDataF10ForexWhbzMbOutput",
+                    "id": 246
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexXycjOutput",
+                    "name": "RepDataF10ForexXycjOutput",
+                    "id": 247
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10ForexYqjjOutput",
+                    "name": "RepDataF10ForexYqjjOutput",
+                    "id": 248
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesBzhyOutput",
+                    "name": "RepDataF10FuturesBzhyOutput",
+                    "id": 249
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesCpgkOutput",
+                    "name": "RepDataF10FuturesCpgkOutput",
+                    "id": 250
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesFkbfOutput",
+                    "name": "RepDataF10FuturesFkbfOutput",
+                    "id": 251
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesJsxzOutput",
+                    "name": "RepDataF10FuturesJsxzOutput",
+                    "id": 252
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesJygzOutput",
+                    "name": "RepDataF10FuturesJygzOutput",
+                    "id": 253
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesWphyOutput",
+                    "name": "RepDataF10FuturesWphyOutput",
+                    "id": 254
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10FuturesYxysOutput",
+                    "name": "RepDataF10FuturesYxysOutput",
+                    "id": 255
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotBzhyOutput",
+                    "name": "RepDataF10SpotBzhyOutput",
+                    "id": 256
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotFjsmOutput",
+                    "name": "RepDataF10SpotFjsmOutput",
+                    "id": 257
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotJygzOutput",
+                    "name": "RepDataF10SpotJygzOutput",
+                    "id": 258
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotPzgkOutput",
+                    "name": "RepDataF10SpotPzgkOutput",
+                    "id": 259
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotWphyOutput",
+                    "name": "RepDataF10SpotWphyOutput",
+                    "id": 260
+                },
+                {
+                    "rule": "repeated",
+                    "type": "F10SpotYxysOutput",
+                    "name": "RepDataF10SpotYxysOutput",
+                    "id": 261
+                },
+                {
+                    "rule": "repeated",
+                    "type": "ReportDataItem",
+                    "name": "RepDataReportDataItem",
+                    "id": 262
+                },
+                {
+                    "rule": "repeated",
+                    "type": "StockReport",
+                    "name": "RepDataStockReport",
+                    "id": 263
+                },
+                {
+                    "rule": "repeated",
+                    "type": "SelfReport",
+                    "name": "RepDataSelfReport",
+                    "id": 264
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteFundFlowSingle",
+                    "name": "RepDataQuoteFundFlowSingle",
+                    "id": 265
+                },
+                {
+                    "rule": "repeated",
+                    "type": "MonthTrends",
+                    "name": "RepDataMonthTrends",
+                    "id": 266
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteQueueMinSingle",
+                    "name": "RepDataQuoteQueueMinSingle",
+                    "id": 269
                 }
             ]
         },
@@ -17166,19 +19918,10 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "TYPE_TOPICANALY",
                     "id": 5
-                }
-            ]
-        },
-        {
-            "name": "FJJJ_TYPE",
-            "values": [
-                {
-                    "name": "FJJJ_TYPE_A",
-                    "id": 1
                 },
                 {
-                    "name": "FJJJ_TYPE_B",
-                    "id": 2
+                    "name": "TYPE_OBJPHONE",
+                    "id": 6
                 }
             ]
         },
@@ -17198,8 +19941,8 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 3
                 },
                 {
-                    "name": "IDJsonTbl",
-                    "id": 4
+                    "name": "IDObjCount",
+                    "id": 5
                 },
                 {
                     "name": "IDQuoteDynaSingle",
@@ -17222,10 +19965,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 24
                 },
                 {
-                    "name": "IDZhiBiaoShuChu",
-                    "id": 25
-                },
-                {
                     "name": "IDZhiBiao",
                     "id": 26
                 },
@@ -17242,18 +19981,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 29
                 },
                 {
-                    "name": "IDFenJiJiJin",
-                    "id": 30
-                },
-                {
-                    "name": "IDMsgGetOutput",
-                    "id": 31
-                },
-                {
-                    "name": "IDMsgPutOutput",
-                    "id": 32
-                },
-                {
                     "name": "IDBlockObjOutput",
                     "id": 33
                 },
@@ -17262,84 +19989,8 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 34
                 },
                 {
-                    "name": "IDSelfStockGetOutput",
-                    "id": 35
-                },
-                {
-                    "name": "IDSelfStockPutOutput",
-                    "id": 36
-                },
-                {
-                    "name": "IDAppKey",
-                    "id": 37
-                },
-                {
-                    "name": "IDAppInfo",
-                    "id": 38
-                },
-                {
-                    "name": "IDAppValue",
-                    "id": 39
-                },
-                {
-                    "name": "IDServiceAuth",
-                    "id": 40
-                },
-                {
-                    "name": "IDAppServiceAuth",
-                    "id": 41
-                },
-                {
-                    "name": "IDTokenAuth",
-                    "id": 42
-                },
-                {
-                    "name": "IDAccOpResponse",
-                    "id": 43
-                },
-                {
                     "name": "IDToken",
                     "id": 44
-                },
-                {
-                    "name": "IDPrivilege",
-                    "id": 45
-                },
-                {
-                    "name": "IDAlarmEvent",
-                    "id": 46
-                },
-                {
-                    "name": "IDAlarmTask",
-                    "id": 47
-                },
-                {
-                    "name": "IDADPutResponse",
-                    "id": 48
-                },
-                {
-                    "name": "IDADGetResponse",
-                    "id": 49
-                },
-                {
-                    "name": "IDUserGroup",
-                    "id": 50
-                },
-                {
-                    "name": "IDUserGroupResponse",
-                    "id": 51
-                },
-                {
-                    "name": "IDUserPropsMessage",
-                    "id": 52
-                },
-                {
-                    "name": "IDTopicInvest",
-                    "id": 53
-                },
-                {
-                    "name": "IDTopicInvestHistory",
-                    "id": 54
                 },
                 {
                     "name": "IDF10GsgkOutput",
@@ -17390,10 +20041,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 66
                 },
                 {
-                    "name": "IDTopicInvestInfo",
-                    "id": 67
-                },
-                {
                     "name": "IDYiZhiXinYeJiYuCeOutPut",
                     "id": 68
                 },
@@ -17410,20 +20057,8 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 71
                 },
                 {
-                    "name": "IDDSToken",
-                    "id": 72
-                },
-                {
                     "name": "IDTongJiApp",
                     "id": 73
-                },
-                {
-                    "name": "IDMessageChannelSubtype",
-                    "id": 74
-                },
-                {
-                    "name": "IDUserGetPropResponse",
-                    "id": 75
                 },
                 {
                     "name": "IDQuoteBOrderSingle",
@@ -17432,14 +20067,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDDXSpirit",
                     "id": 77
-                },
-                {
-                    "name": "IDStkPoolOuput",
-                    "id": 78
-                },
-                {
-                    "name": "IDEventNews",
-                    "id": 79
                 },
                 {
                     "name": "IDGongGaoXinXiOutput",
@@ -17570,40 +20197,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 111
                 },
                 {
-                    "name": "IDServiceAuthConsts",
-                    "id": 112
-                },
-                {
                     "name": "IDDXSpiritStat",
                     "id": 113
                 },
                 {
-                    "name": "IDFluxValue",
-                    "id": 114
-                },
-                {
                     "name": "IDPaiMing",
                     "id": 115
-                },
-                {
-                    "name": "IDJunXianPaiBu",
-                    "id": 116
-                },
-                {
-                    "name": "IDStockFutureEvent",
-                    "id": 117
-                },
-                {
-                    "name": "IDScore",
-                    "id": 118
-                },
-                {
-                    "name": "IDLongHuBang",
-                    "id": 119
-                },
-                {
-                    "name": "IDLongHuBangTongJi",
-                    "id": 120
                 },
                 {
                     "name": "IDOverallInfo",
@@ -17642,72 +20241,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 129
                 },
                 {
-                    "name": "IDTopicPage",
-                    "id": 130
-                },
-                {
-                    "name": "IDLHBTongJiReMenGeGu",
-                    "id": 131
-                },
-                {
-                    "name": "IDLHBTongJiReMenYingYeBu",
-                    "id": 132
-                },
-                {
-                    "name": "IDLHBLiShiShuJu",
-                    "id": 133
-                },
-                {
-                    "name": "IDLHBTongJiLiShiShuJu",
-                    "id": 134
-                },
-                {
-                    "name": "IDLHBLongHuBangLiShi",
-                    "id": 135
-                },
-                {
-                    "name": "IDLHBLongHuBangGuanZhu",
-                    "id": 136
-                },
-                {
                     "name": "IDBrokerList",
                     "id": 137
                 },
                 {
                     "name": "IDFinanceQuickReport",
                     "id": 138
-                },
-                {
-                    "name": "IDLHBTongJiGuanZhu",
-                    "id": 139
-                },
-                {
-                    "name": "IDPcYeJiYuCeShuJu",
-                    "id": 140
-                },
-                {
-                    "name": "IDLHBTongJiGuanZhuFanHui",
-                    "id": 141
-                },
-                {
-                    "name": "IDLHBTongJiReMenGeGuFanHui",
-                    "id": 142
-                },
-                {
-                    "name": "IDLHBTongJiReMenYingYeBuFanHui",
-                    "id": 143
-                },
-                {
-                    "name": "IDLHBLiShiShuJuFanHui",
-                    "id": 144
-                },
-                {
-                    "name": "IDLHBTongJiLiShiShuJuFanHui",
-                    "id": 145
-                },
-                {
-                    "name": "IDLHBLongHuBangLiShiFanHui",
-                    "id": 146
                 },
                 {
                     "name": "IDNewsDataItem",
@@ -17724,18 +20263,6 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDStockAnnouncemt",
                     "id": 150
-                },
-                {
-                    "name": "IDZhiBiaoPingJia",
-                    "id": 151
-                },
-                {
-                    "name": "IDStockFinanceStat",
-                    "id": 152
-                },
-                {
-                    "name": "IDUserNews",
-                    "id": 153
                 },
                 {
                     "name": "IDSelfNews",
@@ -17778,64 +20305,332 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "id": 163
                 },
                 {
-                    "name": "IDAccountSig",
-                    "id": 164
-                },
-                {
-                    "name": "IDLiveCreateRoom",
-                    "id": 165
-                },
-                {
-                    "name": "IDRoomInfo",
-                    "id": 166
-                },
-                {
-                    "name": "IDSearchRoomResult",
-                    "id": 167
-                },
-                {
-                    "name": "IDRoomOperationSuccess",
-                    "id": 168
-                },
-                {
-                    "name": "IDOssSig",
-                    "id": 169
-                },
-                {
                     "name": "IDQuoteDividSingle",
                     "id": 170
                 },
                 {
-                    "name": "IDGetNameList",
-                    "id": 171
+                    "name": "IDF10FundCpbdFbsjjzjzOutput",
+                    "id": 179
                 },
                 {
-                    "name": "IDFluxTimer",
-                    "id": 172
+                    "name": "IDF10FundCpbdJjfebdqkOutput",
+                    "id": 180
                 },
                 {
-                    "name": "IDILVBLogin",
-                    "id": 173
+                    "name": "IDF10FundCpbdJjgbjbOutput",
+                    "id": 181
                 },
                 {
-                    "name": "IDTipList",
-                    "id": 174
+                    "name": "IDF10FundCpbdJjjzbxOutput",
+                    "id": 182
                 },
                 {
-                    "name": "IDFavoriteNews",
-                    "id": 175
+                    "name": "IDF10FundCpbdJjxxOutput",
+                    "id": 183
                 },
                 {
-                    "name": "IDRevDiamondRank",
-                    "id": 176
+                    "name": "IDF10FundCpbdZfeOutput",
+                    "id": 184
                 },
                 {
-                    "name": "IDRegalRank",
-                    "id": 177
+                    "name": "IDF10FundCwsjJyyjOutput",
+                    "id": 185
                 },
                 {
-                    "name": "IDRichSearchResult",
-                    "id": 178
+                    "name": "IDF10FundCwsjZcfzOutput",
+                    "id": 186
+                },
+                {
+                    "name": "IDF10FundCwsjZycwzbOutput",
+                    "id": 187
+                },
+                {
+                    "name": "IDNewStockInfo",
+                    "id": 188
+                },
+                {
+                    "name": "IDF10FundCyrHshjgOutput",
+                    "id": 190
+                },
+                {
+                    "name": "IDF10FundFefhFbsjjcyrjgOutput",
+                    "id": 191
+                },
+                {
+                    "name": "IDF10FundFefhFhOutput",
+                    "id": 192
+                },
+                {
+                    "name": "IDF10FundFefhKfsjjjdfebdOutput",
+                    "id": 193
+                },
+                {
+                    "name": "IDF10FundGpmxBqzdmcgpOutput",
+                    "id": 194
+                },
+                {
+                    "name": "IDF10FundGpmxBqzdmrgpOutput",
+                    "id": 195
+                },
+                {
+                    "name": "IDF10FundGpmxQbcgOutput",
+                    "id": 196
+                },
+                {
+                    "name": "IDF10FundHgzwOutput",
+                    "id": 197
+                },
+                {
+                    "name": "IDF10FundHytzOutput",
+                    "id": 198
+                },
+                {
+                    "name": "IDF10FundHytzQdiiOutput",
+                    "id": 199
+                },
+                {
+                    "name": "IDF10FundJbxxOutput",
+                    "id": 200
+                },
+                {
+                    "name": "IDF10FundFbsjjgkOutput",
+                    "id": 201
+                },
+                {
+                    "name": "IDF10FundKfsjjgkOutput",
+                    "id": 202
+                },
+                {
+                    "name": "IDF10FundJlggJjgsggryOutput",
+                    "id": 203
+                },
+                {
+                    "name": "IDF10FundJlggJjjlOutput",
+                    "id": 204
+                },
+                {
+                    "name": "IDF10FundJyyjOutput",
+                    "id": 205
+                },
+                {
+                    "name": "IDF10FundZccgQsmgpmxOutput",
+                    "id": 206
+                },
+                {
+                    "name": "IDF10FundZccgQdiiOutput",
+                    "id": 207
+                },
+                {
+                    "name": "IDF10FundZqtzTzzhOutput",
+                    "id": 208
+                },
+                {
+                    "name": "IDF10FundZqtzTzzhQdiiOutput",
+                    "id": 209
+                },
+                {
+                    "name": "IDF10FundZqtzZcmxOutput",
+                    "id": 210
+                },
+                {
+                    "name": "IDF10FundZycyrOutput",
+                    "id": 211
+                },
+                {
+                    "name": "IDHistoryTrends",
+                    "id": 215
+                },
+                {
+                    "name": "IDQuoteDynaMinSingle",
+                    "id": 218
+                },
+                {
+                    "name": "IDQuoteHistoryMinSingle",
+                    "id": 221
+                },
+                {
+                    "name": "IDF10FundHbjjxeOutput",
+                    "id": 222
+                },
+                {
+                    "name": "IDF10BondDfzfzfxOutput",
+                    "id": 223
+                },
+                {
+                    "name": "IDF10BondDfzfzqxxOutput",
+                    "id": 224
+                },
+                {
+                    "name": "IDF10BondFlszzfxOutput",
+                    "id": 225
+                },
+                {
+                    "name": "IDF10BondFlszztkOutput",
+                    "id": 226
+                },
+                {
+                    "name": "IDF10BondFlszzxxOutput",
+                    "id": 227
+                },
+                {
+                    "name": "IDF10BondGzxxOutput",
+                    "id": 228
+                },
+                {
+                    "name": "IDF10BondHgxxOutput",
+                    "id": 229
+                },
+                {
+                    "name": "IDF10BondKzzfxOutput",
+                    "id": 230
+                },
+                {
+                    "name": "IDF10BondKzztkOutput",
+                    "id": 231
+                },
+                {
+                    "name": "IDF10BondKzztzzgjOutput",
+                    "id": 232
+                },
+                {
+                    "name": "IDF10BondKzzxxOutput",
+                    "id": 233
+                },
+                {
+                    "name": "IDF10BondQycyrOutput",
+                    "id": 234
+                },
+                {
+                    "name": "IDF10BondQyzfxOutput",
+                    "id": 235
+                },
+                {
+                    "name": "IDF10BondQyzxxOutput",
+                    "id": 236
+                },
+                {
+                    "name": "IDF10BondZqggOutput",
+                    "id": 237
+                },
+                {
+                    "name": "IDF10BondZqxjlOutput",
+                    "id": 238
+                },
+                {
+                    "name": "IDF10BondZqzgOutput",
+                    "id": 239
+                },
+                {
+                    "name": "IDF10ForexDqjjOutput",
+                    "id": 240
+                },
+                {
+                    "name": "IDF10ForexJqjjOutput",
+                    "id": 241
+                },
+                {
+                    "name": "IDF10ForexLlhhOutput",
+                    "id": 242
+                },
+                {
+                    "name": "IDF10ForexQqwhjbzlOutput",
+                    "id": 243
+                },
+                {
+                    "name": "IDF10ForexShiborlvOutput",
+                    "id": 244
+                },
+                {
+                    "name": "IDF10ForexWbdjqOutput",
+                    "id": 245
+                },
+                {
+                    "name": "IDF10ForexWhbzMbOutput",
+                    "id": 246
+                },
+                {
+                    "name": "IDF10ForexXycjOutput",
+                    "id": 247
+                },
+                {
+                    "name": "IDF10ForexYqjjOutput",
+                    "id": 248
+                },
+                {
+                    "name": "IDF10FuturesBzhyOutput",
+                    "id": 249
+                },
+                {
+                    "name": "IDF10FuturesCpgkOutput",
+                    "id": 250
+                },
+                {
+                    "name": "IDF10FuturesFkbfOutput",
+                    "id": 251
+                },
+                {
+                    "name": "IDF10FuturesJsxzOutput",
+                    "id": 252
+                },
+                {
+                    "name": "IDF10FuturesJygzOutput",
+                    "id": 253
+                },
+                {
+                    "name": "IDF10FuturesWphyOutput",
+                    "id": 254
+                },
+                {
+                    "name": "IDF10FuturesYxysOutput",
+                    "id": 255
+                },
+                {
+                    "name": "IDF10SpotBzhyOutput",
+                    "id": 256
+                },
+                {
+                    "name": "IDF10SpotFjsmOutput",
+                    "id": 257
+                },
+                {
+                    "name": "IDF10SpotJygzOutput",
+                    "id": 258
+                },
+                {
+                    "name": "IDF10SpotPzgkOutput",
+                    "id": 259
+                },
+                {
+                    "name": "IDF10SpotWphyOutput",
+                    "id": 260
+                },
+                {
+                    "name": "IDF10SpotYxysOutput",
+                    "id": 261
+                },
+                {
+                    "name": "IDReportDataItem",
+                    "id": 262
+                },
+                {
+                    "name": "IDStockReport",
+                    "id": 263
+                },
+                {
+                    "name": "IDSelfReport",
+                    "id": 264
+                },
+                {
+                    "name": "IDQuoteFundFlowSingle",
+                    "id": 265
+                },
+                {
+                    "name": "IDMonthTrends",
+                    "id": 266
+                },
+                {
+                    "name": "IDQuoteQueueMinSingle",
+                    "id": 269
                 }
             ]
         }
@@ -17932,43 +20727,47 @@ exports['default'] = {
   },
 
   parse: function parse(data, message) {
-
     var result = data;
+    try {
+      if (!data) {
+        return data;
+      } else if (typeof data === 'string') {
 
-    if (!data) {
-      return data;
-    } else if (typeof data === 'string') {
+        // 先尝试用json格式转换
+        try {
+          result = JSON.parse(data);
+        } catch (err) {
 
-      // 先尝试用json格式转换
-      try {
-        result = JSON.parse(data);
-      } catch (err) {
+          // 转换失败则认为是二进制数据，将其转为ArrayBuffer后按照pb格式解析
+          result = this.parseProtoBuf(this.stringToArrayBuffer(data), message);
+        }
+      } else if (data instanceof ArrayBuffer) {
 
-        // 转换失败则认为是二进制数据，将其转为ArrayBuffer后按照pb格式解析
-        result = this.parseProtoBuf(this.stringToArrayBuffer(data), message);
-      }
-    } else if (data instanceof ArrayBuffer) {
+        // 先尝试用pb格式转换
+        try {
+          result = this.parseProtoBuf(data, message);
+        } catch (err) {
 
-      // 先尝试用pb格式转换
-      try {
+          // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
+          result = JSON.parse(this.arrayBufferToString(data));
+        }
+      } else if (this.isBuffer(data)) {
+
+        // 先尝试用pb格式转换
+        try {
+          result = this.parseProtoBuf(data, message);
+        } catch (err) {
+
+          // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
+          result = JSON.parse(data.toString('utf8'));
+        }
+      } else if (data instanceof ByteBuffer) {
         result = this.parseProtoBuf(data, message);
-      } catch (err) {
-
-        // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
-        result = JSON.parse(this.arrayBufferToString(data));
       }
-    } else if (this.isBuffer(data)) {
+    } catch (err) {
 
-      // 先尝试用pb格式转换
-      try {
-        result = this.parseProtoBuf(data, message);
-      } catch (err) {
-
-        // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
-        result = JSON.parse(data.toString('utf8'));
-      }
-    } else if (data instanceof ByteBuffer) {
-      result = this.parseProtoBuf(data, message);
+      // 转换失败，异常情况，考虑可能是json格式问题无法解析，也可能是pb结构错误解析错误
+      console.warn(new Date() + ',Fail parse data [' + data + ']', err.message);
     }
     return result;
   }

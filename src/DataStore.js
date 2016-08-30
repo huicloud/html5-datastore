@@ -145,7 +145,7 @@ export default class DataStore {
      */
     this.fields = options.fields;
 
-    this.dataParser = options.dataParser || new DzhyunDataParser(this.serviceUrl);
+    this.dataParser = options.dataParser || new DzhyunDataParser(this.serviceUrl || '');
 
     /**
      * 其它参数
@@ -432,9 +432,14 @@ export default class DataStore {
       }
     }
 
+    let serviceUrl = this.serviceUrl;
+
     // 如果查询对象是字符串则反序列化为对象
     if (typeof queryObject === 'string') {
-      queryObject = $.unParam(queryObject);
+      if (queryObject[0] === '/') {
+        [serviceUrl, queryObject] = queryObject.split('?');
+      }
+      queryObject = $.unParam(queryObject || '');
     }
 
     var key = queryObject[this.idProperty],
@@ -531,7 +536,7 @@ export default class DataStore {
 
         // 避免请求取消后再次查询，需检查request是否存在
         if (this.requestQueue[request.qid] === request) {
-          this.conn.request(this.serviceUrl + '?' + params, options);
+          this.conn.request(serviceUrl + '?' + params, options);
         }
       };
       request.start();

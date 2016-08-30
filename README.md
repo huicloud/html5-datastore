@@ -188,7 +188,7 @@ refreshSecond: {Number=} 自动刷新token时间秒数，每隔指定时间则�
 ### DzhyunTokenManager.prototype.access(params)
 申请令牌
 
-### DzhyunTokenManager.prototype.refresh(params)
+### DzhyunTokenManager.prototype.refresh(params) 已废弃，请使用access方法重新请求新的token
 刷新令牌
 
 完整的查询例子如下

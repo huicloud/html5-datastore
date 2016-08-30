@@ -5,7 +5,7 @@ import yfloat from 'html5-yfloat';
 import ProtoBuf from '../protobuf';
 var Long = ProtoBuf.Long;
 
-var excludeFieldName = ['Id', 'Obj'];
+var excludeFieldName = ['Id', 'Obj', 'ObjCount'];
 
 export default class MSGAdapter extends BaseDataAdapter {
 
@@ -83,14 +83,15 @@ export default class MSGAdapter extends BaseDataAdapter {
     } else {
 
       // 否则查找其它有数据的字段
-      var keys = Object.keys(input);
+      // 排序将'RepData'开头的数据字段放前面，先判断（尽量避免以后再添加字段时不会影响现有逻辑）
+      var keys = Object.keys(input).sort((key1, key2) => key1.indexOf('RepData') === 0 ? -1 : key2.indexOf('RepData') === 0 ? 1 : 0);
       keys.some(function(key) {
         var data = input[key];
 
         // 不是排除的字段并且不为null
         if (excludeFieldName.indexOf(key) < 0 && data !== null) {
 
-          // 不是数组或者数组长度大于1
+          // 不是数组或者数组长度大于0
           if (!(data instanceof Array) || data.length > 0) {
             output = data;
             return true;

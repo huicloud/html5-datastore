@@ -27,19 +27,21 @@ export default class DzhyunDataParser extends DataParser {
   }
 
   parse(data) {
-    var uaResponse = this.parseUAResponse(data);
-    data = uaResponse.Data;
-    if (uaResponse.Err !== 0) {
-      return Promise.reject({
-        qid: uaResponse.Qid,
-        error: data ? (typeof data === 'string') ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
-      });
-    } else {
-      return Promise.resolve({
-        qid: uaResponse.Qid,
-        data: this.parseMsg(data)
-      });
-    }
+    return new Promise((resolve, reject) => {
+      var uaResponse = this.parseUAResponse(data);
+      data = uaResponse.Data;
+      if (uaResponse.Err !== 0) {
+        reject({
+          qid: uaResponse.Qid,
+          error: data ? (typeof data === 'string') ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
+        });
+      } else {
+        resolve({
+          qid: uaResponse.Qid,
+          data: this.parseMsg(data)
+        });
+      }
+    });
   }
 
   // 根据service进行数据转换

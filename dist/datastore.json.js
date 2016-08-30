@@ -45,6 +45,8 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -243,7 +245,7 @@ var DataStore = (function () {
      */
     this.fields = options.fields;
 
-    this.dataParser = options.dataParser || new _dzhyunDzhyunDataParser2['default'](this.serviceUrl);
+    this.dataParser = options.dataParser || new _dzhyunDzhyunDataParser2['default'](this.serviceUrl || '');
 
     /**
      * 其它参数
@@ -553,9 +555,19 @@ var DataStore = (function () {
         }
       }
 
+      var serviceUrl = this.serviceUrl;
+
       // 如果查询对象是字符串则反序列化为对象
       if (typeof queryObject === 'string') {
-        queryObject = $.unParam(queryObject);
+        if (queryObject[0] === '/') {
+          var _queryObject$split = queryObject.split('?');
+
+          var _queryObject$split2 = _slicedToArray(_queryObject$split, 2);
+
+          serviceUrl = _queryObject$split2[0];
+          queryObject = _queryObject$split2[1];
+        }
+        queryObject = $.unParam(queryObject || '');
       }
 
       var key = queryObject[this.idProperty],
@@ -652,7 +664,7 @@ var DataStore = (function () {
 
           // 避免请求取消后再次查询，需检查request是否存在
           if (_this8.requestQueue[request.qid] === request) {
-            _this8.conn.request(_this8.serviceUrl + '?' + params, options);
+            _this8.conn.request(serviceUrl + '?' + params, options);
           }
         };
         request.start();
@@ -842,26 +854,30 @@ var DzhyunDataParser = (function (_DataParser) {
   }, {
     key: 'parse',
     value: function parse(data) {
-      var uaResponse = this.parseUAResponse(data);
-      data = uaResponse.Data;
-      if (uaResponse.Err !== 0) {
-        return Promise.reject({
-          qid: uaResponse.Qid,
-          error: data ? typeof data === 'string' ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
-        });
-      } else {
-        return Promise.resolve({
-          qid: uaResponse.Qid,
-          data: this.parseMsg(data)
-        });
-      }
+      var _this = this;
+
+      return new Promise(function (resolve, reject) {
+        var uaResponse = _this.parseUAResponse(data);
+        data = uaResponse.Data;
+        if (uaResponse.Err !== 0) {
+          reject({
+            qid: uaResponse.Qid,
+            error: data ? typeof data === 'string' ? data : data.toUTF8 ? data.toUTF8() : JSON.stringify(data) : 'unknown error'
+          });
+        } else {
+          resolve({
+            qid: uaResponse.Qid,
+            data: _this.parseMsg(data)
+          });
+        }
+      });
     }
 
     // 根据service进行数据转换
   }, {
     key: '_adapter',
     value: function _adapter(data) {
-      var _this = this;
+      var _this2 = this;
 
       if (!data) {
         return data;
@@ -869,7 +885,7 @@ var DzhyunDataParser = (function (_DataParser) {
       var keys = Object.keys(adapterMap);
       var adapter = this.direct ? adapterMap._direct : adapterMap._default;
       keys.some(function (key) {
-        if (_this.service.indexOf(key) >= 0) {
+        if (_this2.service.indexOf(key) >= 0) {
           adapter = adapterMap[key];
           return true;
         }
@@ -1131,7 +1147,7 @@ var _protobuf2 = _interopRequireDefault(_protobuf);
 
 var Long = _protobuf2['default'].Long;
 
-var excludeFieldName = ['Id', 'Obj'];
+var excludeFieldName = ['Id', 'Obj', 'ObjCount'];
 
 var MSGAdapter = (function (_BaseDataAdapter) {
   _inherits(MSGAdapter, _BaseDataAdapter);
@@ -1221,14 +1237,17 @@ var MSGAdapter = (function (_BaseDataAdapter) {
       } else {
 
         // 否则查找其它有数据的字段
-        var keys = Object.keys(input);
+        // 排序将'RepData'开头的数据字段放前面，先判断（尽量避免以后再添加字段时不会影响现有逻辑）
+        var keys = Object.keys(input).sort(function (key1, key2) {
+          return key1.indexOf('RepData') === 0 ? -1 : key2.indexOf('RepData') === 0 ? 1 : 0;
+        });
         keys.some(function (key) {
           var data = input[key];
 
           // 不是排除的字段并且不为null
           if (excludeFieldName.indexOf(key) < 0 && data !== null) {
 
-            // 不是数组或者数组长度大于1
+            // 不是数组或者数组长度大于0
             if (!(data instanceof Array) || data.length > 0) {
               output = data;
               return true;
@@ -1403,43 +1422,47 @@ exports['default'] = {
   },
 
   parse: function parse(data, message) {
-
     var result = data;
+    try {
+      if (!data) {
+        return data;
+      } else if (typeof data === 'string') {
 
-    if (!data) {
-      return data;
-    } else if (typeof data === 'string') {
+        // 先尝试用json格式转换
+        try {
+          result = JSON.parse(data);
+        } catch (err) {
 
-      // 先尝试用json格式转换
-      try {
-        result = JSON.parse(data);
-      } catch (err) {
+          // 转换失败则认为是二进制数据，将其转为ArrayBuffer后按照pb格式解析
+          result = this.parseProtoBuf(this.stringToArrayBuffer(data), message);
+        }
+      } else if (data instanceof ArrayBuffer) {
 
-        // 转换失败则认为是二进制数据，将其转为ArrayBuffer后按照pb格式解析
-        result = this.parseProtoBuf(this.stringToArrayBuffer(data), message);
-      }
-    } else if (data instanceof ArrayBuffer) {
+        // 先尝试用pb格式转换
+        try {
+          result = this.parseProtoBuf(data, message);
+        } catch (err) {
 
-      // 先尝试用pb格式转换
-      try {
+          // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
+          result = JSON.parse(this.arrayBufferToString(data));
+        }
+      } else if (this.isBuffer(data)) {
+
+        // 先尝试用pb格式转换
+        try {
+          result = this.parseProtoBuf(data, message);
+        } catch (err) {
+
+          // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
+          result = JSON.parse(data.toString('utf8'));
+        }
+      } else if (data instanceof ByteBuffer) {
         result = this.parseProtoBuf(data, message);
-      } catch (err) {
-
-        // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
-        result = JSON.parse(this.arrayBufferToString(data));
       }
-    } else if (this.isBuffer(data)) {
+    } catch (err) {
 
-      // 先尝试用pb格式转换
-      try {
-        result = this.parseProtoBuf(data, message);
-      } catch (err) {
-
-        // 转换失败则认为是以ws的二进制通道传输的json格式数据，先转为字符串再用json格式解析
-        result = JSON.parse(data.toString('utf8'));
-      }
-    } else if (data instanceof ByteBuffer) {
-      result = this.parseProtoBuf(data, message);
+      // 转换失败，异常情况，考虑可能是json格式问题无法解析，也可能是pb结构错误解析错误
+      console.warn(new Date() + ',Fail parse data [' + data + ']', err.message);
     }
     return result;
   }
