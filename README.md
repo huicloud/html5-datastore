@@ -42,11 +42,11 @@
 3.nodejs
 安装
 
-    npm install https://github.com/huicloud/html5-datastore.git
+    npm install git+https://git@github.com/huicloud/html5-datastore.git
 
 使用
     
-    var DataStore = require('datastore');
+    var DataStore = require('html5-datastore');
     ...
 
 ## API

@@ -11,10 +11,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "connection": "https://github.com/huicloud/html5-connection.git",
+    "html5-connection": "git+https://git@github.com/huicloud/html5-connection.git",
     "promise": "^7.0.4",
     "protobufjs": "*",
-    "yfloat": "https://github.com/huicloud/html5-yfloat.git"
+    "html5-yfloat": "git+https://git@github.com/huicloud/html5-yfloat.git"
   },
   "devDependencies": {
     "aliasify": "^1.7.2",
