@@ -4157,6 +4157,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "int64",
                     "name": "XuHao",
                     "id": 1101
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "XiaoShuWei",
+                    "id": 1102
                 }
             ]
         },
@@ -7229,6 +7235,64 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "rule": "repeated",
                     "type": "WeiTuoDuiLie",
+                    "name": "Data",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "QingPan",
+                    "id": 3
+                }
+            ]
+        },
+        {
+            "name": "QuoteBOrderMin",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShiJian",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JingMaiRuTeDaDanBiLi",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JingMaiRuDaDanBiLi",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JingMaiRuZhongDanBiLi",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JingMaiRuXiaoDanBiLi",
+                    "id": 5
+                }
+            ]
+        },
+        {
+            "name": "QuoteBOrderMinSingle",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteBOrderMin",
                     "name": "Data",
                     "id": 2
                 },
@@ -17413,7 +17477,7 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "rule": "optional",
                     "type": "int64",
-                    "name": "Class",
+                    "name": "ClassTag",
                     "id": 5
                 }
             ]
@@ -18770,6 +18834,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
+                    "type": "ZhiBiaoShuChu",
+                    "name": "RepDataZhiBiaoShuChu",
+                    "id": 25
+                },
+                {
+                    "rule": "repeated",
                     "type": "ZhiBiao",
                     "name": "RepDataZhiBiao",
                     "id": 26
@@ -19769,6 +19839,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "QuoteQueueMinSingle",
                     "name": "RepDataQuoteQueueMinSingle",
                     "id": 269
+                },
+                {
+                    "rule": "repeated",
+                    "type": "QuoteBOrderMinSingle",
+                    "name": "RepDataQuoteBOrderMinSingle",
+                    "id": 302
                 }
             ]
         },
@@ -19963,6 +20039,10 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDNewsInfoValue",
                     "id": 24
+                },
+                {
+                    "name": "IDZhiBiaoShuChu",
+                    "id": 25
                 },
                 {
                     "name": "IDZhiBiao",
@@ -20631,6 +20711,10 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDQuoteQueueMinSingle",
                     "id": 269
+                },
+                {
+                    "name": "IDQuoteBOrderMinSingle",
+                    "id": 302
                 }
             ]
         }
