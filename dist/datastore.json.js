@@ -2242,6 +2242,8 @@ if (typeof window !== 'undefined') {
   } else {
     console.log('当前浏览器不支持WebSocket');
   }
+} else if (typeof WebSocket !== 'undefined') {
+  module.exports = WebSocket;
 } else {
   var wsDep = 'ws';
   module.exports = require(wsDep);
@@ -2402,6 +2404,8 @@ if (typeof window !== 'undefined') {
   } else {
     console.log('当前浏览器不支持XMLHttpRequest');
   }
+} else if (typeof XMLHttpRequest !== 'undefined') {
+  module.exports = XMLHttpRequest;
 } else {
 
   // nodejs中使用xhr2模块
@@ -2532,7 +2536,7 @@ if (typeof $ !== 'undefined' && typeof $.ajax === 'function' && typeof XDomainRe
 
   $.ajaxSetup({
     xhr: function xhr() {
-      var xhr = generateXHRFun();
+      var xhr = generateXHRFun.call(this);
       this.setXHR(xhr);
       return xhr;
     },
