@@ -6313,6 +6313,12 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                     "type": "FenShi",
                     "name": "Rows",
                     "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "RiQi",
+                    "id": 2
                 }
             ]
         },
@@ -16908,6 +16914,64 @@ module.exports = require("./protobuf").newBuilder({})['import']({
             ]
         },
         {
+            "name": "LongHuBang",
+            "fields": [
+                {
+                    "rule": "required",
+                    "type": "string",
+                    "name": "Obj",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShangBangCiShu",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JiGouJingMaiRuE",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShangBangCiShuPaiMing",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "JiGouJingMaiRuZhanBiPaiMing",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ZhuLiJingMaiRuZhanBiPaiMing",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "LongHuBangTongJi",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int64",
+                    "name": "ShangBangGeShu",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "string",
+                    "name": "ShangBangLieBiao",
+                    "id": 2
+                }
+            ]
+        },
+        {
             "name": "OverallInfo",
             "fields": [
                 {
@@ -19200,6 +19264,18 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 },
                 {
                     "rule": "repeated",
+                    "type": "LongHuBang",
+                    "name": "RepDataLongHuBang",
+                    "id": 119
+                },
+                {
+                    "rule": "repeated",
+                    "type": "LongHuBangTongJi",
+                    "name": "RepDataLongHuBangTongJi",
+                    "id": 120
+                },
+                {
+                    "rule": "repeated",
                     "type": "OverallInfo",
                     "name": "RepDataOverallInfo",
                     "id": 121
@@ -20283,6 +20359,14 @@ module.exports = require("./protobuf").newBuilder({})['import']({
                 {
                     "name": "IDPaiMing",
                     "id": 115
+                },
+                {
+                    "name": "IDLongHuBang",
+                    "id": 119
+                },
+                {
+                    "name": "IDLongHuBangTongJi",
+                    "id": 120
                 },
                 {
                     "name": "IDOverallInfo",
