@@ -58,6 +58,10 @@
 ### DataStore.dataType = 'pb'
 设置默认请求数据格式，不设置默认为'pb'，可设置为'pb'/'json'
 
+### DataStore.compresser = 'snappy'
+设置数据的压缩格式，不设置默认为null表示不压缩数据，可设置为'snappy'
+注意同一个连接上压缩格式需要相同
+
 ### DataStore.token = 'XXXXXXXX'
 设置云平台访问令牌，需自维护，
 
@@ -76,6 +80,8 @@
 address: {string=} 连接服务器地址，不设置则使用DataStore.address
 
 dataType: {string=} 请求数据格式，可设置为'pb'/'json'，不设置则使用DataStore.dataType
+
+compresser: {string=} 请求数据的压缩格式，可设置为'snappy'，不设置则使用DataStore.compresser
 
 serviceUrl: {!string} 请求数据url，例如'/quote/dyna'
 

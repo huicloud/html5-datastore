@@ -13,7 +13,7 @@ export function unParam(searchStr) {
     if ( pairs[i] === '' ) continue;
 
     pair = pairs[i].split('=');
-    obj[ decodeURIComponent( pair[0] ) ] = decodeURIComponent( pair[1] );
+    obj[ decodeURIComponent( pair[0] ) ] = decodeURIComponent( pair.slice(1).join('=') );
   }
 
   return obj;

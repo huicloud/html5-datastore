@@ -1,5 +1,7 @@
 import dzhyun from './dzhyun';
 import ProtoBuf from './protobuf';
+import SnappyJS from 'snappyjs'
+
 var ByteBuffer = ProtoBuf.ByteBuffer;
 
 export default {
@@ -46,7 +48,20 @@ export default {
     return data.constructor && data.constructor.name === 'Buffer';
   },
 
-  parse: function(data, message) {
+  parse: function(data, message, compresser) {
+    if (compresser === 'snappy') {
+      try {
+        if (typeof data === 'string') {
+          data = this.stringToArrayBuffer(data);
+          data = SnappyJS.uncompress(data);
+          data = this.arrayBufferToString(data);
+        } else {
+          data = SnappyJS.uncompress(data);
+        }
+      } catch (e) {
+        console.warn('uncompress fail', e);
+      }
+    }
     var result = data;
     try {
       if (!data) {

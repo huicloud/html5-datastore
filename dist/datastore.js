@@ -1,4 +1,4 @@
-(typeof ArrayBuffer==='undefined')&&(ArrayBuffer=function(){});(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define(["connection","protobufjs","yfloat"],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.DataStore = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(typeof ArrayBuffer==='undefined')&&(ArrayBuffer=function(){});(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define(["connection","protobufjs","yfloat","snappyjs"],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.DataStore = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
 // 添加依赖Promise
 if (typeof Promise === 'undefined') {
@@ -67,12 +67,9 @@ var _dzhyunDzhyunTokenManager = require('./dzhyun/DzhyunTokenManager');
 
 var _dzhyunDzhyunTokenManager2 = _interopRequireDefault(_dzhyunDzhyunTokenManager);
 
-var connection;
-try {
-  connection = require('html5-connection');
-} catch (err) {
-  connection = window.connection;
-}
+var _html5Connection = require('html5-connection');
+
+var _html5Connection2 = _interopRequireDefault(_html5Connection);
 
 var Request = (function () {
   function Request(qid, key, filter, subscribe, queryObject) {
@@ -230,6 +227,9 @@ var DataStore = (function () {
     /** {String} 请求数据的返回类型 pb|json */
     this.dataType = options.dataType || this.constructor.dataType || 'pb';
 
+    /** {String} 响应数据的压缩方式 snappy */
+    this.compresser = options.compresser || this.constructor.compresser || null;
+
     /** {String} 请求的服务url */
     this.serviceUrl = options.serviceUrl;
 
@@ -246,6 +246,9 @@ var DataStore = (function () {
     this.fields = options.fields;
 
     this.dataParser = options.dataParser || new _dzhyunDzhyunDataParser2['default'](this.serviceUrl || '');
+
+    // 添加压缩参数设置
+    this.dataParser.parseUAResponse = this.dataParser.parseUAResponse.bind(this.dataParser, this.compresser);
 
     /**
      * 其它参数
@@ -303,9 +306,9 @@ var DataStore = (function () {
           conn = map[address];
         }
         if (!conn) {
-          var handler = $.extend({}, DataStore._connectionHandler);
+          var handler = $.extend({}, DataStore._connectionHandler, { dataParser: this.dataParser });
           var options = { deferred: true };
-          conn = this.connectionType ? connection[this.connectionType](address, options, handler) : connection(address, options, handler);
+          conn = this.connectionType ? _html5Connection2['default'][this.connectionType](address, options, handler) : (0, _html5Connection2['default'])(address, options, handler);
 
           if (this.alone === false) {
             map[address] = conn;
@@ -492,7 +495,8 @@ var DataStore = (function () {
       var params = {
         qid: qid,
         sub: subscribe && this.connectionType === 'ws' ? 1 : 0,
-        output: this.dataType
+        output: this.dataType,
+        compresser: this.compresser
       };
 
       var fieldStr = this._requestFieldStr();
@@ -628,7 +632,7 @@ var DataStore = (function () {
 
         // http协议不支持订阅
         //subscribe = false;
-        if (this.dataType === 'pb') {
+        if (this.dataType === 'pb' || this.compresser != null) {
 
           // 如果以http协议请求pb格式数据时，需设置额外参数以指定响应数据是二进制数据
           options = {
@@ -843,8 +847,10 @@ var DzhyunDataParser = (function (_DataParser) {
 
   _createClass(DzhyunDataParser, [{
     key: 'parseUAResponse',
-    value: function parseUAResponse(data) {
-      return _parser2['default'].parse(data, 'UAResponse');
+    value: function parseUAResponse(compresser, data) {
+      if (compresser === undefined) compresser = null;
+
+      return _parser2['default'].parse(data, 'UAResponse', compresser);
     }
   }, {
     key: 'parseMsg',
@@ -853,11 +859,13 @@ var DzhyunDataParser = (function (_DataParser) {
     }
   }, {
     key: 'parse',
-    value: function parse(data) {
+    value: function parse(compresser, data) {
       var _this = this;
 
+      if (compresser === undefined) compresser = null;
+
       return new Promise(function (resolve, reject) {
-        var uaResponse = _this.parseUAResponse(data);
+        var uaResponse = _this.parseUAResponse(compresser, data);
         data = uaResponse.Data;
         if (uaResponse.Err !== 0) {
           reject({
@@ -882,14 +890,16 @@ var DzhyunDataParser = (function (_DataParser) {
       if (!data) {
         return data;
       }
-      var keys = Object.keys(adapterMap);
       var adapter = this.direct ? adapterMap._direct : adapterMap._default;
-      keys.some(function (key) {
-        if (_this2.service.indexOf(key) >= 0) {
-          adapter = adapterMap[key];
-          return true;
-        }
-      });
+      if (this.service) {
+        var keys = Object.keys(adapterMap);
+        keys.some(function (key) {
+          if (_this2.service.indexOf(key) >= 0) {
+            adapter = adapterMap[key];
+            return true;
+          }
+        });
+      }
       return adapter.adapt(data);
     }
   }]);
@@ -974,7 +984,7 @@ var DzhyunTokenManager = (function () {
           error: reject
         }).request(service + '?' + util.param(params));
       }).then(function (data) {
-        return new _DzhyunDataParser2['default'](service).parse(data);
+        return new _DzhyunDataParser2['default'](service).parse(null, data);
       }).then(function (data) {
         data = data.data[0];
         if (data.result == 0) {
@@ -20848,6 +20858,10 @@ var _protobuf = require('./protobuf');
 
 var _protobuf2 = _interopRequireDefault(_protobuf);
 
+var _snappyjs = require('snappyjs');
+
+var _snappyjs2 = _interopRequireDefault(_snappyjs);
+
 var ByteBuffer = _protobuf2['default'].ByteBuffer;
 
 exports['default'] = {
@@ -20894,7 +20908,20 @@ exports['default'] = {
     return data.constructor && data.constructor.name === 'Buffer';
   },
 
-  parse: function parse(data, message) {
+  parse: function parse(data, message, compresser) {
+    if (compresser === 'snappy') {
+      try {
+        if (typeof data === 'string') {
+          data = this.stringToArrayBuffer(data);
+          data = _snappyjs2['default'].uncompress(data);
+          data = this.arrayBufferToString(data);
+        } else {
+          data = _snappyjs2['default'].uncompress(data);
+        }
+      } catch (e) {
+        console.warn('uncompress fail', e);
+      }
+    }
     var result = data;
     try {
       if (!data) {
@@ -20941,7 +20968,7 @@ exports['default'] = {
   }
 };
 module.exports = exports['default'];
-},{"./dzhyun":9,"./protobuf":13}],12:[function(require,module,exports){
+},{"./dzhyun":9,"./protobuf":13,"snappyjs":"snappyjs"}],12:[function(require,module,exports){
 /**
  * pb table格式数据转换模块
  */
@@ -21443,7 +21470,7 @@ function unParam(searchStr) {
     if (pairs[i] === '') continue;
 
     pair = pairs[i].split('=');
-    obj[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    obj[decodeURIComponent(pair[0])] = decodeURIComponent(pair.slice(1).join('='));
   }
 
   return obj;

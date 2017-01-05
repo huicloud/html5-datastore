@@ -2,11 +2,11 @@
 (function (global){
 // 添加依赖Promise
 if (typeof Promise === 'undefined') {
-  global.Promise = require('promise');
+  global.Promise = require('promise/polyfill');
 }
 module.exports = require('./lib/DataStore');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/DataStore":3,"promise":27}],2:[function(require,module,exports){
+},{"./lib/DataStore":3,"promise/polyfill":33}],2:[function(require,module,exports){
 // 数据解析接口
 'use strict';
 
@@ -67,12 +67,9 @@ var _dzhyunDzhyunTokenManager = require('./dzhyun/DzhyunTokenManager');
 
 var _dzhyunDzhyunTokenManager2 = _interopRequireDefault(_dzhyunDzhyunTokenManager);
 
-var connection;
-try {
-  connection = require('html5-connection');
-} catch (err) {
-  connection = window.connection;
-}
+var _html5Connection = require('html5-connection');
+
+var _html5Connection2 = _interopRequireDefault(_html5Connection);
 
 var Request = (function () {
   function Request(qid, key, filter, subscribe, queryObject) {
@@ -230,6 +227,9 @@ var DataStore = (function () {
     /** {String} 请求数据的返回类型 pb|json */
     this.dataType = options.dataType || this.constructor.dataType || 'pb';
 
+    /** {String} 响应数据的压缩方式 snappy */
+    this.compresser = options.compresser || this.constructor.compresser || null;
+
     /** {String} 请求的服务url */
     this.serviceUrl = options.serviceUrl;
 
@@ -246,6 +246,9 @@ var DataStore = (function () {
     this.fields = options.fields;
 
     this.dataParser = options.dataParser || new _dzhyunDzhyunDataParser2['default'](this.serviceUrl || '');
+
+    // 添加压缩参数设置
+    this.dataParser.parseUAResponse = this.dataParser.parseUAResponse.bind(this.dataParser, this.compresser);
 
     /**
      * 其它参数
@@ -303,9 +306,9 @@ var DataStore = (function () {
           conn = map[address];
         }
         if (!conn) {
-          var handler = $.extend({}, DataStore._connectionHandler);
+          var handler = $.extend({}, DataStore._connectionHandler, { dataParser: this.dataParser });
           var options = { deferred: true };
-          conn = this.connectionType ? connection[this.connectionType](address, options, handler) : connection(address, options, handler);
+          conn = this.connectionType ? _html5Connection2['default'][this.connectionType](address, options, handler) : (0, _html5Connection2['default'])(address, options, handler);
 
           if (this.alone === false) {
             map[address] = conn;
@@ -492,7 +495,8 @@ var DataStore = (function () {
       var params = {
         qid: qid,
         sub: subscribe && this.connectionType === 'ws' ? 1 : 0,
-        output: this.dataType
+        output: this.dataType,
+        compresser: this.compresser
       };
 
       var fieldStr = this._requestFieldStr();
@@ -628,7 +632,7 @@ var DataStore = (function () {
 
         // http协议不支持订阅
         //subscribe = false;
-        if (this.dataType === 'pb') {
+        if (this.dataType === 'pb' || this.compresser != null) {
 
           // 如果以http协议请求pb格式数据时，需设置额外参数以指定响应数据是二进制数据
           options = {
@@ -780,7 +784,7 @@ DataStore.pushInterval = 5000;
 // 全局暂停标识，对于http订阅数据有效，默认为false
 DataStore.pause = false;
 module.exports = exports['default'];
-},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":14,"html5-connection":17}],4:[function(require,module,exports){
+},{"./dzhyun/DzhyunDataParser":4,"./dzhyun/DzhyunTokenManager":5,"./util":14,"html5-connection":18}],4:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -843,8 +847,10 @@ var DzhyunDataParser = (function (_DataParser) {
 
   _createClass(DzhyunDataParser, [{
     key: 'parseUAResponse',
-    value: function parseUAResponse(data) {
-      return _parser2['default'].parse(data, 'UAResponse');
+    value: function parseUAResponse(compresser, data) {
+      if (compresser === undefined) compresser = null;
+
+      return _parser2['default'].parse(data, 'UAResponse', compresser);
     }
   }, {
     key: 'parseMsg',
@@ -853,11 +859,13 @@ var DzhyunDataParser = (function (_DataParser) {
     }
   }, {
     key: 'parse',
-    value: function parse(data) {
+    value: function parse(compresser, data) {
       var _this = this;
 
+      if (compresser === undefined) compresser = null;
+
       return new Promise(function (resolve, reject) {
-        var uaResponse = _this.parseUAResponse(data);
+        var uaResponse = _this.parseUAResponse(compresser, data);
         data = uaResponse.Data;
         if (uaResponse.Err !== 0) {
           reject({
@@ -882,14 +890,16 @@ var DzhyunDataParser = (function (_DataParser) {
       if (!data) {
         return data;
       }
-      var keys = Object.keys(adapterMap);
       var adapter = this.direct ? adapterMap._direct : adapterMap._default;
-      keys.some(function (key) {
-        if (_this2.service.indexOf(key) >= 0) {
-          adapter = adapterMap[key];
-          return true;
-        }
-      });
+      if (this.service) {
+        var keys = Object.keys(adapterMap);
+        keys.some(function (key) {
+          if (_this2.service.indexOf(key) >= 0) {
+            adapter = adapterMap[key];
+            return true;
+          }
+        });
+      }
       return adapter.adapt(data);
     }
   }]);
@@ -910,7 +920,7 @@ var _global = global || undefined;
 _global.DzhyunDataParser = DzhyunDataParser;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":11,"./pbTable":12,"html5-yfloat":26}],5:[function(require,module,exports){
+},{"../DataParser":2,"./adapter/MSGAdapter":7,"./adapter/MSGDirectAdapter":8,"./parser":11,"./pbTable":12,"html5-yfloat":27}],5:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -974,7 +984,7 @@ var DzhyunTokenManager = (function () {
           error: reject
         }).request(service + '?' + util.param(params));
       }).then(function (data) {
-        return new _DzhyunDataParser2['default'](service).parse(data);
+        return new _DzhyunDataParser2['default'](service).parse(null, data);
       }).then(function (data) {
         data = data.data[0];
         if (data.result == 0) {
@@ -1071,7 +1081,7 @@ var _global = global || undefined;
 _global.DzhyunTokenManager = DzhyunTokenManager;
 module.exports = exports['default'];
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../util":14,"./DzhyunDataParser":4,"html5-connection":17}],6:[function(require,module,exports){
+},{"../util":14,"./DzhyunDataParser":4,"html5-connection":18}],6:[function(require,module,exports){
 /**
  * 数据转换器，负责将各种响应数据类型转换为用于DataStore统一存储用格式
  */
@@ -1289,7 +1299,7 @@ var MSGAdapter = (function (_BaseDataAdapter) {
 
 exports['default'] = MSGAdapter;
 module.exports = exports['default'];
-},{"../jsonTable":10,"../pbTable":12,"../protobuf":13,"./BaseDataAdapter":6,"html5-yfloat":26}],8:[function(require,module,exports){
+},{"../jsonTable":10,"../pbTable":12,"../protobuf":13,"./BaseDataAdapter":6,"html5-yfloat":27}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -20848,6 +20858,10 @@ var _protobuf = require('./protobuf');
 
 var _protobuf2 = _interopRequireDefault(_protobuf);
 
+var _snappyjs = require('snappyjs');
+
+var _snappyjs2 = _interopRequireDefault(_snappyjs);
+
 var ByteBuffer = _protobuf2['default'].ByteBuffer;
 
 exports['default'] = {
@@ -20894,7 +20908,20 @@ exports['default'] = {
     return data.constructor && data.constructor.name === 'Buffer';
   },
 
-  parse: function parse(data, message) {
+  parse: function parse(data, message, compresser) {
+    if (compresser === 'snappy') {
+      try {
+        if (typeof data === 'string') {
+          data = this.stringToArrayBuffer(data);
+          data = _snappyjs2['default'].uncompress(data);
+          data = this.arrayBufferToString(data);
+        } else {
+          data = _snappyjs2['default'].uncompress(data);
+        }
+      } catch (e) {
+        console.warn('uncompress fail', e);
+      }
+    }
     var result = data;
     try {
       if (!data) {
@@ -20941,7 +20968,7 @@ exports['default'] = {
   }
 };
 module.exports = exports['default'];
-},{"./dzhyun":9,"./protobuf":13}],12:[function(require,module,exports){
+},{"./dzhyun":9,"./protobuf":13,"snappyjs":37}],12:[function(require,module,exports){
 /**
  * pb table格式数据转换模块
  */
@@ -21414,7 +21441,7 @@ if (!ProtoBuf) {
 
 exports['default'] = ProtoBuf;
 module.exports = exports['default'];
-},{"protobufjs/dist/ProtoBuf-light":36}],14:[function(require,module,exports){
+},{"protobufjs/dist/ProtoBuf-light":34}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -21443,14 +21470,16 @@ function unParam(searchStr) {
     if (pairs[i] === '') continue;
 
     pair = pairs[i].split('=');
-    obj[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    obj[decodeURIComponent(pair[0])] = decodeURIComponent(pair.slice(1).join('='));
   }
 
   return obj;
 }
-},{"html5-connection/lib/util":25}],15:[function(require,module,exports){
+},{"html5-connection/lib/util":26}],15:[function(require,module,exports){
 
 },{}],16:[function(require,module,exports){
+arguments[4][15][0].apply(exports,arguments)
+},{"dup":15}],17:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -21543,12 +21572,12 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 require('./lib/HttpConnection');
 require('./lib/WebSocketConnection');
 
 module.exports = require('./lib/connection');
-},{"./lib/HttpConnection":19,"./lib/WebSocketConnection":21,"./lib/connection":24}],18:[function(require,module,exports){
+},{"./lib/HttpConnection":20,"./lib/WebSocketConnection":22,"./lib/connection":25}],19:[function(require,module,exports){
 /**
  * connection基类
  */
@@ -21673,7 +21702,7 @@ BaseConnection.EVENT_PROGRESS = 'progress';
 
 exports['default'] = BaseConnection;
 module.exports = exports['default'];
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -21798,7 +21827,7 @@ _connection2['default'].https = function (url, options, handler) {
   return new HttpConnection(url, options, handler, true);
 };
 module.exports = exports['default'];
-},{"./BaseConnection":18,"./ajax":23,"./connection":24,"./util":25}],20:[function(require,module,exports){
+},{"./BaseConnection":19,"./ajax":24,"./connection":25,"./util":26}],21:[function(require,module,exports){
 // WebSocket 依赖，node环境使用模块ws
 'use strict';
 
@@ -21814,7 +21843,7 @@ if (typeof window !== 'undefined') {
   var wsDep = 'ws';
   module.exports = require(wsDep);
 }
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -21958,7 +21987,7 @@ _connection2['default'].wss = function (url, options, handler) {
   return new WebSocketConnection(url, options, handler, true);
 };
 module.exports = exports['default'];
-},{"./BaseConnection":18,"./WebSocket":20,"./connection":24}],22:[function(require,module,exports){
+},{"./BaseConnection":19,"./WebSocket":21,"./connection":25}],23:[function(require,module,exports){
 // 判断环境，浏览器环境存在window对象
 'use strict';
 
@@ -21979,7 +22008,7 @@ if (typeof window !== 'undefined') {
   var xmlhttprequest = require(xmlhttprequestDep);
   module.exports = xmlhttprequest.XMLHttpRequest || xmlhttprequest;
 }
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -22417,7 +22446,7 @@ if (typeof $ !== 'undefined' && typeof $.ajax === 'function' && typeof XDomainRe
     };
   })();
 }
-},{"./XMLHttpRequest":22,"./util":25}],24:[function(require,module,exports){
+},{"./XMLHttpRequest":23,"./util":26}],25:[function(require,module,exports){
 /**
  * 解析url，根据url中指定的协议创建对应的连接对象
  * @param url
@@ -22454,7 +22483,7 @@ function connection(url, options, handler) {
 
 exports['default'] = connection;
 module.exports = exports['default'];
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -22494,7 +22523,7 @@ function extend(target) {
 }
 
 // recurse into nested objects
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /**
  * yfloat格式数据的解析模块
  * Created by jiagang on 2015/10/15.
@@ -22597,12 +22626,7 @@ module.exports = {
   unmakeValueToString: unmakeValueToString
 };
 
-},{}],27:[function(require,module,exports){
-'use strict';
-
-module.exports = require('./lib')
-
-},{"./lib":32}],28:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -22788,22 +22812,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":35}],29:[function(require,module,exports){
-'use strict';
-
-var Promise = require('./core.js');
-
-module.exports = Promise;
-Promise.prototype.done = function (onFulfilled, onRejected) {
-  var self = arguments.length ? this.then.apply(this, arguments) : this;
-  self.then(null, function (err) {
-    setTimeout(function () {
-      throw err;
-    }, 0);
-  });
-};
-
-},{"./core.js":28}],30:[function(require,module,exports){
+},{"asap/raw":31}],29:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -22912,107 +22921,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":28}],31:[function(require,module,exports){
-'use strict';
-
-var Promise = require('./core.js');
-
-module.exports = Promise;
-Promise.prototype['finally'] = function (f) {
-  return this.then(function (value) {
-    return Promise.resolve(f()).then(function () {
-      return value;
-    });
-  }, function (err) {
-    return Promise.resolve(f()).then(function () {
-      throw err;
-    });
-  });
-};
-
-},{"./core.js":28}],32:[function(require,module,exports){
-'use strict';
-
-module.exports = require('./core.js');
-require('./done.js');
-require('./finally.js');
-require('./es6-extensions.js');
-require('./node-extensions.js');
-
-},{"./core.js":28,"./done.js":29,"./es6-extensions.js":30,"./finally.js":31,"./node-extensions.js":33}],33:[function(require,module,exports){
-'use strict';
-
-// This file contains then/promise specific extensions that are only useful
-// for node.js interop
-
-var Promise = require('./core.js');
-var asap = require('asap');
-
-module.exports = Promise;
-
-/* Static Functions */
-
-Promise.denodeify = function (fn, argumentCount) {
-  argumentCount = argumentCount || Infinity;
-  return function () {
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 0,
-        argumentCount > 0 ? argumentCount : 0);
-    return new Promise(function (resolve, reject) {
-      args.push(function (err, res) {
-        if (err) reject(err);
-        else resolve(res);
-      })
-      var res = fn.apply(self, args);
-      if (res &&
-        (
-          typeof res === 'object' ||
-          typeof res === 'function'
-        ) &&
-        typeof res.then === 'function'
-      ) {
-        resolve(res);
-      }
-    })
-  }
-}
-Promise.nodeify = function (fn) {
-  return function () {
-    var args = Array.prototype.slice.call(arguments);
-    var callback =
-      typeof args[args.length - 1] === 'function' ? args.pop() : null;
-    var ctx = this;
-    try {
-      return fn.apply(this, arguments).nodeify(callback, ctx);
-    } catch (ex) {
-      if (callback === null || typeof callback == 'undefined') {
-        return new Promise(function (resolve, reject) {
-          reject(ex);
-        });
-      } else {
-        asap(function () {
-          callback.call(ctx, ex);
-        })
-      }
-    }
-  }
-}
-
-Promise.prototype.nodeify = function (callback, ctx) {
-  if (typeof callback != 'function') return this;
-
-  this.then(function (value) {
-    asap(function () {
-      callback.call(ctx, null, value);
-    });
-  }, function (err) {
-    asap(function () {
-      callback.call(ctx, err);
-    });
-  });
-}
-
-},{"./core.js":28,"asap":34}],34:[function(require,module,exports){
+},{"./core.js":28}],30:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -23080,7 +22989,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":35}],35:[function(require,module,exports){
+},{"./raw":31}],31:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -23304,7 +23213,32 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],36:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
+// should work in any browser without browserify
+
+if (typeof Promise.prototype.done !== 'function') {
+  Promise.prototype.done = function (onFulfilled, onRejected) {
+    var self = arguments.length ? this.then.apply(this, arguments) : this
+    self.then(null, function (err) {
+      setTimeout(function () {
+        throw err
+      }, 0)
+    })
+  }
+}
+},{}],33:[function(require,module,exports){
+// not "use strict" so we can declare global "Promise"
+
+var asap = require('asap');
+
+if (typeof Promise === 'undefined') {
+  Promise = require('./lib/core.js')
+  require('./lib/es6-extensions.js')
+}
+
+require('./polyfill-done.js');
+
+},{"./lib/core.js":28,"./lib/es6-extensions.js":29,"./polyfill-done.js":32,"asap":30}],34:[function(require,module,exports){
 (function (process){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
@@ -27528,7 +27462,7 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 });
 
 }).call(this,require('_process'))
-},{"_process":16,"bytebuffer":37,"fs":15,"path":15}],37:[function(require,module,exports){
+},{"_process":17,"bytebuffer":35,"fs":16,"path":16}],35:[function(require,module,exports){
 /*
  Copyright 2013-2014 Daniel Wirtz <dcode@dcode.io>
 
@@ -31205,7 +31139,7 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
     return ByteBuffer;
 });
 
-},{"long":38}],38:[function(require,module,exports){
+},{"long":36}],36:[function(require,module,exports){
 /*
  Copyright 2013 Daniel Wirtz <dcode@dcode.io>
  Copyright 2009 The Closure Library Authors. All Rights Reserved.
@@ -32285,6 +32219,507 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 
     return Long;
 });
+
+},{}],37:[function(require,module,exports){
+(function (process,Buffer){
+// The MIT License (MIT)
+//
+// Copyright (c) 2016 Zhipeng Jia
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+'use strict'
+
+function isNode () {
+  if (typeof process === 'object') {
+    if (typeof process.versions === 'object') {
+      if (typeof process.versions.node !== 'undefined') {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+var is_node = isNode()
+
+function isUint8Array (object) {
+  return object instanceof Uint8Array && (!is_node || !Buffer.isBuffer(object))
+}
+
+function isArrayBuffer (object) {
+  return object instanceof ArrayBuffer
+}
+
+function isBuffer (object) {
+  if (!is_node) {
+    return false
+  }
+  return Buffer.isBuffer(object)
+}
+
+var SnappyDecompressor = require('./snappy_decompressor').SnappyDecompressor
+var SnappyCompressor = require('./snappy_compressor').SnappyCompressor
+
+var TYPE_ERROR_MSG = 'Argument compressed must be type of ArrayBuffer, Buffer, or Uint8Array'
+
+function uncompress (compressed) {
+  if (!isUint8Array(compressed) && !isArrayBuffer(compressed) && !isBuffer(compressed)) {
+    throw new TypeError(TYPE_ERROR_MSG)
+  }
+  var uint8_mode = false
+  var array_buffer_mode = false
+  if (isUint8Array(compressed)) {
+    uint8_mode = true
+  } else if (isArrayBuffer(compressed)) {
+    array_buffer_mode = true
+    compressed = new Uint8Array(compressed)
+  }
+  var decompressor = new SnappyDecompressor(compressed)
+  var length = decompressor.readUncompressedLength()
+  if (length === -1) {
+    throw new Error('Invalid Snappy bitstream')
+  }
+  var uncompressed, uncompressed_view
+  if (uint8_mode) {
+    uncompressed = new Uint8Array(length)
+    if (!decompressor.uncompressToBuffer(uncompressed)) {
+      throw new Error('Invalid Snappy bitstream')
+    }
+  } else if (array_buffer_mode) {
+    uncompressed = new ArrayBuffer(length)
+    uncompressed_view = new Uint8Array(uncompressed)
+    if (!decompressor.uncompressToBuffer(uncompressed_view)) {
+      throw new Error('Invalid Snappy bitstream')
+    }
+  } else {
+    uncompressed = new Buffer(length)
+    if (!decompressor.uncompressToBuffer(uncompressed)) {
+      throw new Error('Invalid Snappy bitstream')
+    }
+  }
+  return uncompressed
+}
+
+function compress (uncompressed) {
+  if (!isUint8Array(uncompressed) && !isArrayBuffer(uncompressed) && !isBuffer(uncompressed)) {
+    throw new TypeError(TYPE_ERROR_MSG)
+  }
+  var uint8_mode = false
+  var array_buffer_mode = false
+  if (isUint8Array(compressed)) {
+    uint8_mode = true
+  } else if (isArrayBuffer(uncompressed)) {
+    array_buffer_mode = true
+    uncompressed = new Uint8Array(uncompressed)
+  }
+  var compressor = new SnappyCompressor(uncompressed)
+  var max_length = compressor.maxCompressedLength()
+  var compressed, compressed_view
+  var length
+  if (uint8_mode) {
+    compressed = new Uint8Array(max_length)
+    length = compressor.compressToBuffer(compressed)
+  } else if (array_buffer_mode) {
+    compressed = new ArrayBuffer(max_length)
+    compressed_view = new Uint8Array(compressed)
+    length = compressor.compressToBuffer(compressed_view)
+  } else {
+    compressed = new Buffer(max_length)
+    length = compressor.compressToBuffer(compressed)
+  }
+  return compressed.slice(0, length)
+}
+
+exports.uncompress = uncompress
+exports.compress = compress
+
+}).call(this,require('_process'),require("buffer").Buffer)
+},{"./snappy_compressor":38,"./snappy_decompressor":39,"_process":17,"buffer":15}],38:[function(require,module,exports){
+// The MIT License (MIT)
+//
+// Copyright (c) 2016 Zhipeng Jia
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+'use strict'
+
+var BLOCK_LOG = 16
+var BLOCK_SIZE = 1 << BLOCK_LOG
+
+var MAX_HASH_TABLE_BITS = 14
+var global_hash_tables = new Array(MAX_HASH_TABLE_BITS + 1)
+
+function hashFunc (key, hash_func_shift) {
+  return (key * 0x1e35a7bd) >>> hash_func_shift
+}
+
+function load32 (array, pos) {
+  return array[pos] + (array[pos + 1] << 8) + (array[pos + 2] << 16) + (array[pos + 3] << 24)
+}
+
+function equals32 (array, pos1, pos2) {
+  return array[pos1] === array[pos2] &&
+         array[pos1 + 1] === array[pos2 + 1] &&
+         array[pos1 + 2] === array[pos2 + 2] &&
+         array[pos1 + 3] === array[pos2 + 3]
+}
+
+function copyBytes (from_array, from_pos, to_array, to_pos, length) {
+  var i
+  for (i = 0; i < length; i++) {
+    to_array[to_pos + i] = from_array[from_pos + i]
+  }
+}
+
+function emitLiteral (input, ip, len, output, op) {
+  if (len <= 60) {
+    output[op] = (len - 1) << 2
+    op += 1
+  } else if (len < 256) {
+    output[op] = 60 << 2
+    output[op + 1] = len - 1
+    op += 2
+  } else {
+    output[op] = 61 << 2
+    output[op + 1] = (len - 1) & 0xff
+    output[op + 2] = (len - 1) >>> 8
+    op += 3
+  }
+  copyBytes(input, ip, output, op, len)
+  return op + len
+}
+
+function emitCopyLessThan64 (output, op, offset, len) {
+  if (len < 12 && offset < 2048) {
+    output[op] = 1 + ((len - 4) << 2) + ((offset >>> 8) << 5)
+    output[op + 1] = offset & 0xff
+    return op + 2
+  } else {
+    output[op] = 2 + ((len - 1) << 2)
+    output[op + 1] = offset & 0xff
+    output[op + 2] = offset >>> 8
+    return op + 3
+  }
+}
+
+function emitCopy (output, op, offset, len) {
+  while (len >= 68) {
+    op = emitCopyLessThan64(output, op, offset, 64)
+    len -= 64
+  }
+  if (len > 64) {
+    op = emitCopyLessThan64(output, op, offset, 60)
+    len -= 60
+  }
+  return emitCopyLessThan64(output, op, offset, len)
+}
+
+function compressFragment (input, ip, input_size, output, op) {
+  var hash_table_bits = 1
+  while ((1 << hash_table_bits) <= input_size &&
+         hash_table_bits <= MAX_HASH_TABLE_BITS) {
+    hash_table_bits += 1
+  }
+  hash_table_bits -= 1
+  var hash_func_shift = 32 - hash_table_bits
+
+  if (typeof global_hash_tables[hash_table_bits] === 'undefined') {
+    global_hash_tables[hash_table_bits] = new Uint16Array(1 << hash_table_bits)
+  }
+  var hash_table = global_hash_tables[hash_table_bits]
+  var i
+  for (i = 0; i < hash_table.length; i++) {
+    hash_table[i] = 0
+  }
+
+  var ip_end = ip + input_size
+  var ip_limit
+  var base_ip = ip
+  var next_emit = ip
+
+  var hash, next_hash
+  var next_ip, candidate, skip
+  var bytes_between_hash_lookups
+  var base, matched, offset
+  var prev_hash, cur_hash
+  var flag = true
+
+  var INPUT_MARGIN = 15
+  if (input_size >= INPUT_MARGIN) {
+    ip_limit = ip_end - INPUT_MARGIN
+
+    ip += 1
+    next_hash = hashFunc(load32(input, ip), hash_func_shift)
+
+    while (flag) {
+      skip = 32
+      next_ip = ip
+      do {
+        ip = next_ip
+        hash = next_hash
+        bytes_between_hash_lookups = skip >>> 5
+        skip += 1
+        next_ip = ip + bytes_between_hash_lookups
+        if (ip > ip_limit) {
+          flag = false
+          break
+        }
+        next_hash = hashFunc(load32(input, next_ip), hash_func_shift)
+        candidate = base_ip + hash_table[hash]
+        hash_table[hash] = ip - base_ip
+      } while (!equals32(input, ip, candidate))
+
+      if (!flag) {
+        break
+      }
+
+      op = emitLiteral(input, next_emit, ip - next_emit, output, op)
+
+      do {
+        base = ip
+        matched = 4
+        while (ip + matched < ip_end && input[ip + matched] === input[candidate + matched]) {
+          matched += 1
+        }
+        ip += matched
+        offset = base - candidate
+        op = emitCopy(output, op, offset, matched)
+
+        next_emit = ip
+        if (ip >= ip_limit) {
+          flag = false
+          break
+        }
+        prev_hash = hashFunc(load32(input, ip - 1), hash_func_shift)
+        hash_table[prev_hash] = ip - 1 - base_ip
+        cur_hash = hashFunc(load32(input, ip), hash_func_shift)
+        candidate = base_ip + hash_table[cur_hash]
+        hash_table[cur_hash] = ip - base_ip
+      } while (equals32(input, ip, candidate))
+
+      if (!flag) {
+        break
+      }
+
+      ip += 1
+      next_hash = hashFunc(load32(input, ip), hash_func_shift)
+    }
+  }
+
+  if (next_emit < ip_end) {
+    op = emitLiteral(input, next_emit, ip_end - next_emit, output, op)
+  }
+
+  return op
+}
+
+function putVarint (value, output, op) {
+  do {
+    output[op] = value & 0x7f
+    value = value >>> 7
+    if (value > 0) {
+      output[op] += 0x80
+    }
+    op += 1
+  } while (value > 0)
+  return op
+}
+
+function SnappyCompressor (uncompressed) {
+  this.array = uncompressed
+}
+
+SnappyCompressor.prototype.maxCompressedLength = function () {
+  var source_len = this.array.length
+  return 32 + source_len + Math.floor(source_len / 6)
+}
+
+SnappyCompressor.prototype.compressToBuffer = function (out_buffer) {
+  var array = this.array
+  var length = array.length
+  var pos = 0
+  var out_pos = 0
+
+  var fragment_size
+
+  out_pos = putVarint(length, out_buffer, out_pos)
+  while (pos < length) {
+    fragment_size = Math.min(length - pos, BLOCK_SIZE)
+    out_pos = compressFragment(array, pos, fragment_size, out_buffer, out_pos)
+    pos += fragment_size
+  }
+
+  return out_pos
+}
+
+exports.SnappyCompressor = SnappyCompressor
+
+},{}],39:[function(require,module,exports){
+// The MIT License (MIT)
+//
+// Copyright (c) 2016 Zhipeng Jia
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+'use strict'
+
+var WORD_MASK = [0, 0xff, 0xffff, 0xffffff, 0xffffffff]
+
+function copyBytes (from_array, from_pos, to_array, to_pos, length) {
+  var i
+  for (i = 0; i < length; i++) {
+    to_array[to_pos + i] = from_array[from_pos + i]
+  }
+}
+
+function selfCopyBytes (array, pos, offset, length) {
+  var i
+  for (i = 0; i < length; i++) {
+    array[pos + i] = array[pos - offset + i]
+  }
+}
+
+function SnappyDecompressor (compressed) {
+  this.array = compressed
+  this.pos = 0
+}
+
+SnappyDecompressor.prototype.readUncompressedLength = function () {
+  var result = 0
+  var shift = 0
+  var c, val
+  while (shift < 32 && this.pos < this.array.length) {
+    c = this.array[this.pos]
+    this.pos += 1
+    val = c & 0x7f
+    if (((val << shift) >>> shift) !== val) {
+      return -1
+    }
+    result |= val << shift
+    if (c < 128) {
+      return result
+    }
+    shift += 7
+  }
+  return -1
+}
+
+SnappyDecompressor.prototype.uncompressToBuffer = function (out_buffer) {
+  var array = this.array
+  var array_length = array.length
+  var pos = this.pos
+  var out_pos = 0
+
+  var c, len, small_len
+  var offset
+
+  while (pos < array.length) {
+    c = array[pos]
+    pos += 1
+    if ((c & 0x3) === 0) {
+      // Literal
+      len = (c >>> 2) + 1
+      if (len > 60) {
+        if (pos + 3 >= array_length) {
+          return false
+        }
+        small_len = len - 60
+        len = array[pos] + (array[pos + 1] << 8) + (array[pos + 2] << 16) + (array[pos + 3] << 24)
+        len = (len & WORD_MASK[small_len]) + 1
+        pos += small_len
+      }
+      if (pos + len > array_length) {
+        return false
+      }
+      copyBytes(array, pos, out_buffer, out_pos, len)
+      pos += len
+      out_pos += len
+    } else {
+      switch (c & 0x3) {
+        case 1:
+          len = ((c >>> 2) & 0x7) + 4
+          offset = array[pos] + ((c >>> 5) << 8)
+          pos += 1
+          break
+        case 2:
+          if (pos + 1 >= array_length) {
+            return false
+          }
+          len = (c >>> 2) + 1
+          offset = array[pos] + (array[pos + 1] << 8)
+          pos += 2
+          break
+        case 3:
+          if (pos + 3 >= array_length) {
+            return false
+          }
+          len = (c >>> 2) + 1
+          offset = array[pos] + (array[pos + 1] << 8) + (array[pos + 2] << 16) + (array[pos + 3] << 24)
+          pos += 4
+          break
+        default:
+          break
+      }
+      if (offset === 0 || offset > out_pos) {
+        return false
+      }
+      selfCopyBytes(out_buffer, out_pos, offset, len)
+      out_pos += len
+    }
+  }
+  return true
+}
+
+exports.SnappyDecompressor = SnappyDecompressor
 
 },{}]},{},[1])(1)
 });

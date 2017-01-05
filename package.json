@@ -1,6 +1,6 @@
 {
   "name": "html5-datastore",
-  "version": "0.2.25",
+  "version": "0.2.26",
   "description": "dzh云平台数据查询和存储管理模块",
   "main": "index.js",
   "scripts": {},
@@ -13,7 +13,8 @@
   "dependencies": {
     "html5-connection": "git+https://git@github.com/huicloud/html5-connection.git",
     "promise": "^7.0.4",
-    "protobufjs": "*",
+    "protobufjs": "^4",
+    "snappyjs": "^0.5.0",
     "html5-yfloat": "git+https://git@github.com/huicloud/html5-yfloat.git"
   },
   "devDependencies": {
@@ -31,11 +32,6 @@
     "gulp-util": "^3.0.4",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
-  },
-  "aliasify": {
-    "aliases": {
-      "protobufjs": "protobufjs/dist/ProtoBuf-light"
-    }
   },
   "jspm": {
     "jspmNodeConversion": false,

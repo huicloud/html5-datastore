@@ -1,13 +1,7 @@
 import * as $ from './util';
 import DzhyunDataParser from './dzhyun/DzhyunDataParser';
 import DzhyunTokenManager from './dzhyun/DzhyunTokenManager';
-
-var connection;
-try {
-  connection = require('html5-connection');
-} catch (err) {
-  connection = window.connection;
-}
+import connection from 'html5-connection';
 
 class Request {
   constructor(qid, key, filter, subscribe, queryObject) {
@@ -130,6 +124,9 @@ export default class DataStore {
     /** {String} 请求数据的返回类型 pb|json */
     this.dataType = options.dataType || this.constructor.dataType || 'pb';
 
+    /** {String} 响应数据的压缩方式 snappy */
+    this.compresser = options.compresser || this.constructor.compresser || null;
+
     /** {String} 请求的服务url */
     this.serviceUrl = options.serviceUrl;
 
@@ -146,6 +143,9 @@ export default class DataStore {
     this.fields = options.fields;
 
     this.dataParser = options.dataParser || new DzhyunDataParser(this.serviceUrl || '');
+
+    // 添加压缩参数设置
+    this.dataParser.parseUAResponse = this.dataParser.parseUAResponse.bind(this.dataParser, this.compresser);
 
     /**
      * 其它参数
@@ -200,7 +200,7 @@ export default class DataStore {
         conn = map[address];
       }
       if (!conn) {
-        var handler = $.extend({}, DataStore._connectionHandler);
+        var handler = $.extend({}, DataStore._connectionHandler, {dataParser: this.dataParser});
         var options = {deferred: true};
         conn = this.connectionType ?
           connection[this.connectionType](address, options, handler) : connection(address, options, handler);
@@ -373,7 +373,8 @@ export default class DataStore {
     var params = {
       qid: qid,
       sub: (subscribe && this.connectionType === 'ws') ? 1 : 0,
-      output: this.dataType
+      output: this.dataType,
+      compresser: this.compresser
     };
 
     var fieldStr = this._requestFieldStr();
@@ -500,7 +501,7 @@ export default class DataStore {
 
       // http协议不支持订阅
       //subscribe = false;
-      if (this.dataType === 'pb') {
+      if (this.dataType === 'pb' || this.compresser != null) {
 
         // 如果以http协议请求pb格式数据时，需设置额外参数以指定响应数据是二进制数据
         options = {

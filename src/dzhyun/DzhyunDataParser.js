@@ -18,17 +18,17 @@ export default class DzhyunDataParser extends DataParser {
     //this.direct = false;
   }
 
-  parseUAResponse(data) {
-    return parser.parse(data, 'UAResponse');
+  parseUAResponse(compresser = null, data) {
+    return parser.parse(data, 'UAResponse', compresser);
   }
 
   parseMsg(msgData) {
     return this._adapter(parser.parse(msgData, 'MSG'));
   }
 
-  parse(data) {
+  parse(compresser = null, data) {
     return new Promise((resolve, reject) => {
-      var uaResponse = this.parseUAResponse(data);
+      var uaResponse = this.parseUAResponse(compresser, data);
       data = uaResponse.Data;
       if (uaResponse.Err !== 0) {
         reject({
@@ -49,14 +49,16 @@ export default class DzhyunDataParser extends DataParser {
     if (!data) {
       return data;
     }
-    var keys = Object.keys(adapterMap);
     var adapter = this.direct ? adapterMap._direct : adapterMap._default;
-    keys.some((key) => {
-      if (this.service.indexOf(key) >= 0) {
-        adapter = adapterMap[key];
-        return true;
-      }
-    });
+    if (this.service) {
+      var keys = Object.keys(adapterMap);
+      keys.some((key) => {
+        if (this.service.indexOf(key) >= 0) {
+          adapter = adapterMap[key];
+          return true;
+        }
+      });
+    }
     return adapter.adapt(data);
   }
 }

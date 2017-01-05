@@ -28,7 +28,7 @@ export default class DzhyunTokenManager {
         error: reject
       }).request(service + '?' + util.param(params));
     }).then((data) => {
-      return new DzhyunDataParser(service).parse(data);
+      return new DzhyunDataParser(service).parse(null, data);
     }).then((data) => {
       data = data.data[0];
       if (data.result == 0) {

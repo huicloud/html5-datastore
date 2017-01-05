@@ -11,6 +11,7 @@ var babel = require('gulp-babel');
 var git = require('gulp-git');
 var del = require('del');
 var fs = require('fs');
+var aliasify = require('aliasify');
 
 gulp.task('clean:proto', function(cb) {
   del('proto', cb);
@@ -30,7 +31,7 @@ function pbjs(cb) {
   });
 }
 
-gulp.task('pbjs', ['clone', 'babel'], function(cb) {
+gulp.task('pbjs', ['babel'], function(cb) {
   pbjs(cb);
 });
 
@@ -46,7 +47,7 @@ gulp.task('babel', function () {
 });
 
 gulp.task('browserify', ['babel', 'pbjs'], function () {
-  bundle('./index.js', ['connection', 'protobufjs', 'yfloat'], ['promise'])
+  bundle('./index.js', ['connection', 'protobufjs', 'yfloat', 'snappyjs'], ['promise', 'buffer'])
     .pipe(rename('datastore.js'))
     .pipe(gulp.dest('./dist/'))
     .pipe(rename({ extname: '.min.js' }))
@@ -54,7 +55,12 @@ gulp.task('browserify', ['babel', 'pbjs'], function () {
     .pipe(gulp.dest('./dist/'))
     .on('error', gutil.log);
 
-  bundle('./index.js', [], [], null, 'aliasify')
+  bundle('./index.js', [], ['buffer'], null, {
+    "aliases": {
+      "protobufjs": "protobufjs/dist/ProtoBuf-light",
+      "promise": "promise/polyfill"
+    }
+  })
     .pipe(rename('datastore.all.js'))
     .pipe(gulp.dest('./dist/'))
     .pipe(rename({ extname: '.min.js' }))
@@ -63,7 +69,11 @@ gulp.task('browserify', ['babel', 'pbjs'], function () {
     .on('error', gutil.log);
 
   // json格式不需要pb解析和yfloat解析
-  bundle('./index.js', ['protobufjs'], [require.resolve('./lib/dzhyun/dzhyun'), 'yfloat'], null)
+  bundle('./index.js', ['protobufjs'], [require.resolve('./lib/dzhyun/dzhyun'), 'yfloat', 'buffer'], null, {
+    "aliases": {
+      "promise": "promise/polyfill"
+    }
+  })
     .pipe(rename('datastore.json.js'))
     .pipe(gulp.dest('./dist/'))
     .pipe(rename({ extname: '.min.js' }))
@@ -72,7 +82,7 @@ gulp.task('browserify', ['babel', 'pbjs'], function () {
     .on('error', gutil.log);
 });
 
-function bundle(entires, externals, ignores, amdRequires, transform) {
+function bundle(entires, externals, ignores, amdRequires, aliasifyConfig) {
   var b = browserify({
     entries: './index.js',
     standalone: 'DataStore'
@@ -85,7 +95,7 @@ function bundle(entires, externals, ignores, amdRequires, transform) {
     b.ignore(ignore);
   });
 
-  transform && b.transform(transform);
+  aliasifyConfig && b.transform(aliasify, aliasifyConfig);
 
   var output = '';
   return b.bundle()
